@@ -5,6 +5,9 @@ using System.Web;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
+using System.Security.Principal;
+using System.Web.Security;
+
 
 namespace HealthTrack
 {
@@ -21,5 +24,18 @@ namespace HealthTrack
                 db.Database.Initialize(false);
             }
         }
+            protected void Application_PostAuthenticateRequest(object sender, EventArgs e)
+        {
+            var cookie = Request.Cookies[FormsAuthentication.FormsCookieName];
+            if (cookie == null || string.IsNullOrEmpty(cookie.Value)) return;
+            try
+            {
+                var ticket = FormsAuthentication.Decrypt(cookie.Value);
+                if (ticket == null || ticket.Expired) return;
+                HttpContext.Current.User = new GenericPrincipal(new FormsIdentity(ticket), new[] { ticket.UserData });
+            }
+            catch { }
+        }
     }
 }
+

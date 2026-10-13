@@ -3,14 +3,27 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title - My ASP.NET Application</title>
+    <title>@ViewBag.Title - HealthTrack</title>
+    <link rel="icon" type="image/svg+xml" href="@Url.Content("~/Content/favicon.svg")" />
+    <link rel="icon" type="image/x-icon" href="@Url.Content("~/favicon.ico")" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@800&display=swap" rel="stylesheet">
     @Styles.Render("~/Content/css")
+    <link href="@Url.Content("~/Content/brand.css")" rel="stylesheet" />
     @Scripts.Render("~/bundles/modernizr")
 </head>
 <body>
     <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark">
         <div class="container">
-            @Html.ActionLink("Application name", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+            <a class="navbar-brand brand-ht" href="@Url.Action("Index", "Home", new { area = "" })">
+                <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true">
+                    <defs><linearGradient id="bm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22d3ee" /><stop offset="1" stop-color="#0d9488" /></linearGradient></defs>
+                    <rect width="64" height="64" rx="14" fill="url(#bm)" />
+                    <polyline points="8,34 21,34 27,19 35,47 41,27 45,34 56,34" fill="none" stroke="#fff" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <span><span class="b-health">Health</span><span class="b-track">Track</span></span>
+            </a>
             <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" title="Toggle navigation" aria-controls="navbarSupportedContent"
                     aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -21,6 +34,25 @@
                     <li>@Html.ActionLink("About", "About", "Home", new { area = "" }, new { @class = "nav-link" })</li>
                     <li>@Html.ActionLink("Contact", "Contact", "Home", new { area = "" }, new { @class = "nav-link" })</li>
                 </ul>
+
+                <ul class="navbar-nav">
+                    @if (Request.IsAuthenticated)
+                    {
+                    <li><span class="nav-link">Hi, @User.Identity.Name</span></li>
+                    <li>
+                        @using (Html.BeginForm("Logout", "Account", new { area = "" }, FormMethod.Post, new { @class = "d-inline" }))
+                            {
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-link nav-link">Logout</button>
+                            }
+                    </li>
+                    }
+                    else
+                    {
+                    <li>@Html.ActionLink("Login", "Login", "Account", new { area = "" }, new { @class = "nav-link" })</li>
+                    <li>@Html.ActionLink("Register", "Register", "Account", new { area = "" }, new { @class = "nav-link" })</li>
+                    }
+                </ul>
             </div>
         </div>
     </nav>
@@ -28,7 +60,7 @@
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
+            <p>&copy; @DateTime.Now.Year - <span class="footer-brand">HealthTrack</span></p>
         </footer>
     </div>
 
