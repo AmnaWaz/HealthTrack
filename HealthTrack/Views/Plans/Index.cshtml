@@ -1,0 +1,67 @@
+@model HealthTrack.ViewModels.PlanIndexViewModel
+@{ ViewBag.Title = Model.Kind + " plans"; }
+
+<div class="ht-page">
+
+  <div class="ht-page-head">
+    <div>
+      <p class="ht-eyebrow">Trainer</p>
+      <h1 class="ht-h1">@Model.Kind plans</h1>
+      <p class="ht-sub">Create plans and assign them to your clients.</p>
+    </div>
+    <div class="ht-head-actions">
+      @Html.ActionLink("+ New " + Model.Kind.ToLower() + " plan", "Create", Model.Route, null, new { @class = "ht-btn" })
+    </div>
+  </div>
+
+  @if (TempData["Success"] != null) { <div class="ht-alert ok">@TempData["Success"]</div> }
+  @if (TempData["Error"] != null) { <div class="ht-alert bad">@TempData["Error"]</div> }
+
+  <section class="ht-card">
+    @if (Model.Plans.Any())
+    {
+      <div class="ht-table-wrap">
+        <table class="ht-table">
+          <thead>
+            <tr><th>Plan</th><th>Client</th><th>Dates</th><th>Status</th><th></th></tr>
+          </thead>
+          <tbody>
+            @foreach (var p in Model.Plans)
+            {
+              <tr>
+                <td>
+                  <div class="ht-list-title">@p.PlanName</div>
+                  @if (!string.IsNullOrWhiteSpace(p.Description))
+                  {
+                    <div class="ht-list-sub">@(p.Description.Length > 70 ? p.Description.Substring(0, 70) + "…" : p.Description)</div>
+                  }
+                </td>
+                <td>@p.ClientName</td>
+                <td>@p.StartDate.ToString("d MMM yyyy")@(p.EndDate.HasValue ? " – " + p.EndDate.Value.ToString("d MMM yyyy") : "")</td>
+                <td><span class="ht-badge @HealthTrack.ViewModels.PlanStatusHelper.BadgeClass(p.Status)">@p.Status</span></td>
+                <td>
+                  <div class="ht-actions">
+                    @Html.ActionLink("Edit", "Edit", Model.Route, new { id = p.Id }, new { @class = "ht-btn-ghost" })
+                    @using (Html.BeginForm("Delete", Model.Route, new { id = p.Id }, FormMethod.Post, new { @class = "d-inline", onsubmit = "return confirm('Delete this plan?');" }))
+                    {
+                      @Html.AntiForgeryToken()
+                      <button type="submit" class="ht-btn-ghost danger">Delete</button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+    else
+    {
+      <div class="ht-empty">
+        <svg viewBox="0 0 24 24"><path d="M6 8v8M18 8v8M3 10v4M21 10v4M6 12h12"/></svg>
+        <div>You haven't created any @Model.Kind.ToLower() plans yet.</div>
+        <p style="margin-top:14px">@Html.ActionLink("Create your first plan", "Create", Model.Route, null, new { @class = "ht-btn" })</p>
+      </div>
+    }
+  </section>
+</div>

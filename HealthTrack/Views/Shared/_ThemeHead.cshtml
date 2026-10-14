@@ -1,0 +1,12 @@
+@* Theme head: pre-paint script (no flash) + the theme stylesheet.
+   _Layout includes this automatically. For a page with Layout = null, add:  @Html.Partial("_ThemeHead")  inside <head>. *@
+<script>
+  (function () {
+    var DEFAULT_THEME = 'dark';          // change to 'light' to make light the default for new visitors
+    var t = DEFAULT_THEME;
+    try { t = localStorage.getItem('ht-theme') || DEFAULT_THEME; } catch (e) { }
+    document.documentElement.setAttribute('data-theme', t);
+    document.documentElement.setAttribute('data-bs-theme', t);
+  })();
+</script>
+<link href="@Url.Content("~/Content/theme.css")" rel="stylesheet" />

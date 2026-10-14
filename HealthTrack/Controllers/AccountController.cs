@@ -87,7 +87,7 @@ namespace HealthTrack.Controllers
 
                 SignIn(user.Email, role.RoleName, false);
             }
-            return RedirectToAction("Index", "Home");
+            return RedirectByRole(vm.Role);
         }
 
         // ---------- LOGIN (email OR phone + password) ----------
@@ -134,7 +134,7 @@ namespace HealthTrack.Controllers
 
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                 return Redirect(returnUrl);
-            return RedirectToAction("Index", "Home");
+            return RedirectByRole(roleName);
         }
 
         // ---------- LOGOUT ----------
@@ -146,6 +146,13 @@ namespace HealthTrack.Controllers
         }
 
         // ---------- helpers ----------
+        private ActionResult RedirectByRole(string roleName)
+        {
+            if (roleName == "Trainer") return RedirectToAction("Index", "Trainer");
+            if (roleName == "Client") return RedirectToAction("Plans", "Client");
+            return RedirectToAction("Index", "Home");
+        }
+
         private void SignIn(string email, string roleName, bool persistent)
         {
             var now = DateTime.Now;

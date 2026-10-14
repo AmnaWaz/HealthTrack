@@ -1,16 +1,41 @@
-/* ===== HealthTrack brand (loaded on every page) ===== */
+/* ===== HealthTrack brand (loaded on every page; colours come from theme.css) ===== */
 .navbar-brand.brand-ht {
-  display: flex; align-items: center; gap: 10px;
-  padding: 4px 0; margin-right: 1.5rem;
-  font-family: 'Poppins', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  font-size: 2rem; font-weight: 800; letter-spacing: -0.04em; line-height: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 0;
+    margin-right: 1.5rem;
+    font-family: 'Poppins', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1;
 }
-.brand-ht .brand-mark { width: 38px; height: 38px; flex: none; filter: drop-shadow(0 2px 8px rgba(34,211,238,.35)); }
-.brand-ht .b-health { color: #f8fafc; }
+
+.brand-ht .brand-mark {
+    width: 38px;
+    height: 38px;
+    flex: none;
+    filter: drop-shadow(0 2px 8px rgba(34,211,238,.35));
+}
+
+.brand-ht .b-health {
+    color: var(--ht-text);
+}
+
 .brand-ht .b-track {
-  background: linear-gradient(90deg, #22d3ee 0%, #2dd4bf 50%, #34d399 100%);
-  -webkit-background-clip: text; background-clip: text;
-  color: transparent; -webkit-text-fill-color: transparent;
+    background: linear-gradient(90deg, #22d3ee 0%, #2dd4bf 50%, #34d399 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
 }
-.brand-ht:hover .brand-mark { transform: rotate(-6deg) scale(1.05); transition: transform .2s; }
-.footer-brand { font-weight: 700; }
+
+.brand-ht:hover .brand-mark {
+    transform: rotate(-6deg) scale(1.05);
+    transition: transform .2s;
+}
+
+.footer-brand {
+    font-weight: 700;
+}
