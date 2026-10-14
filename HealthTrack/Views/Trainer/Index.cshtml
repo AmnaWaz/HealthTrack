@@ -1,0 +1,148 @@
+@model HealthTrack.ViewModels.TrainerDashboardViewModel
+@{ ViewBag.Title = "Trainer dashboard"; }
+
+<div class="ht-page">
+
+    <div class="ht-page-head">
+        <div>
+            <p class="ht-eyebrow">Trainer dashboard</p>
+            <h1 class="ht-h1">@Model.Greeting, @Model.FirstName</h1>
+            <p class="ht-sub">
+                @(string.IsNullOrWhiteSpace(Model.Specialisation) ? "Trainer" : Model.Specialisation)
+                &nbsp;&middot;&nbsp;
+                @if (Model.AverageRating > 0)
+                {<text>&#9733; @Model.AverageRating.ToString("0.0") average rating</text> }
+            else
+            { <text>No ratings yet</text>}
+            </p>
+        </div>
+        <div class="ht-head-actions">
+            <span class="ht-chip">@DateTime.Now.ToString("dddd, d MMMM")</span>
+            @Html.ActionLink("+ Workout plan", "Create", "WorkoutPlans", null, new { @class = "ht-btn" })
+            @Html.ActionLink("+ Diet plan", "Create", "DietPlans", null, new { @class = "ht-btn-ghost" })
+        </div>
+    </div>
+
+    @* ---------- stat tiles ---------- *@
+    <div class="ht-grid-4">
+        <div class="ht-card ht-stat">
+            <div class="ht-stat-icon"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c0-3.6 3-5.5 6.5-5.5s6.5 1.9 6.5 5.5" /><path d="M16 4.6a3.5 3.5 0 010 6.8M18 14.8c2.2.6 3.5 2.2 3.5 5.2" /></svg></div>
+            <div><div class="ht-stat-value">@Model.ClientCount</div><div class="ht-stat-label">Clients</div></div>
+        </div>
+        <div class="ht-card ht-stat">
+            <div class="ht-stat-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M3 10h18M8 3v4M16 3v4" /></svg></div>
+            <div><div class="ht-stat-value">@Model.UpcomingAppointmentCount</div><div class="ht-stat-label">Upcoming appointments</div></div>
+        </div>
+        <div class="ht-card ht-stat">
+            <div class="ht-stat-icon"><svg viewBox="0 0 24 24"><path d="M6 8v8M18 8v8M3 10v4M21 10v4M6 12h12" /></svg></div>
+            <div><div class="ht-stat-value">@Model.ActiveWorkoutPlans</div><div class="ht-stat-label">Active workout plans</div></div>
+        </div>
+        <div class="ht-card ht-stat">
+            <div class="ht-stat-icon"><svg viewBox="0 0 24 24"><path d="M12 7c-1-2-3-3-5-3 0 2 1 4 3 5" /><path d="M12 7c1-2 3-3 5-3 0 2-1 4-3 5" /><path d="M5 12c0 5 3 9 7 9s7-4 7-9c0-2-2-3-4-3-1.2 0-2 .4-3 1-1-.6-1.800-1-3-1-2 0-4 1-4 3z" /></svg></div>
+            <div><div class="ht-stat-value">@Model.ActiveDietPlans</div><div class="ht-stat-label">Active diet plans</div></div>
+        </div>
+    </div>
+
+    @* ---------- appointments + notifications ---------- *@
+    <div class="ht-split">
+
+        <section class="ht-card">
+            <div class="ht-card-head">
+                <h2 class="ht-card-title">Upcoming appointments</h2>
+                <span class="ht-badge">@Model.UpcomingAppointmentCount total</span>
+            </div>
+            @if (Model.Appointments.Any())
+            {
+                <ul class="ht-list">
+                    @foreach (var a in Model.Appointments)
+                    {
+                        var cls = a.Status == "Completed" ? "ok" : (a.Status == "Cancelled" ? "bad" : "");
+                        <li>
+                            <div class="ht-date"><b>@a.When.ToString("dd")</b><span>@a.When.ToString("MMM")</span></div>
+                            <div class="ht-list-main">
+                                <p class="ht-list-title">@a.ClientName</p>
+                                <p class="ht-list-sub">@a.When.ToString("dddd, h:mm tt")@(string.IsNullOrWhiteSpace(a.Location) ? "" : " · " + a.Location)</p>
+                            </div>
+                            <span class="ht-badge @cls">@a.Status</span>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <div class="ht-empty">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M3 10h18M8 3v4M16 3v4" /></svg>
+                    <div>No upcoming appointments.</div>
+                </div>
+            }
+        </section>
+
+        <section class="ht-card">
+            <div class="ht-card-head">
+                <h2 class="ht-card-title">Notifications</h2>
+                @if (Model.UnreadNotifications > 0)
+                {<span class="ht-badge warn">@Model.UnreadNotifications new</span>}
+            </div>
+            @if (Model.Notifications.Any())
+            {
+                <ul class="ht-list">
+                    @foreach (var n in Model.Notifications)
+                    {
+                        <li>
+                            <span class="ht-dot @(n.IsRead ? "read" : "")"></span>
+                            <div class="ht-list-main">
+                                <p class="ht-list-title">@n.Message</p>
+                                <p class="ht-list-sub">@n.CreatedAt.ToString("d MMM, h:mm tt")@(string.IsNullOrWhiteSpace(n.Type) ? "" : " · " + n.Type)</p>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <div class="ht-empty">
+                    <svg viewBox="0 0 24 24"><path d="M6 9a6 6 0 1112 0c0 6 2 7 2 7H4s2-1 2-7z" /><path d="M10 20a2 2 0 004 0" /></svg>
+                    <div>You're all caught up.</div>
+                </div>
+            }
+        </section>
+    </div>
+
+    @* ---------- clients ---------- *@
+    <section class="ht-card">
+        <div class="ht-card-head">
+            <h2 class="ht-card-title">My clients</h2>
+            <span>@Html.ActionLink("Manage clients", "Clients", "Trainer", null, new { @class = "ht-btn-ghost" })</span>
+        </div>
+        @if (Model.Clients.Any())
+        {
+            <div class="ht-table-wrap">
+                <table class="ht-table">
+                    <thead>
+                        <tr><th>Client</th><th>Goal</th><th>Age</th><th>Height</th><th>Weight</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in Model.Clients)
+                        {
+                            <tr>
+                                <td><div class="ht-name"><span class="ht-avatar">@c.Initials</span>@c.Name</div></td>
+                                <td>@(string.IsNullOrWhiteSpace(c.Goal) ? "—" : c.Goal)</td>
+                                <td>@c.Age</td>
+                                <td>@(c.Height > 0 ? c.Height.ToString("0.#") + " cm" : "—")</td>
+                                <td>@(c.Weight > 0 ? c.Weight.ToString("0.#") + " kg" : "—")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="ht-empty">
+                <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c0-3.6 3-5.5 6.5-5.5s6.5 1.9 6.5 5.5" /></svg>
+                <div>No clients assigned to you yet.</div>
+            </div>
+        }
+    </section>
+
+</div>

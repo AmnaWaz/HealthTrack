@@ -168,7 +168,7 @@
             var colors = ['#ef4444', '#ef4444', '#f59e0b', '#84cc16', '#22c55e', '#22c55e'];
             label.textContent = names[s];
             label.style.color = colors[s];
-            bars.forEach(function (b, idx) { b.style.background = idx < s ? colors[s] : '#1f2a3a'; });
+            bars.forEach(function (b, idx) { b.style.background = idx < s ? colors[s] : 'var(--ht-border)'; });
             var met = p.length >= 8 && /[a-z]/.test(p) && /[A-Z]/.test(p) && /[0-9]/.test(p);
             req.className = 'auth-req' + (met ? ' met' : '');
             req.textContent = met ? 'All requirements met' : 'Use 8+ characters with upper and lower case letters and a number';
