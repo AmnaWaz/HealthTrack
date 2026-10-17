@@ -2,64 +2,71 @@
 @{ ViewBag.Title = "Log in"; }
 <link href="~/Content/auth.css" rel="stylesheet" />
 
-<div class="auth-wrap">
-    <h1 class="auth-title">Welcome back</h1>
-    <p class="auth-sub">Log in to continue to HealthTrack.</p>
-
-    <div class="auth-card">
-        @using (Html.BeginForm("Login", "Account", new { returnUrl = ViewBag.ReturnUrl }, FormMethod.Post))
-        {
-            @Html.AntiForgeryToken()
-            @Html.ValidationSummary(true)
-            @Html.HiddenFor(m => m.Method)
-
-            <label class="auth-label first">Log in with</label>
-            <div class="auth-pills">
-                <button type="button" class="auth-pill" data-method="Email">
-                    <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg> Email
-                </button>
-                <button type="button" class="auth-pill" data-method="Phone">
-                    <svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z" /></svg> Phone
-                </button>
-            </div>
-
-            <div id="emailBlock">
-                <label class="auth-label" for="Email">Email</label>
-                <div class="auth-field">
-                    <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg>
-                    @Html.TextBoxFor(m => m.Email, new { placeholder = "you@email.com", autocomplete = "email" })
-                </div>
-                @Html.ValidationMessageFor(m => m.Email)
-            </div>
-
-            <div id="phoneBlock" style="display:none">
-                <label class="auth-label" for="Phone">Phone number</label>
-                <div class="auth-field">
-                    <svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z" /></svg>
-                    @Html.TextBoxFor(m => m.Phone, new { placeholder = "Phone number", autocomplete = "tel", type = "tel" })
-                </div>
-                @Html.ValidationMessageFor(m => m.Phone)
-            </div>
-
-            <label class="auth-label" for="Password">Password</label>
-            <div class="auth-field">
-                <svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="9" rx="2" /><path d="M8 11V8a4 4 0 018 0v3" /></svg>
-                @Html.PasswordFor(m => m.Password, new { placeholder = "Your password", autocomplete = "current-password" })
-                <button type="button" class="auth-eye" data-eye="Password" aria-label="Show password">
-                    <svg viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
-                </button>
-            </div>
-            @Html.ValidationMessageFor(m => m.Password)
-
-            <label class="auth-check">
-                @Html.CheckBoxFor(m => m.RememberMe) Remember me
-            </label>
-
-            <button type="submit" class="auth-btn">Log in</button>
-            <p class="auth-foot">New to HealthTrack? @Html.ActionLink("Create an account", "Register", "Account")</p>
-        }
+<section class="ht-auth">
+    <div class="ht-auth-hero">
+        <p class="ht-eyebrow">Welcome back.</p>
+        <h1 class="ht-display">Back to<br />the work.</h1>
+        <p class="ht-lead">Log in to see your clients, plans and sessions. Good coaching starts with good records.</p>
     </div>
-</div>
+    <div class="ht-auth-panel">
+        <div class="ht-auth-box">
+            <h2 class="ht-card-title">Log in</h2>
+            @if (TempData["Error"] != null)
+            {<div class="ht-alert bad">@TempData["Error"]</div>}
+            @using (Html.BeginForm("Login", "Account", new { returnUrl = ViewBag.ReturnUrl }, FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(true)
+                @Html.HiddenFor(m => m.Method)
+
+                <label class="auth-label first">Log in with</label>
+                <div class="auth-pills">
+                    <button type="button" class="auth-pill" data-method="Email">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg> Email
+                    </button>
+                    <button type="button" class="auth-pill" data-method="Phone">
+                        <svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z" /></svg> Phone
+                    </button>
+                </div>
+
+                <div id="emailBlock">
+                    <label class="auth-label" for="Email">Email</label>
+                    <div class="auth-field">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg>
+                        @Html.TextBoxFor(m => m.Email, new { placeholder = "you@email.com", autocomplete = "email" })
+                    </div>
+                    @Html.ValidationMessageFor(m => m.Email)
+                </div>
+
+                <div id="phoneBlock" style="display:none">
+                    <label class="auth-label" for="Phone">Phone number</label>
+                    <div class="auth-field">
+                        <svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z" /></svg>
+                        @Html.TextBoxFor(m => m.Phone, new { placeholder = "Phone number", autocomplete = "tel", type = "tel" })
+                    </div>
+                    @Html.ValidationMessageFor(m => m.Phone)
+                </div>
+
+                <label class="auth-label" for="Password">Password</label>
+                <div class="auth-field">
+                    <svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="9" rx="2" /><path d="M8 11V8a4 4 0 018 0v3" /></svg>
+                    @Html.PasswordFor(m => m.Password, new { placeholder = "Your password", autocomplete = "current-password" })
+                    <button type="button" class="auth-eye" data-eye="Password" aria-label="Show password">
+                        <svg viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
+                    </button>
+                </div>
+                @Html.ValidationMessageFor(m => m.Password)
+
+                <label class="auth-check">
+                    @Html.CheckBoxFor(m => m.RememberMe) Remember me
+                </label>
+
+                <button type="submit" class="auth-btn">Log in</button>
+                <p class="auth-foot">New to HealthTrack? @Html.ActionLink("Create an account", "Register", "Account")</p>
+            }
+        </div>
+    </div>
+</section>
 
 @section scripts {
     @Scripts.Render("~/bundles/jqueryval")

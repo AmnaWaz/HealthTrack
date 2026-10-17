@@ -18,6 +18,7 @@ namespace HealthTrack.Controllers
         protected TrainerProfile CurrentTrainer { get; private set; }
         protected int CurrentTrainerId { get { return CurrentTrainer.TrainerId; } }
         protected int CurrentUserId { get { return CurrentUser.UserId; } }
+        protected string TrainerName { get { return CurrentUser.FirstName + " " + CurrentUser.LastName; } }
 
         protected override void OnActionExecuting(ActionExecutingContext filterContext)
         {
@@ -36,7 +37,34 @@ namespace HealthTrack.Controllers
             }
             CurrentUser = user;
             CurrentTrainer = trainer;
+
+            // values the sidebar in _Layout.cshtml shows
+            var userId = user.UserId;
+            var first = string.IsNullOrEmpty(user.FirstName) ? "T" : user.FirstName.Substring(0, 1);
+            var last = string.IsNullOrEmpty(user.LastName) ? "" : user.LastName.Substring(0, 1);
+            ViewBag.SideName = user.FirstName + " " + user.LastName;
+            ViewBag.SideInitials = (first + last).ToUpper();
+            ViewBag.SideUnread = db.Set<Notification>().Count(n => n.UserId == userId && !n.IsRead);
+
             base.OnActionExecuting(filterContext);
+        }
+
+        // ---------- notifications ----------
+        // Adds a notification for a client. The caller must call db.SaveChanges() afterwards.
+        protected void Notify(int clientId, string message, string type)
+        {
+            var client = db.Set<ClientProfile>().Find(clientId);
+            if (client == null) return;
+            if (message != null && message.Length > 480) message = message.Substring(0, 480);
+
+            db.Set<Notification>().Add(new Notification
+            {
+                UserId = client.UserId,
+                Message = message,
+                Type = type,
+                IsRead = false,
+                CreatedAt = DateTime.Now
+            });
         }
 
         // ---------- shared helpers ----------
@@ -112,19 +140,21 @@ namespace HealthTrack.Controllers
                    .ToDictionary(x => x.ClientId, x => x.FirstName + " " + x.LastName);
         }
 
+        protected bool IsMyClient(int clientId)
+        {
+            var tid = CurrentTrainerId;
+            return db.Set<ClientProfile>().Any(c => c.ClientId == clientId && c.TrainerId == tid);
+        }
+
         // checks used by both workout and diet plan forms
         protected bool ValidatePlan(PlanFormViewModel vm)
         {
             if (vm.StartDate.HasValue && vm.EndDate.HasValue && vm.EndDate.Value.Date < vm.StartDate.Value.Date)
                 ModelState.AddModelError("EndDate", "End date must be on or after the start date.");
 
-            if (vm.ClientId.HasValue)
-            {
-                var cid = vm.ClientId.Value;
-                var tid = CurrentTrainerId;
-                var ok = db.Set<ClientProfile>().Any(c => c.ClientId == cid && c.TrainerId == tid);
-                if (!ok) ModelState.AddModelError("ClientId", "You can only assign plans to your own clients.");
-            }
+            if (vm.ClientId.HasValue && !IsMyClient(vm.ClientId.Value))
+                ModelState.AddModelError("ClientId", "You can only assign plans to your own clients.");
+
             return ModelState.IsValid;
         }
 

@@ -1,0 +1,57 @@
+@model HealthTrack.ViewModels.NotificationsPageViewModel
+@{ ViewBag.Title = "Notifications"; }
+
+<div class="ht-page">
+
+  <div class="ht-page-head">
+    <div>
+      <p class="ht-eyebrow">07 / Notifications</p>
+      <h1 class="ht-h1">What&rsquo;s<br />new.</h1>
+    </div>
+    <div class="ht-head-actions">
+      @if (Model.Unread > 0)
+      {
+        using (Html.BeginForm("MarkAllRead", "Notifications", new { filter = Model.Filter }, FormMethod.Post))
+        {
+          @Html.AntiForgeryToken()
+          <button type="submit" class="ht-btn-ghost">Mark all as read</button>
+        }
+      }
+    </div>
+  </div>
+
+  <div class="ht-tabs">
+    <a class="ht-tab @(Model.Filter == "all" ? "active" : "")" href="@Url.Action("Index", "Notifications", new { filter = "all" })">All<span class="ht-tab-count">@Model.Total</span></a>
+    <a class="ht-tab @(Model.Filter == "unread" ? "active" : "")" href="@Url.Action("Index", "Notifications", new { filter = "unread" })">Unread<span class="ht-tab-count">@Model.Unread</span></a>
+  </div>
+
+  <section class="ht-card">
+    @if (Model.Items.Any())
+    {
+      <ul class="ht-list">
+        @foreach (var n in Model.Items)
+        {
+          <li>
+            <span class="ht-dot @(n.IsRead ? "read" : "")"></span>
+            <div class="ht-list-main">
+              <p class="ht-list-title" style="@(n.IsRead ? "font-weight:500" : "")">@n.Message</p>
+              <p class="ht-list-sub">@n.CreatedAt.ToString("d MMM yyyy, h:mm tt")@(string.IsNullOrWhiteSpace(n.Type) ? "" : " · " + n.Type)</p>
+            </div>
+            @if (!n.IsRead)
+            {
+              using (Html.BeginForm("MarkRead", "Notifications", new { id = n.Id, filter = Model.Filter }, FormMethod.Post, new { @class = "d-inline" }))
+              {
+                @Html.AntiForgeryToken()
+                <button type="submit" class="ht-btn-ghost">Mark read</button>
+              }
+            }
+          </li>
+        }
+      </ul>
+    }
+    else
+    {
+      <div class="ht-empty"><div>@(Model.Filter == "unread" ? "No unread notifications." : "No notifications yet.")</div></div>
+    }
+  </section>
+</div>

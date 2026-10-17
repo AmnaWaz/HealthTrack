@@ -1,0 +1,55 @@
+@model HealthTrack.ViewModels.AppointmentFormViewModel
+@{ ViewBag.Title = Model.Id == 0 ? "New session" : "Edit session"; }
+
+<div class="ht-page">
+  <div class="ht-page-head">
+    <div>
+      <p class="ht-eyebrow">04 / Appointments</p>
+      <h1 class="ht-h1">@(Model.Id == 0 ? "New" : "Move")<br />session.</h1>
+    </div>
+  </div>
+
+  <section class="ht-card ht-form-card">
+    @using (Html.BeginForm(Model.Id == 0 ? "Create" : "Edit", "Appointments", FormMethod.Post))
+    {
+      @Html.AntiForgeryToken()
+      @Html.HiddenFor(m => m.Id)
+      @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+      <div class="mb-4">
+        @Html.LabelFor(m => m.ClientId, new { @class = "form-label" })
+        @Html.DropDownListFor(m => m.ClientId, Model.Clients, "Select a client…", new { @class = "form-select" })
+        @Html.ValidationMessageFor(m => m.ClientId, "", new { @class = "text-danger" })
+        @if (!Model.Clients.Any())
+        {
+          <p class="ht-hint mt-2">You have no clients yet. @Html.ActionLink("Add a client first", "Clients", "Trainer").</p>
+        }
+      </div>
+
+      <div class="mb-4">
+        @Html.LabelFor(m => m.When, new { @class = "form-label" })
+        @Html.TextBoxFor(m => m.When, "{0:yyyy-MM-ddTHH:mm}", new { @class = "form-control", type = "datetime-local" })
+        @Html.ValidationMessageFor(m => m.When, "", new { @class = "text-danger" })
+      </div>
+
+      <div class="mb-4">
+        @Html.LabelFor(m => m.Location, new { @class = "form-label" })
+        @Html.TextBoxFor(m => m.Location, new { @class = "form-control", placeholder = "e.g. Main gym, studio B, online" })
+        @Html.ValidationMessageFor(m => m.Location, "", new { @class = "text-danger" })
+      </div>
+
+      <div class="mb-4">
+        @Html.LabelFor(m => m.Notes, new { @class = "form-label" })
+        @Html.TextAreaFor(m => m.Notes, 3, 40, new { @class = "form-control", placeholder = "What to focus on, what to bring..." })
+        @Html.ValidationMessageFor(m => m.Notes, "", new { @class = "text-danger" })
+      </div>
+
+      <div class="ht-head-actions">
+        <button type="submit" class="ht-btn">@(Model.Id == 0 ? "Schedule session" : "Save changes")</button>
+        @Html.ActionLink("Cancel", "Index", "Appointments", null, new { @class = "ht-btn-ghost" })
+      </div>
+    }
+  </section>
+</div>
+
+@section scripts { @Scripts.Render("~/bundles/jqueryval") }

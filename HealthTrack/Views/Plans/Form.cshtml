@@ -1,62 +1,73 @@
 @model HealthTrack.ViewModels.PlanFormViewModel
-@{ ViewBag.Title = (Model.Id == 0 ? "New " : "Edit ") + Model.Kind.ToLower() + " plan"; }
+@{
+    ViewBag.Title = (Model.Id == 0 ? "New " : "Edit ") + Model.Kind.ToLower() + " plan";
+
+    // /WorkoutPlans/Create?clientId=5 pre-selects that client
+    var qClient = Request.QueryString["clientId"];
+    var clientItems = Model.Clients.Select(i => new SelectListItem
+    {
+        Value = i.Value,
+        Text = i.Text,
+        Selected = Model.ClientId == null && i.Value == qClient
+    }).ToList();
+}
 
 <div class="ht-page">
-  <div class="ht-page-head">
-    <div>
-      <p class="ht-eyebrow">@Model.Kind plans</p>
-      <h1 class="ht-h1">@(Model.Id == 0 ? "New " : "Edit ")@Model.Kind.ToLower() plan</h1>
+    <div class="ht-page-head">
+        <div>
+            <p class="ht-eyebrow">03 / Create plans / @Model.Kind</p>
+            <h1 class="ht-h1">@(Model.Id == 0 ? "New" : "Edit")<br />@Model.Kind.ToLower() plan.</h1>
+        </div>
     </div>
-  </div>
 
-  <section class="ht-card ht-form-card">
-    @using (Html.BeginForm(Model.Id == 0 ? "Create" : "Edit", Model.Route, FormMethod.Post))
-    {
-      @Html.AntiForgeryToken()
-      @Html.HiddenFor(m => m.Id)
-      @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-
-      <div class="mb-3">
-        @Html.LabelFor(m => m.PlanName, new { @class = "form-label" })
-        @Html.TextBoxFor(m => m.PlanName, new { @class = "form-control", placeholder = Model.Kind == "Workout" ? "e.g. 4-week strength builder" : "e.g. High-protein cutting plan" })
-        @Html.ValidationMessageFor(m => m.PlanName, "", new { @class = "text-danger" })
-      </div>
-
-      <div class="mb-3">
-        @Html.LabelFor(m => m.Description, new { @class = "form-label" })
-        @Html.TextAreaFor(m => m.Description, 4, 40, new { @class = "form-control", placeholder = Model.Kind == "Workout" ? "Exercises, sets, reps, rest days..." : "Meals, calories, macros, notes..." })
-        @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-danger" })
-      </div>
-
-      <div class="row g-3 mb-3">
-        <div class="col-md-6">
-          @Html.LabelFor(m => m.StartDate, new { @class = "form-label" })
-          @Html.TextBoxFor(m => m.StartDate, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
-          @Html.ValidationMessageFor(m => m.StartDate, "", new { @class = "text-danger" })
-        </div>
-        <div class="col-md-6">
-          @Html.LabelFor(m => m.EndDate, new { @class = "form-label" })
-          @Html.TextBoxFor(m => m.EndDate, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
-          @Html.ValidationMessageFor(m => m.EndDate, "", new { @class = "text-danger" })
-        </div>
-      </div>
-
-      <div class="mb-4">
-        @Html.LabelFor(m => m.ClientId, new { @class = "form-label" })
-        @Html.DropDownListFor(m => m.ClientId, Model.Clients, "Select a client…", new { @class = "form-select" })
-        @Html.ValidationMessageFor(m => m.ClientId, "", new { @class = "text-danger" })
-        @if (!Model.Clients.Any())
+    <section class="ht-card ht-form-card">
+        @using (Html.BeginForm(Model.Id == 0 ? "Create" : "Edit", Model.Route, FormMethod.Post))
         {
-          <p class="ht-hint mt-2">You have no clients yet. @Html.ActionLink("Add a client first", "Clients", "Trainer").</p>
-        }
-      </div>
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.Id)
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
-      <div class="ht-head-actions">
-        <button type="submit" class="ht-btn">@(Model.Id == 0 ? "Create plan" : "Save changes")</button>
-        @Html.ActionLink("Cancel", "Index", Model.Route, null, new { @class = "ht-btn-ghost" })
-      </div>
-    }
-  </section>
+            <div class="mb-4">
+                @Html.LabelFor(m => m.PlanName, new { @class = "form-label" })
+                @Html.TextBoxFor(m => m.PlanName, new { @class = "form-control", placeholder = Model.Kind == "Workout" ? "e.g. Four-week strength base" : "e.g. High-protein maintenance" })
+                @Html.ValidationMessageFor(m => m.PlanName, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="mb-4">
+                @Html.LabelFor(m => m.Description, new { @class = "form-label" })
+                @Html.TextAreaFor(m => m.Description, 4, 40, new { @class = "form-control", placeholder = Model.Kind == "Workout" ? "Exercises, sets, reps, rest days..." : "Meals, calories, macros, notes..." })
+                @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    @Html.LabelFor(m => m.StartDate, new { @class = "form-label" })
+                    @Html.TextBoxFor(m => m.StartDate, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+                    @Html.ValidationMessageFor(m => m.StartDate, "", new { @class = "text-danger" })
+                </div>
+                <div class="col-md-6">
+                    @Html.LabelFor(m => m.EndDate, new { @class = "form-label" })
+                    @Html.TextBoxFor(m => m.EndDate, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+                    @Html.ValidationMessageFor(m => m.EndDate, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div class="mb-4">
+                @Html.LabelFor(m => m.ClientId, new { @class = "form-label" })
+                @Html.DropDownListFor(m => m.ClientId, clientItems, "Select a client…", new { @class = "form-select" })
+                @Html.ValidationMessageFor(m => m.ClientId, "", new { @class = "text-danger" })
+                @if (!Model.Clients.Any())
+                {
+                    <p class="ht-hint mt-2">You have no clients yet. @Html.ActionLink("Add a client first", "Clients", "Trainer").</p>
+                }
+            </div>
+
+            <div class="ht-head-actions">
+                <button type="submit" class="ht-btn">@(Model.Id == 0 ? "Create plan" : "Save changes")</button>
+                @Html.ActionLink("Cancel", "Index", Model.Route, null, new { @class = "ht-btn-ghost" })
+            </div>
+        }
+    </section>
 </div>
 
 @section scripts { @Scripts.Render("~/bundles/jqueryval") }

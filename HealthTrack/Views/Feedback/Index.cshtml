@@ -1,0 +1,67 @@
+@model HealthTrack.ViewModels.FeedbackPageViewModel
+@{ ViewBag.Title = "Feedback"; }
+
+<div class="ht-page">
+
+  <div class="ht-page-head">
+    <div>
+      <p class="ht-eyebrow">05 / Feedback</p>
+      <h1 class="ht-h1">Say what<br />to fix next.</h1>
+      <p class="ht-sub">Good coaching is specific. Write a short note for a client and it lands in their notifications.</p>
+    </div>
+    <div class="ht-head-actions">
+      <span class="ht-chip">@(Model.AverageRating > 0 ? "Your rating  ★ " + Model.AverageRating.ToString("0.0") : "No ratings yet")</span>
+    </div>
+  </div>
+
+  @if (TempData["Success"] != null) { <div class="ht-alert ok">@TempData["Success"]</div> }
+  @if (TempData["Error"] != null) { <div class="ht-alert bad">@TempData["Error"]</div> }
+
+  <div class="ht-split">
+
+    <section class="ht-card">
+      <div class="ht-card-head"><h2 class="ht-card-title">Send feedback</h2></div>
+      @using (Html.BeginForm("Index", "Feedback", FormMethod.Post))
+      {
+        @Html.AntiForgeryToken()
+        <div class="mb-4">
+          @Html.LabelFor(m => m.ClientId, new { @class = "form-label" })
+          @Html.DropDownListFor(m => m.ClientId, Model.Clients, "Select a client…", new { @class = "form-select" })
+          @Html.ValidationMessageFor(m => m.ClientId, "", new { @class = "text-danger" })
+        </div>
+        <div class="mb-4">
+          @Html.LabelFor(m => m.Message, new { @class = "form-label" })
+          @Html.TextAreaFor(m => m.Message, 5, 40, new { @class = "form-control", maxlength = 300, placeholder = "e.g. Keep your guard up on the return. Great footwork this week." })
+          @Html.ValidationMessageFor(m => m.Message, "", new { @class = "text-danger" })
+          <div class="ht-hint mt-2">Up to 300 characters.</div>
+        </div>
+        <button type="submit" class="ht-btn">Send feedback</button>
+      }
+    </section>
+
+    <section class="ht-card">
+      <div class="ht-card-head"><h2 class="ht-card-title">Sent</h2><span class="ht-badge">@Model.Sent.Count</span></div>
+      @if (Model.Sent.Any())
+      {
+        <ul class="ht-list">
+          @foreach (var f in Model.Sent)
+          {
+            <li>
+              <div class="ht-list-main">
+                <p class="ht-list-title">@f.ClientName</p>
+                <p class="ht-list-sub">@f.Message</p>
+                <p class="ht-list-sub" style="font-family:var(--ht-font-mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase">@f.CreatedAt.ToString("d MMM yyyy, h:mm tt")</p>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+      else
+      {
+        <div class="ht-empty"><div>No feedback sent yet.</div></div>
+      }
+    </section>
+  </div>
+</div>
+
+@section scripts { @Scripts.Render("~/bundles/jqueryval") }

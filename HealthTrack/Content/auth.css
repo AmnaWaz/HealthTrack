@@ -1,36 +1,86 @@
-/* ===== HealthTrack auth pages - all colours come from theme.css tokens ===== */
-.auth-wrap {
-    max-width: 520px;
-    margin: 40px auto 24px;
-    padding: 0 12px;
+/* ===== Login / Register: dark hero + themed form panel. Colours come from theme.css tokens. ===== */
+.ht-auth {
+    position: relative;
+    left: 50%;
+    width: 100vw;
+    margin-left: -50vw;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    min-height: calc(100vh - 82px);
+    min-height: calc(100dvh - 82px); /* 🔧 CHANGED: dvh for mobile bars */
 }
 
-.auth-title {
-    font-size: 2.1rem;
-    font-weight: 800;
-    color: var(--ht-text);
-    margin: 0 0 8px;
+.ht-auth-hero {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 28px;
+    padding: clamp(32px, 6vw, 96px);
+    color: var(--ht-hero-text);
+    background: radial-gradient(640px 380px at 25% 0%, rgba(34, 72, 130, .55), transparent 70%), #0a0e17;
 }
 
-.auth-sub {
-    color: var(--ht-text-muted);
-    margin-bottom: 28px;
+    .ht-auth-hero .ht-eyebrow {
+        color: #8f9aac;
+        margin: 0;
+    }
+
+    .ht-auth-hero .ht-display {
+        color: var(--ht-hero-text);
+    }
+
+    .ht-auth-hero .ht-lead {
+        color: #aab3c2;
+        margin: 0;
+    }
+
+.ht-auth-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(28px, 5vw, 72px);
+    background: var(--ht-bg);
 }
 
-.auth-card {
-    background: var(--ht-surface);
-    border: 1px solid var(--ht-border);
-    border-radius: 22px;
-    padding: 32px 36px;
-    box-shadow: var(--ht-shadow);
+.ht-auth-box {
+    width: 100%;
+    max-width: 460px;
+}
+
+    .ht-auth-box .ht-card-title {
+        margin-bottom: 26px;
+    }
+
+@media (max-width: 900px) {
+    .ht-auth {
+        grid-template-columns: 1fr;
+        min-height: 0;
+    }
+
+    .ht-auth-hero {
+        padding: 44px 24px;
+        gap: 18px;
+    }
+
+        .ht-auth-hero .ht-display {
+            font-size: clamp(2.4rem, 14vw, 4rem);
+        }
+
+    .ht-auth-panel {
+        align-items: flex-start;
+    }
+    /* 🔧 CHANGED: form starts right under the hero */
 }
 
 .auth-label {
     display: block;
-    font-weight: 600;
-    font-size: .95rem;
-    color: var(--ht-text);
-    margin: 20px 0 8px;
+    margin: 22px 0 8px;
+    font-family: var(--ht-font-mono);
+    font-size: .7rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ht-text-muted);
+    font-weight: 500;
 }
 
     .auth-label.first {
@@ -41,51 +91,62 @@
     display: flex;
     align-items: center;
     gap: 12px;
+    height: 52px;
+    padding: 0 14px;
     background: var(--ht-input-bg);
     border: 1px solid var(--ht-border-strong);
-    border-radius: 14px;
-    padding: 0 16px;
-    height: 54px;
-    transition: border-color .15s, box-shadow .15s;
+    border-radius: 0;
+    transition: border-color .15s;
 }
 
     .auth-field.area {
         height: auto;
-        padding-top: 10px;
-        padding-bottom: 10px;
+        padding-top: 12px;
+        padding-bottom: 12px;
         align-items: flex-start;
     }
 
     .auth-field:focus-within {
-        border-color: var(--ht-primary);
-        box-shadow: 0 0 0 3px var(--ht-primary-soft);
+        border-color: var(--ht-text);
     }
 
     .auth-field.ok {
         border-color: var(--ht-success);
     }
 
-    .auth-field svg {
-        width: 20px;
-        height: 20px;
-        flex: none;
-        stroke: var(--ht-text-muted);
-        fill: none;
-        stroke-width: 1.7;
-        stroke-linecap: round;
-        stroke-linejoin: round;
+    .auth-field:has(.input-validation-error) {
+        border-color: var(--ht-danger);
+    }
+
+    .auth-field > svg {
+        display: none;
+    }
+        /* no leading icons in this look */
+        .auth-field > svg.auth-tick {
+            stroke: var(--ht-success);
+            fill: none;
+            stroke-width: 2.5;
+            width: 18px;
+            height: 18px;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+    .auth-field.ok > svg.auth-tick {
+        display: block;
     }
 
     .auth-field input, .auth-field select, .auth-field textarea {
         flex: 1;
         min-width: 0;
+        padding: 0;
+        font-size: 1rem;
+        color: var(--ht-text);
+        font-family: var(--ht-font-body);
         background: transparent !important;
         border: 0 !important;
         outline: 0 !important;
         box-shadow: none !important;
-        color: var(--ht-text);
-        font-size: 1rem;
-        padding: 0;
     }
 
         .auth-field input::placeholder, .auth-field textarea::placeholder {
@@ -97,40 +158,38 @@
             color: var(--ht-text);
         }
 
-    .auth-field:has(.input-validation-error) {
-        border-color: var(--ht-danger);
-    }
-
 .auth-eye {
     background: none;
     border: 0;
     padding: 0;
     cursor: pointer;
     display: flex;
+    color: var(--ht-text-muted);
 }
 
-    .auth-eye:hover svg {
-        stroke: var(--ht-text);
+    .auth-eye:hover {
+        color: var(--ht-text);
     }
 
-.auth-tick {
-    display: none;
-    stroke: var(--ht-success) !important;
-}
-
-.auth-field.ok .auth-tick {
-    display: block;
-}
+    .auth-eye svg {
+        width: 20px;
+        height: 20px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
 
 .field-validation-error, .validation-summary-errors {
     color: var(--ht-danger);
-    font-size: .85rem;
+    font-size: .82rem;
     display: block;
     margin-top: 6px;
 }
 
     .validation-summary-errors ul {
-        margin: 0 0 12px;
+        margin: 0 0 14px;
         padding-left: 18px;
     }
 
@@ -144,42 +203,41 @@
         min-width: 0;
     }
 
-/* pill toggles (Client/Trainer, Email/Phone) */
+/* segmented toggles (Client/Trainer, Email/Phone) */
 .auth-pills {
     display: flex;
-    gap: 14px;
-    margin-bottom: 8px;
+    border: 1px solid var(--ht-border-strong);
+    margin-bottom: 4px;
 }
 
 .auth-pill {
     flex: 1;
-    height: 50px;
-    border-radius: 14px;
+    height: 46px;
     cursor: pointer;
-    background: var(--ht-input-bg);
-    border: 1px solid var(--ht-border-strong);
+    border: 0;
+    background: transparent;
     color: var(--ht-text-muted);
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
+    font-family: var(--ht-font-mono);
+    font-size: .74rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
 }
 
+    .auth-pill + .auth-pill {
+        border-left: 1px solid var(--ht-border-strong);
+    }
+
     .auth-pill svg {
-        width: 18px;
-        height: 18px;
-        stroke: currentColor;
-        fill: none;
-        stroke-width: 1.7;
-        stroke-linecap: round;
-        stroke-linejoin: round;
+        display: none;
+    }
+
+    .auth-pill:hover {
+        color: var(--ht-text);
     }
 
     .auth-pill.active {
-        background: var(--ht-primary-soft);
-        border-color: var(--ht-primary-border);
-        color: var(--ht-text);
+        background: var(--ht-text);
+        color: var(--ht-bg);
     }
 
 /* password strength */
@@ -187,32 +245,34 @@
     display: none;
     margin-top: 12px;
     border: 1px solid var(--ht-border);
-    border-radius: 14px;
     padding: 16px;
-    background: var(--ht-surface-2);
+    background: var(--ht-surface);
 }
 
 .auth-bars {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     margin-bottom: 10px;
 }
 
     .auth-bars span {
         flex: 1;
-        height: 5px;
-        border-radius: 4px;
+        height: 4px;
         background: var(--ht-border);
     }
 
 .auth-strength small {
     color: var(--ht-text-muted);
     display: block;
+    font-family: var(--ht-font-mono);
+    font-size: .68rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
 }
 
 .auth-req {
     margin-top: 10px;
-    font-size: .9rem;
+    font-size: .88rem;
     color: var(--ht-text-muted);
 }
 
@@ -221,43 +281,57 @@
     }
 
 .auth-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     width: 100%;
-    height: 54px;
-    margin-top: 24px;
+    height: 56px;
+    margin-top: 28px;
+    padding: 0 22px;
     border: 0;
-    border-radius: 14px;
+    border-radius: 0;
     cursor: pointer;
     background: var(--ht-primary);
     color: var(--ht-primary-contrast);
     font-weight: 700;
-    font-size: 1.05rem;
+    font-size: .95rem;
 }
+
+    .auth-btn::after {
+        content: "\2197";
+        font-size: 1.05rem;
+    }
 
     .auth-btn:hover {
         background: var(--ht-primary-hover);
     }
 
 .auth-foot {
-    text-align: center;
+    margin-top: 24px;
     color: var(--ht-text-muted);
-    margin-top: 22px;
+    font-size: .92rem;
 }
 
     .auth-foot a {
-        color: var(--ht-accent);
+        color: var(--ht-text);
+        font-weight: 700;
+        border-bottom: 1px solid var(--ht-border-strong);
         text-decoration: none;
+        padding-bottom: 1px;
     }
 
         .auth-foot a:hover {
-            text-decoration: underline;
+            color: var(--ht-accent);
+            border-color: var(--ht-accent);
         }
 
 .auth-check {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-top: 18px;
+    margin-top: 20px;
     color: var(--ht-text);
+    font-size: .92rem;
 }
 
     .auth-check input {
@@ -267,7 +341,68 @@
     }
 
 .auth-section {
-    margin: 26px 0 0;
+    margin: 32px 0 0;
+    padding-top: 18px;
+    border-top: 1px solid var(--ht-border);
+    font-family: var(--ht-font-display);
     font-weight: 700;
+    text-transform: uppercase;
+    font-size: 1.3rem;
     color: var(--ht-text);
+}
+
+/* 🔧 CHANGED: responsive additions */
+@media (max-width: 575.98px) {
+    .ht-auth-hero {
+        padding: 32px 18px;
+    }
+
+        .ht-auth-hero .ht-lead {
+            font-size: 1rem;
+        }
+
+    .ht-auth-panel {
+        padding: 28px 16px 40px;
+    }
+
+    .auth-row {
+        flex-direction: column;
+        gap: 0;
+    }
+    /* two-up fields (e.g. first/last name) stack on phones */
+    .auth-pill {
+        letter-spacing: .06em;
+        font-size: .7rem;
+    }
+
+    .auth-btn {
+        height: 54px;
+    }
+
+    .auth-section {
+        font-size: 1.15rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .auth-field {
+        padding: 0 10px;
+        gap: 8px;
+    }
+
+    .auth-label {
+        letter-spacing: .1em;
+    }
+}
+
+@media (min-width: 1600px) {
+    .ht-auth-box {
+        max-width: 520px;
+    }
+}
+
+@media (min-width: 1920px) {
+    .ht-auth-hero {
+        padding: clamp(96px, 7vw, 160px);
+    }
 }

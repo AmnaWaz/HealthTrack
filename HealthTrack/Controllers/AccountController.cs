@@ -16,8 +16,10 @@ namespace HealthTrack.Controllers
 
         // ---------- REGISTER ----------
         [HttpGet]
+        [OutputCache(NoStore = true, Duration = 0, VaryByParam = "*")]
         public ActionResult Register()
         {
+            if (Request.IsAuthenticated) return RedirectByRole(CurrentRole());
             return View(new RegisterViewModel { Role = "Client" });
         }
 
@@ -92,8 +94,10 @@ namespace HealthTrack.Controllers
 
         // ---------- LOGIN (email OR phone + password) ----------
         [HttpGet]
+        [OutputCache(NoStore = true, Duration = 0, VaryByParam = "*")]
         public ActionResult Login(string returnUrl)
         {
+            if (Request.IsAuthenticated) return RedirectByRole(CurrentRole());
             ViewBag.ReturnUrl = returnUrl;
             return View(new LoginViewModel { Method = "Email" });
         }
@@ -146,6 +150,34 @@ namespace HealthTrack.Controllers
         }
 
         // ---------- helpers ----------
+        private string CurrentRole()
+        {
+            if (User.IsInRole("Trainer")) return "Trainer";
+            if (User.IsInRole("Client")) return "Client";
+            return "";
+        }
+
+        // A form that was opened while logged out (or in another tab) and submitted after logging in
+        // carries an old anti-forgery token. Instead of a crash page, send the user somewhere sensible.
+        protected override void OnException(ExceptionContext filterContext)
+        {
+            if (filterContext.Exception is HttpAntiForgeryException)
+            {
+                filterContext.ExceptionHandled = true;
+                if (Request.IsAuthenticated)
+                {
+                    filterContext.Result = RedirectByRole(CurrentRole());
+                }
+                else
+                {
+                    TempData["Error"] = "Your page expired. Please try again.";
+                    filterContext.Result = RedirectToAction("Login");
+                }
+                return;
+            }
+            base.OnException(filterContext);
+        }
+
         private ActionResult RedirectByRole(string roleName)
         {
             if (roleName == "Trainer") return RedirectToAction("Index", "Trainer");
