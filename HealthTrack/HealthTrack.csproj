@@ -128,9 +128,14 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\AppointmentsController.cs" />
     <Compile Include="Controllers\ClientController.cs" />
     <Compile Include="Controllers\DietPlansController.cs" />
+    <Compile Include="Controllers\FeedbackController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\NotificationsController.cs" />
+    <Compile Include="Controllers\ProfileController.cs" />
+    <Compile Include="Controllers\ReportsController.cs" />
     <Compile Include="Controllers\TrainerBaseController.cs" />
     <Compile Include="Controllers\TrainerController.cs" />
     <Compile Include="Controllers\WorkoutPlansController.cs" />
@@ -156,6 +161,7 @@
     <Compile Include="ViewModels\PlanViewModels.cs" />
     <Compile Include="ViewModels\TrainerClientsViewModel.cs" />
     <Compile Include="ViewModels\TrainerDashboardViewModel.cs" />
+    <Compile Include="ViewModels\TrainerPagesViewModels.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\auth.css" />
@@ -178,7 +184,7 @@
     <Content Include="Content\brand.css" />
     <Content Include="Content\sidebar.css" />
     <Content Include="Content\theme.css" />
-    <Content Include="favicon.ico" />
+    <Content Include="favicon.svg" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
     <Content Include="Scripts\bootstrap.bundle.js" />
@@ -222,6 +228,14 @@
     <Content Include="Views\Plans\Form.cshtml" />
     <Content Include="Views\Plans\Index.cshtml" />
     <Content Include="Views\Trainer\Clients.cshtml" />
+    <Content Include="Views\Appointments\Form.cshtml" />
+    <Content Include="Views\Appointments\Index.cshtml" />
+    <Content Include="Views\Feedback\Index.cshtml" />
+    <Content Include="Views\Notifications\Index.cshtml" />
+    <Content Include="Views\Profile\Index.cshtml" />
+    <Content Include="Views\Reports\Index.cshtml" />
+    <Content Include="Views\Shared\_Brand.cshtml" />
+    <Content Include="Views\Account\AccessDenied.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

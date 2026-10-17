@@ -1,8 +1,88 @@
 ﻿@model HealthTrack.ViewModels.TrainerClientsViewModel
+@{ ViewBag.Title = "Client list"; }
 
-@{
-    ViewBag.Title = "My Clients";
-}
+<div class="ht-page">
+    <div class="ht-page-head">
+        <div>
+            <p class="ht-eyebrow">02 / Client list</p>
+            <h1 class="ht-h1">Your<br />clients.</h1>
+            <p class="ht-sub">Add clients to your list, then give them plans, sessions and feedback.</p>
+        </div>
+    </div>
 
-<h2>My Clients</h2>
-<!-- Your table and UI markup here -->
+    @if (TempData["Success"] != null)
+    {<div class="ht-alert ok">@TempData["Success"]</div>}
+    @if (TempData["Error"] != null)
+    {<div class="ht-alert bad">@TempData["Error"]</div>}
+
+    <section class="ht-card" style="margin-bottom:20px">
+        <div class="ht-card-head">
+            <h2 class="ht-card-title">My clients</h2>
+            <span class="ht-badge">@Model.Mine.Count</span>
+        </div>
+        @if (Model.Mine.Any())
+        {
+            <div class="ht-table-wrap">
+                <table class="ht-table">
+                    <thead>
+                        <tr><th>Client</th><th>Goal</th><th>Age</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in Model.Mine)
+                        {
+                            <tr>
+                                <td><div class="ht-name"><span class="ht-avatar">@c.Initials</span>@c.Name</div></td>
+                                <td>@(string.IsNullOrWhiteSpace(c.Goal) ? "—" : c.Goal)</td>
+                                <td>@c.Age</td>
+                                <td>
+                                    <div class="ht-actions" style="justify-content:flex-start">
+                                        @Html.ActionLink("Workout plan", "Create", "WorkoutPlans", new { clientId = c.ClientId }, new { @class = "ht-btn-ghost" })
+                                        @Html.ActionLink("Diet plan", "Create", "DietPlans", new { clientId = c.ClientId }, new { @class = "ht-btn-ghost" })
+                                        @Html.ActionLink("Session", "Create", "Appointments", new { clientId = c.ClientId }, new { @class = "ht-btn-ghost" })
+                                        @Html.ActionLink("Feedback", "Index", "Feedback", new { clientId = c.ClientId }, new { @class = "ht-btn-ghost" })
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="ht-empty"><div>No clients yet. Add one from the list below.</div></div>
+        }
+    </section>
+
+    <section class="ht-card">
+        <div class="ht-card-head">
+            <h2 class="ht-card-title">Looking for a trainer</h2>
+            <span class="ht-badge red">@Model.Available.Count</span>
+        </div>
+        @if (Model.Available.Any())
+        {
+            <ul class="ht-list">
+                @foreach (var c in Model.Available)
+                {
+                    <li>
+                        <span class="ht-avatar">@c.Initials</span>
+                        <div class="ht-list-main">
+                            <p class="ht-list-title">@c.Name</p>
+                            <p class="ht-list-sub">@(string.IsNullOrWhiteSpace(c.Goal) ? "No goal set" : c.Goal) · @c.Age yrs</p>
+                        </div>
+                        @using (Html.BeginForm("AddClient", "Trainer", FormMethod.Post, new { @class = "d-inline" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="clientId" value="@c.ClientId" />
+                            <button type="submit" class="ht-btn-ghost">Add to my list</button>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <div class="ht-empty"><div>Every registered client already has a trainer.</div></div>
+        }
+    </section>
+</div>
