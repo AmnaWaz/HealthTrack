@@ -1,0 +1,104 @@
+@model HealthTrack.ViewModels.ChangePasswordViewModel
+@{ ViewBag.Title = "Settings"; }
+<link href="~/Content/profile.css" rel="stylesheet" />
+
+<div class="ht-page">
+  <div class="ht-page-head">
+    <div>
+      <p class="ht-eyebrow">Trainer / Settings</p>
+      <h1 class="ht-h1">Your<br />settings.</h1>
+      <p class="ht-sub">Appearance, sidebar and password.</p>
+    </div>
+  </div>
+
+  <div class="ht-tabs">
+    @Html.ActionLink("Profile", "Index", "Profile", null, new { @class = "ht-tab" })
+    @Html.ActionLink("Settings", "Settings", "Profile", null, new { @class = "ht-tab active" })
+  </div>
+
+  @if (TempData["Success"] != null) { <div class="ht-alert ok">@TempData["Success"]</div> }
+
+  <div class="ht-grid-2">
+
+    <section class="ht-card">
+      <div class="ht-card-head"><h2 class="ht-card-title">Preferences</h2></div>
+
+      <div class="ht-setting-row">
+        <div>
+          <p class="ht-setting-title">Theme</p>
+          <p class="ht-setting-sub">Cream (light) or navy (dark).</p>
+        </div>
+        <div class="ht-seg" id="themeSeg">
+          <button type="button" data-set-theme="light">Light</button>
+          <button type="button" data-set-theme="dark">Dark</button>
+        </div>
+      </div>
+
+      <div class="ht-setting-row">
+        <div>
+          <p class="ht-setting-title">Collapsed sidebar</p>
+          <p class="ht-setting-sub">Start every page with the sidebar closed to icons.</p>
+        </div>
+        <label class="ht-switch" title="Collapsed sidebar">
+          <input type="checkbox" id="sidebarPref" />
+          <span></span>
+        </label>
+      </div>
+    </section>
+
+    <section class="ht-card">
+      <div class="ht-card-head"><h2 class="ht-card-title">Change password</h2></div>
+      @using (Html.BeginForm("ChangePassword", "Profile", FormMethod.Post))
+      {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        <div class="mb-4">
+          @Html.LabelFor(m => m.CurrentPassword, new { @class = "form-label" })
+          @Html.PasswordFor(m => m.CurrentPassword, new { @class = "form-control", autocomplete = "current-password" })
+          @Html.ValidationMessageFor(m => m.CurrentPassword, "", new { @class = "text-danger" })
+        </div>
+        <div class="mb-4">
+          @Html.LabelFor(m => m.NewPassword, new { @class = "form-label" })
+          @Html.PasswordFor(m => m.NewPassword, new { @class = "form-control", autocomplete = "new-password" })
+          @Html.ValidationMessageFor(m => m.NewPassword, "", new { @class = "text-danger" })
+        </div>
+        <div class="mb-4">
+          @Html.LabelFor(m => m.ConfirmPassword, new { @class = "form-label" })
+          @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control", autocomplete = "new-password" })
+          @Html.ValidationMessageFor(m => m.ConfirmPassword, "", new { @class = "text-danger" })
+        </div>
+        <button type="submit" class="ht-btn">Update password</button>
+      }
+    </section>
+
+  </div>
+</div>
+
+@section scripts {
+  @Scripts.Render("~/bundles/jqueryval")
+  <script>
+    (function () {
+      // theme buttons (HealthTheme comes from theme.js)
+      var buttons = [].slice.call(document.querySelectorAll('[data-set-theme]'));
+      function mark() {
+        var current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+        buttons.forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-set-theme') === current); });
+      }
+      buttons.forEach(function (b) {
+        b.addEventListener('click', function () { if (window.HealthTheme) { HealthTheme.set(b.getAttribute('data-set-theme')); } mark(); });
+      });
+      document.addEventListener('ht-theme-change', mark);
+      mark();
+
+      // sidebar preference (same key sidebar.js uses)
+      var pref = document.getElementById('sidebarPref');
+      try { pref.checked = localStorage.getItem('ht-sidebar-collapsed') === '1'; } catch (e) { }
+      pref.addEventListener('change', function () {
+        try { localStorage.setItem('ht-sidebar-collapsed', pref.checked ? '1' : '0'); } catch (e) { }
+        var shell = document.getElementById('htTrainerShell');
+        if (shell && !window.matchMedia('(max-width: 767.98px)').matches) { shell.classList.toggle('sidebar-collapsed', pref.checked); }
+      });
+    })();
+  </script>
+}

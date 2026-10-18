@@ -73,65 +73,42 @@
 
     </div>
 
-    <div class="ht-split">
-
-        <section class="ht-card">
-            <div class="ht-card-head">
-                <h2 class="ht-card-title">Upcoming sessions</h2>
-                @Html.ActionLink("Manage", "Index", "Appointments", null, new { @class = "ht-link" })
+    @* Upcoming sessions: closed = title + count in the corner; hover (or tap) reveals the list *@
+    <section class="ht-card ht-reveal" id="htSessions" tabindex="0">
+        <div class="ht-reveal-head">
+            <h2 class="ht-card-title">Upcoming sessions</h2>
+            <div class="ht-reveal-corner">
+                <span class="ht-reveal-count" title="Upcoming sessions">@Model.UpcomingAppointmentCount</span>
+                <span class="ht-acc-plus" aria-hidden="true"></span>
             </div>
-            @if (Model.Appointments.Any())
-            {
-                <ul class="ht-list">
-                    @foreach (var a in Model.Appointments)
-                    {
-                        var cls = a.Status == "Completed" ? "ok" : (a.Status == "Cancelled" ? "bad" : "");
-                        <li>
-                            <div class="ht-date"><b>@a.When.ToString("dd")</b><span>@a.When.ToString("MMM")</span></div>
-                            <div class="ht-list-main">
-                                <p class="ht-list-title">@a.ClientName</p>
-                                <p class="ht-list-sub">@a.When.ToString("dddd, h:mm tt")@(string.IsNullOrWhiteSpace(a.Location) ? "" : " · " + a.Location)</p>
-                            </div>
-                            <span class="ht-badge @cls">@a.Status</span>
-                        </li>
-                    }
-                </ul>
-            }
-            else
-            {
-                <div class="ht-empty"><div>No upcoming sessions. Book one from the Appointments tab.</div></div>
-            }
-        </section>
-
-        <section class="ht-card">
-            <div class="ht-card-head">
-                <h2 class="ht-card-title">Notifications</h2>
-                @if (Model.UnreadNotifications > 0)
-                {<span class="ht-badge red">@Model.UnreadNotifications new</span> }
-            else
-            { @Html.ActionLink("View all", "Index", "Notifications", null, new { @class = "ht-link" })}
+        </div>
+        <div class="ht-reveal-body">
+            <div class="ht-reveal-inner">
+                @if (Model.Appointments.Any())
+                {
+                    <ul class="ht-list">
+                        @foreach (var a in Model.Appointments)
+                        {
+                            var cls = a.Status == "Completed" ? "ok" : (a.Status == "Cancelled" ? "bad" : "");
+                            <li>
+                                <div class="ht-date"><b>@a.When.ToString("dd")</b><span>@a.When.ToString("MMM")</span></div>
+                                <div class="ht-list-main">
+                                    <p class="ht-list-title">@a.ClientName</p>
+                                    <p class="ht-list-sub">@a.When.ToString("dddd, h:mm tt")@(string.IsNullOrWhiteSpace(a.Location) ? "" : " · " + a.Location)</p>
+                                </div>
+                                <span class="ht-badge @cls">@a.Status</span>
+                            </li>
+                        }
+                    </ul>
+                    <p style="margin:20px 0 0">@Html.ActionLink("Manage sessions", "Index", "Appointments", null, new { @class = "ht-link" })</p>
+                }
+                else
+                {
+                    <div class="ht-empty"><div>No upcoming sessions. Book one from the Appointments tab.</div></div>
+                }
             </div>
-            @if (Model.Notifications.Any())
-            {
-                <ul class="ht-list">
-                    @foreach (var n in Model.Notifications)
-                    {
-                        <li>
-                            <span class="ht-dot @(n.IsRead ? "read" : "")"></span>
-                            <div class="ht-list-main">
-                                <p class="ht-list-title">@n.Message</p>
-                                <p class="ht-list-sub">@n.CreatedAt.ToString("d MMM, h:mm tt")@(string.IsNullOrWhiteSpace(n.Type) ? "" : " · " + n.Type)</p>
-                            </div>
-                        </li>
-                    }
-                </ul>
-            }
-            else
-            {
-                <div class="ht-empty"><div>You&rsquo;re all caught up.</div></div>
-            }
-        </section>
-    </div>
+        </div>
+    </section>
 
     <section class="ht-card">
         <div class="ht-card-head">
@@ -169,25 +146,41 @@
 </div>
 
 @section scripts {
-    <script>(function () {
-      var acc = document.getElementById('htStatAcc');
-      if (!acc) { return; }
-      var items = [].slice.call(acc.querySelectorAll('.ht-acc-item'));
-      var canHover = window.matchMedia('(hover: hover)').matches;
+    <script>
+        (function () {
+            var canHover = window.matchMedia('(hover: hover)').matches;
+            var acc = document.getElementById('htStatAcc');
+            var reveal = document.getElementById('htSessions');
 
-      function toggle(item) {
-        var open = !item.classList.contains('is-open');
-        items.forEach(function (i) { i.classList.remove('is-open'); });   // opening one closes the others
-        if (open) { item.classList.add('is-open'); }
-      }
-      items.forEach(function (item) {
-        item.addEventListener('click', function (e) {
-          if (canHover || (e.target.closest && e.target.closest('a'))) { return; }   // mouse users: hover does the work
-          toggle(item);
-        });
-        item.addEventListener('keydown', function (e) {
-          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(item); }
-        });
-      });
-    })();</script>
+            // stat cards: opening one closes the others (hover does this on desktop; tap / Enter elsewhere)
+            if (acc) {
+                var items = [].slice.call(acc.querySelectorAll('.ht-acc-item'));
+                var toggle = function (item) {
+                    var open = !item.classList.contains('is-open');
+                    items.forEach(function (i) { i.classList.remove('is-open'); });
+                    if (open) { item.classList.add('is-open'); }
+                };
+                items.forEach(function (item) {
+                    item.addEventListener('click', function (e) {
+                        if (canHover || (e.target.closest && e.target.closest('a'))) { return; }
+                        toggle(item);
+                    });
+                    item.addEventListener('keydown', function (e) {
+                        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(item); }
+                    });
+                });
+            }
+
+            // upcoming sessions card
+            if (reveal) {
+                reveal.addEventListener('click', function (e) {
+                    if (canHover || (e.target.closest && e.target.closest('a'))) { return; }
+                    reveal.classList.toggle('is-open');
+                });
+                reveal.addEventListener('keydown', function (e) {
+                    if (e.target === reveal && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); reveal.classList.toggle('is-open'); }
+                });
+            }
+        })();
+    </script>
 }

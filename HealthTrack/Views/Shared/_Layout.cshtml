@@ -33,6 +33,18 @@
     @if (isTrainer)
     {
         <div class="ht-trainer-shell" id="htTrainerShell">
+            <script>
+                // keep the sidebar exactly as the user left it (runs before the page paints, so there is no flash/re-open)
+                (function () {
+                    try {
+                        var s = localStorage.getItem('ht-sidebar-collapsed');
+                        var tablet = window.matchMedia('(min-width: 768px) and (max-width: 1099.98px)').matches;
+                        if (s === '1' || (s === null && tablet)) {
+                            document.getElementById('htTrainerShell').classList.add('sidebar-collapsed');
+                        }
+                    } catch (e) { }
+                })();
+            </script>
 
             <aside class="ht-sidebar" id="htSidebar">
                 <div class="ht-sidebar-brand">
@@ -70,13 +82,16 @@
                 </nav>
 
                 <div class="ht-sidebar-bottom">
-                    <a class="ht-sidebar-profile" href="@Url.Action("Index", "Profile")" title="Profile settings">
-                        <span class="ht-profile-avatar">@sideInitials</span>
+                    <div class="ht-sidebar-profile">
+                        <button type="button" class="ht-profile-avatar" data-profile-toggle aria-label="Profile and settings" title="Profile and settings">@sideInitials</button>
                         <span class="ht-profile-info">
                             <strong>@sideName</strong>
-                            <small>Trainer / Settings</small>
+                            <small>Trainer</small>
                         </span>
-                    </a>
+                        <button type="button" class="ht-profile-cog @(ctrl == "Profile" ? "active" : "")" data-profile-toggle aria-haspopup="menu" aria-expanded="false" aria-controls="htProfileMenu" aria-label="Profile and settings" title="Profile and settings">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+                        </button>
+                    </div>
 
                     <button type="button" class="ht-sidebar-collapse" id="htSidebarCollapse" aria-label="Collapse sidebar" title="Collapse sidebar">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
@@ -86,6 +101,15 @@
             </aside>
 
             <div class="ht-sidebar-overlay" id="htSidebarOverlay"></div>
+
+            <div class="ht-profile-menu" id="htProfileMenu" role="menu" hidden>
+                <div class="ht-profile-menu-head">
+                    <strong>@sideName</strong>
+                    <small>@User.Identity.Name</small>
+                </div>
+                <a role="menuitem" class="@(ctrl == "Profile" && act == "Index" ? "active" : "")" href="@Url.Action("Index", "Profile")">Profile</a>
+                <a role="menuitem" class="@(ctrl == "Profile" && act == "Settings" ? "active" : "")" href="@Url.Action("Settings", "Profile")">Settings</a>
+            </div>
 
             <div class="ht-trainer-main">
                 <header class="ht-trainer-topbar">
