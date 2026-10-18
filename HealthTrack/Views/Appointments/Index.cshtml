@@ -3,79 +3,82 @@
 
 <div class="ht-page">
 
-  <div class="ht-page-head">
-    <div>
-      <p class="ht-eyebrow">04 / Appointments</p>
-      <h1 class="ht-h1">Manage<br />sessions.</h1>
-      <p class="ht-sub">Book, move and close out sessions with your clients. Clients are notified when you schedule, move or cancel.</p>
+    <div class="ht-page-head">
+        <div>
+            <p class="ht-eyebrow">04 / Appointments</p>
+            <h1 class="ht-h1">Manage<br />sessions.</h1>
+            <p class="ht-sub">Book, move and close out sessions with your clients. Clients are notified when you schedule, move or cancel.</p>
+        </div>
+        <div class="ht-head-actions">
+            @Html.ActionLink("New session", "Create", "Appointments", null, new { @class = "ht-btn" })
+        </div>
     </div>
-    <div class="ht-head-actions">
-      @Html.ActionLink("New session", "Create", "Appointments", null, new { @class = "ht-btn" })
+
+    <div class="ht-tabs">
+        <a class="ht-tab @(Model.Filter == "upcoming" ? "active" : "")" href="@Url.Action("Index", "Appointments", new { filter = "upcoming" })">Upcoming<span class="ht-tab-count">@Model.CountUpcoming</span></a>
+        <a class="ht-tab @(Model.Filter == "needsupdate" ? "active" : "")" href="@Url.Action("Index", "Appointments", new { filter = "needsupdate" })">Needs update<span class="ht-tab-count">@Model.CountNeedsUpdate</span></a>
+        <a class="ht-tab @(Model.Filter == "completed" ? "active" : "")" href="@Url.Action("Index", "Appointments", new { filter = "completed" })">Completed<span class="ht-tab-count">@Model.CountCompleted</span></a>
+        <a class="ht-tab @(Model.Filter == "cancelled" ? "active" : "")" href="@Url.Action("Index", "Appointments", new { filter = "cancelled" })">Cancelled<span class="ht-tab-count">@Model.CountCancelled</span></a>
+        <a class="ht-tab @(Model.Filter == "all" ? "active" : "")" href="@Url.Action("Index", "Appointments", new { filter = "all" })">All<span class="ht-tab-count">@Model.CountAll</span></a>
     </div>
-  </div>
 
-  <div class="ht-tabs">
-    <a class="ht-tab @(Model.Filter == "upcoming" ? "active" : "")" href="@Url.Action("Index", "Appointments", new { filter = "upcoming" })">Upcoming<span class="ht-tab-count">@Model.CountUpcoming</span></a>
-    <a class="ht-tab @(Model.Filter == "needsupdate" ? "active" : "")" href="@Url.Action("Index", "Appointments", new { filter = "needsupdate" })">Needs update<span class="ht-tab-count">@Model.CountNeedsUpdate</span></a>
-    <a class="ht-tab @(Model.Filter == "completed" ? "active" : "")" href="@Url.Action("Index", "Appointments", new { filter = "completed" })">Completed<span class="ht-tab-count">@Model.CountCompleted</span></a>
-    <a class="ht-tab @(Model.Filter == "cancelled" ? "active" : "")" href="@Url.Action("Index", "Appointments", new { filter = "cancelled" })">Cancelled<span class="ht-tab-count">@Model.CountCancelled</span></a>
-    <a class="ht-tab @(Model.Filter == "all" ? "active" : "")" href="@Url.Action("Index", "Appointments", new { filter = "all" })">All<span class="ht-tab-count">@Model.CountAll</span></a>
-  </div>
+    @if (TempData["Success"] != null)
+    {<div class="ht-alert ok">@TempData["Success"]</div>}
+    @if (TempData["Error"] != null)
+    {<div class="ht-alert bad">@TempData["Error"]</div>}
 
-  @if (TempData["Success"] != null) { <div class="ht-alert ok">@TempData["Success"]</div> }
-  @if (TempData["Error"] != null) { <div class="ht-alert bad">@TempData["Error"]</div> }
-
-  <section class="ht-card">
-    @if (Model.Items.Any())
-    {
-      <div class="ht-table-wrap">
-        <table class="ht-table">
-          <thead>
-            <tr><th>When</th><th>Client</th><th>Location</th><th>Status</th><th></th></tr>
-          </thead>
-          <tbody>
-            @foreach (var a in Model.Items)
-            {
-              var overdue = a.Status == "Scheduled" && a.When < DateTime.Now;
-              var cls = a.Status == "Completed" ? "ok" : (a.Status == "Cancelled" ? "bad" : "");
-              <tr>
-                <td>
-                  <div class="ht-list-title">@a.When.ToString("ddd d MMM yyyy")</div>
-                  <div class="ht-list-sub">@a.When.ToString("h:mm tt")</div>
-                </td>
-                <td>@a.ClientName</td>
-                <td>@(string.IsNullOrWhiteSpace(a.Location) ? "—" : a.Location)</td>
-                <td>
-                  <span class="ht-badge @cls">@a.Status</span>
-                  @if (overdue) { <span class="ht-badge warn">Past</span> }
-                </td>
-                <td>
-                  <div class="ht-actions">
-                    @if (a.Status == "Scheduled")
-                    {
-                      @Html.ActionLink("Edit", "Edit", "Appointments", new { id = a.AppointmentId }, new { @class = "ht-btn-ghost" })
-                      using (Html.BeginForm("Complete", "Appointments", new { id = a.AppointmentId, filter = Model.Filter }, FormMethod.Post, new { @class = "d-inline" }))
-                      {
-                        @Html.AntiForgeryToken()
-                        <button type="submit" class="ht-btn-ghost">Complete</button>
-                      }
-                      using (Html.BeginForm("Cancel", "Appointments", new { id = a.AppointmentId, filter = Model.Filter }, FormMethod.Post, new { @class = "d-inline", onsubmit = "return confirm('Cancel this session? The client will be notified.');" }))
-                      {
-                        @Html.AntiForgeryToken()
-                        <button type="submit" class="ht-btn-ghost danger">Cancel</button>
-                      }
-                    }
-                  </div>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    }
-    else
-    {
-      <div class="ht-empty"><div>Nothing here yet.</div></div>
-    }
-  </section>
+    <section class="ht-card">
+        @if (Model.Items.Any())
+        {
+            <div class="ht-table-wrap">
+                <table class="ht-table">
+                    <thead>
+                        <tr><th>When</th><th>Client</th><th>Location</th><th>Status</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var a in Model.Items)
+                        {
+                            var overdue = a.Status == "Scheduled" && a.When < DateTime.Now;
+                            var cls = a.Status == "Completed" ? "ok" : (a.Status == "Cancelled" ? "bad" : "");
+                            <tr>
+                                <td data-label="When">
+                                    <div class="ht-list-title">@a.When.ToString("ddd d MMM yyyy")</div>
+                                    <div class="ht-list-sub">@a.When.ToString("h:mm tt")</div>
+                                </td>
+                                <td data-label="Client">@a.ClientName</td>
+                                <td data-label="Location">@(string.IsNullOrWhiteSpace(a.Location) ? "—" : a.Location)</td>
+                                <td data-label="Status">
+                                    <span class="ht-badge @cls">@a.Status</span>
+                                    @if (overdue)
+                                    {<span class="ht-badge warn">Past</span>}
+                                </td>
+                                <td data-label="">
+                                    <div class="ht-actions">
+                                        @if (a.Status == "Scheduled")
+                                        {
+                                            @Html.ActionLink("Edit", "Edit", "Appointments", new { id = a.AppointmentId }, new { @class = "ht-btn-ghost" })
+                                            using (Html.BeginForm("Complete", "Appointments", new { id = a.AppointmentId, filter = Model.Filter }, FormMethod.Post, new { @class = "d-inline" }))
+                                            {
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="ht-btn-ghost">Complete</button>
+                                            }
+                                            using (Html.BeginForm("Cancel", "Appointments", new { id = a.AppointmentId, filter = Model.Filter }, FormMethod.Post, new { @class = "d-inline", onsubmit = "return confirm('Cancel this session? The client will be notified.');" }))
+                                            {
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="ht-btn-ghost danger">Cancel</button>
+                                            }
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="ht-empty"><div>Nothing here yet.</div></div>
+        }
+    </section>
 </div>

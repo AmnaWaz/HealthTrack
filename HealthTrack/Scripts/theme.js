@@ -7,7 +7,7 @@
 
   function apply(t) {
     root.setAttribute('data-theme', t);
-    root.setAttribute('data-bs-theme', t);   // Bootstrap 5.3 native dark mode
+    root.setAttribute('data-bs-theme', t);  
   }
   function get() { return root.getAttribute('data-theme') === 'light' ? 'light' : 'dark'; }
   function set(t) {

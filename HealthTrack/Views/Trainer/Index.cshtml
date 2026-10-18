@@ -1,5 +1,6 @@
 @model HealthTrack.ViewModels.TrainerDashboardViewModel
 @{ ViewBag.Title = "Overview"; }
+<link href="~/Content/stat-accordion.css" rel="stylesheet" />
 
 <div class="ht-page">
 
@@ -22,27 +23,54 @@
         </div>
     </div>
 
-    <div class="ht-grid-4">
-        <div class="ht-card ht-stat">
-            <div class="ht-stat-index">01</div>
-            <div class="ht-stat-value">@Model.ClientCount</div>
-            <div class="ht-stat-label">Clients</div>
+    @{
+        var nextAppt = Model.Appointments.FirstOrDefault();
+        var topClients = string.Join(", ", Model.Clients.Take(3).Select(c => c.Name));
+    }
+
+    @* Stat cards: only the name shows until you hover (or tap). One opens at a time. *@
+    <div class="ht-acc" id="htStatAcc">
+
+        <div class="ht-acc-item" tabindex="0">
+            <div class="ht-acc-top"><span class="ht-stat-index">01</span><span class="ht-acc-plus" aria-hidden="true"></span></div>
+            <div class="ht-acc-body">
+                <div class="ht-stat-value">@Model.ClientCount</div>
+                <p class="ht-acc-detail">@(Model.ClientCount > 0 ? topClients + (Model.ClientCount > 3 ? " and " + (Model.ClientCount - 3) + " more." : ".") : "No clients assigned yet.")</p>
+                @Html.ActionLink("Client list", "Clients", "Trainer", null, new { @class = "ht-link" })
+            </div>
+            <div class="ht-acc-name">Clients</div>
         </div>
-        <div class="ht-card ht-stat">
-            <div class="ht-stat-index">02</div>
-            <div class="ht-stat-value">@Model.UpcomingAppointmentCount</div>
-            <div class="ht-stat-label">Upcoming sessions</div>
+
+        <div class="ht-acc-item" tabindex="0">
+            <div class="ht-acc-top"><span class="ht-stat-index">02</span><span class="ht-acc-plus" aria-hidden="true"></span></div>
+            <div class="ht-acc-body">
+                <div class="ht-stat-value">@Model.UpcomingAppointmentCount</div>
+                <p class="ht-acc-detail">@(nextAppt != null ? "Next: " + nextAppt.ClientName + ", " + nextAppt.When.ToString("ddd d MMM, h:mm tt") + "." : "Nothing booked yet.")</p>
+                @Html.ActionLink("Manage sessions", "Index", "Appointments", null, new { @class = "ht-link" })
+            </div>
+            <div class="ht-acc-name">Upcoming sessions</div>
         </div>
-        <div class="ht-card ht-stat">
-            <div class="ht-stat-index">03</div>
-            <div class="ht-stat-value">@Model.ActiveWorkoutPlans</div>
-            <div class="ht-stat-label">Active workout plans</div>
+
+        <div class="ht-acc-item" tabindex="0">
+            <div class="ht-acc-top"><span class="ht-stat-index">03</span><span class="ht-acc-plus" aria-hidden="true"></span></div>
+            <div class="ht-acc-body">
+                <div class="ht-stat-value">@Model.ActiveWorkoutPlans</div>
+                <p class="ht-acc-detail">Workout plans running today across your clients.</p>
+                @Html.ActionLink("Workout plans", "Index", "WorkoutPlans", null, new { @class = "ht-link" })
+            </div>
+            <div class="ht-acc-name">Active workout plans</div>
         </div>
-        <div class="ht-card ht-stat">
-            <div class="ht-stat-index">04</div>
-            <div class="ht-stat-value">@Model.ActiveDietPlans</div>
-            <div class="ht-stat-label">Active diet plans</div>
+
+        <div class="ht-acc-item" tabindex="0">
+            <div class="ht-acc-top"><span class="ht-stat-index">04</span><span class="ht-acc-plus" aria-hidden="true"></span></div>
+            <div class="ht-acc-body">
+                <div class="ht-stat-value">@Model.ActiveDietPlans</div>
+                <p class="ht-acc-detail">Diet plans running today across your clients.</p>
+                @Html.ActionLink("Diet plans", "Index", "DietPlans", null, new { @class = "ht-link" })
+            </div>
+            <div class="ht-acc-name">Active diet plans</div>
         </div>
+
     </div>
 
     <div class="ht-split">
@@ -121,11 +149,11 @@
                         @foreach (var c in Model.Clients)
                         {
                             <tr>
-                                <td><div class="ht-name"><span class="ht-avatar">@c.Initials</span>@c.Name</div></td>
-                                <td>@(string.IsNullOrWhiteSpace(c.Goal) ? "—" : c.Goal)</td>
-                                <td>@c.Age</td>
-                                <td>@(c.Height > 0 ? c.Height.ToString("0.#") + " cm" : "—")</td>
-                                <td>@(c.Weight > 0 ? c.Weight.ToString("0.#") + " kg" : "—")</td>
+                                <td data-label="Client"><div class="ht-name"><span class="ht-avatar">@c.Initials</span>@c.Name</div></td>
+                                <td data-label="Goal">@(string.IsNullOrWhiteSpace(c.Goal) ? "—" : c.Goal)</td>
+                                <td data-label="Age">@c.Age</td>
+                                <td data-label="Height">@(c.Height > 0 ? c.Height.ToString("0.#") + " cm" : "—")</td>
+                                <td data-label="Weight">@(c.Weight > 0 ? c.Weight.ToString("0.#") + " kg" : "—")</td>
                             </tr>
                         }
                     </tbody>
@@ -139,3 +167,27 @@
     </section>
 
 </div>
+
+@section scripts {
+    <script>(function () {
+      var acc = document.getElementById('htStatAcc');
+      if (!acc) { return; }
+      var items = [].slice.call(acc.querySelectorAll('.ht-acc-item'));
+      var canHover = window.matchMedia('(hover: hover)').matches;
+
+      function toggle(item) {
+        var open = !item.classList.contains('is-open');
+        items.forEach(function (i) { i.classList.remove('is-open'); });   // opening one closes the others
+        if (open) { item.classList.add('is-open'); }
+      }
+      items.forEach(function (item) {
+        item.addEventListener('click', function (e) {
+          if (canHover || (e.target.closest && e.target.closest('a'))) { return; }   // mouse users: hover does the work
+          toggle(item);
+        });
+        item.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(item); }
+        });
+      });
+    })();</script>
+}

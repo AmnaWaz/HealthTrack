@@ -183,6 +183,7 @@
     <Content Include="Content\bootstrap.rtl.min.css" />
     <Content Include="Content\brand.css" />
     <Content Include="Content\sidebar.css" />
+    <Content Include="Content\stat-accordion.css" />
     <Content Include="Content\theme.css" />
     <Content Include="favicon.svg" />
     <Content Include="Global.asax" />
