@@ -36,17 +36,17 @@
                         @foreach (var p in Model.Plans)
                         {
                             <tr>
-                                <td>
+                                <td data-label="Plan">
                                     <div class="ht-list-title">@p.PlanName</div>
                                     @if (!string.IsNullOrWhiteSpace(p.Description))
                                     {
                                         <div class="ht-list-sub">@(p.Description.Length > 70 ? p.Description.Substring(0, 70) + "…" : p.Description)</div>
                                     }
                                 </td>
-                                <td>@p.ClientName</td>
-                                <td>@p.StartDate.ToString("d MMM yyyy")@(p.EndDate.HasValue ? " – " + p.EndDate.Value.ToString("d MMM yyyy") : "")</td>
-                                <td><span class="ht-badge @HealthTrack.ViewModels.PlanStatusHelper.BadgeClass(p.Status)">@p.Status</span></td>
-                                <td>
+                                <td data-label="Client">@p.ClientName</td>
+                                <td data-label="Dates">@p.StartDate.ToString("d MMM yyyy")@(p.EndDate.HasValue ? " – " + p.EndDate.Value.ToString("d MMM yyyy") : "")</td>
+                                <td data-label="Status"><span class="ht-badge @HealthTrack.ViewModels.PlanStatusHelper.BadgeClass(p.Status)">@p.Status</span></td>
+                                <td data-label="">
                                     <div class="ht-actions">
                                         @Html.ActionLink("Edit", "Edit", Model.Route, new { id = p.Id }, new { @class = "ht-btn-ghost" })
                                         @using (Html.BeginForm("Delete", Model.Route, new { id = p.Id }, FormMethod.Post, new { @class = "d-inline", onsubmit = "return confirm('Delete this plan?');" }))

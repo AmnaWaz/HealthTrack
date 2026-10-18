@@ -2,505 +2,160 @@
    HealthTrack trainer sidebar. Always-dark navy panel; the
    page area next to it follows the light/dark theme tokens.
    ========================================================= */
-.ht-trainer-shell {
-    --ht-sidebar-width: 270px;
-    --sb-bg: #0a1220;
-    --sb-line: #1c2940;
-    --sb-text: #ede8df;
-    --sb-muted: #8f9aac;
-    min-height: 100vh;
-    min-height: 100dvh;
-}
-/* 🔧 CHANGED: dvh */
+.ht-trainer-shell { --ht-sidebar-width: 270px; --sb-bg: #0a1220; --sb-line: #1c2940; --sb-text: #ede8df; --sb-muted: #8f9aac; min-height: 100vh; }
 
-.ht-sidebar, .ht-trainer-main {
-    transition: width .25s ease, margin .25s ease, transform .25s ease;
-}
+.ht-sidebar, .ht-trainer-main { transition: width .25s ease, margin .25s ease, transform .25s ease; }
 
 .ht-sidebar {
-    position: fixed;
-    inset: 0 auto 0 0;
-    z-index: 1040;
-    width: var(--ht-sidebar-width);
-    overscroll-behavior: contain; /* 🔧 CHANGED */
-    display: flex;
-    flex-direction: column;
-    overflow-x: hidden;
-    overflow-y: auto;
-    background: var(--sb-bg);
-    color: var(--sb-text);
-    border-right: 1px solid var(--sb-line);
+  position: fixed; inset: 0 auto 0 0; z-index: 1040; width: var(--ht-sidebar-width);
+  display: flex; flex-direction: column; overflow-x: hidden; overflow-y: auto;
+  background: var(--sb-bg); color: var(--sb-text); border-right: 1px solid var(--sb-line);
 }
-
-.ht-sidebar-brand {
-    display: flex;
-    align-items: center;
-    min-height: 86px;
-    padding: 20px 26px;
-    border-bottom: 1px solid var(--sb-line);
-    white-space: nowrap;
-}
-
+.ht-sidebar-brand { display: flex; align-items: center; min-height: 86px; padding: 20px 26px; border-bottom: 1px solid var(--sb-line); white-space: nowrap; }
 .ht-sidebar-section-label {
-    padding: 30px 26px 12px;
-    color: var(--sb-muted);
-    font-family: var(--ht-font-mono);
-    font-size: .66rem;
-    letter-spacing: .2em;
-    white-space: nowrap;
+  padding: 30px 26px 12px; color: var(--sb-muted); font-family: var(--ht-font-mono); font-size: .66rem; letter-spacing: .2em; white-space: nowrap;
 }
-
-.ht-sidebar-nav {
-    display: flex;
-    flex-direction: column;
-}
+.ht-sidebar-nav { display: flex; flex-direction: column; }
 
 .ht-side-link {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    padding: 15px 26px;
-    border-top: 1px solid transparent;
-    color: #9aa6b8;
-    text-decoration: none;
-    white-space: nowrap;
-    font-weight: 600;
-    font-size: .84rem;
-    letter-spacing: .09em;
-    text-transform: uppercase;
-    transition: color .15s, background .15s;
+  position: relative; display: flex; align-items: center; gap: 18px; padding: 15px 26px;
+  border-top: 1px solid transparent; color: #9aa6b8; text-decoration: none; white-space: nowrap;
+  font-weight: 600; font-size: .84rem; letter-spacing: .09em; text-transform: uppercase;
+  transition: color .15s, background .15s;
 }
+.ht-side-num { font-family: var(--ht-font-mono); font-size: .68rem; letter-spacing: .1em; color: #5f6c82; min-width: 20px; }
+.ht-side-link:hover { color: var(--sb-text); background: rgba(237, 232, 223, .04); }
+.ht-side-link.active { color: var(--sb-text); background: rgba(237, 232, 223, .07); }
+.ht-side-link.active .ht-side-num { color: #e0636d; }
+.ht-side-link.active::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: #b3303b; }
+.ht-side-badge { margin-left: auto; padding: 2px 7px; background: #b3303b; color: #fff; font-family: var(--ht-font-mono); font-size: .66rem; letter-spacing: .04em; }
 
-.ht-side-num {
-    font-family: var(--ht-font-mono);
-    font-size: .68rem;
-    letter-spacing: .1em;
-    color: #5f6c82;
-    min-width: 20px;
-}
-
-.ht-side-link:hover {
-    color: var(--sb-text);
-    background: rgba(237, 232, 223, .04);
-}
-
-.ht-side-link.active {
-    color: var(--sb-text);
-    background: rgba(237, 232, 223, .07);
-}
-
-    .ht-side-link.active .ht-side-num {
-        color: #e0636d;
-    }
-
-    .ht-side-link.active::before {
-        content: "";
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 3px;
-        background: #b3303b;
-    }
-
-.ht-side-badge {
-    margin-left: auto;
-    padding: 2px 7px;
-    background: #b3303b;
-    color: #fff;
-    font-family: var(--ht-font-mono);
-    font-size: .66rem;
-    letter-spacing: .04em;
-}
-
-.ht-sidebar-bottom {
-    margin-top: auto;
-    padding: 18px 16px 14px;
-    border-top: 1px solid var(--sb-line);
-}
-
-.ht-sidebar-profile {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 8px 10px;
-    text-decoration: none;
-    color: var(--sb-text);
-    min-width: 0;
-}
-
-    .ht-sidebar-profile:hover {
-        background: rgba(237, 232, 223, .05);
-        color: var(--sb-text);
-    }
-
-.ht-profile-avatar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 42px;
-    height: 42px;
-    flex: 0 0 42px;
-    border-radius: 50%;
-    border: 1px solid #3a4b69;
-    font-family: var(--ht-font-display);
-    font-weight: 700;
-    letter-spacing: .04em;
-    color: var(--sb-text);
-}
-
-.ht-profile-info {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    flex: 1;
-    overflow: hidden;
-}
-
-    .ht-profile-info strong {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        font-size: .9rem;
-        color: var(--sb-text);
-    }
-
-    .ht-profile-info small {
-        font-family: var(--ht-font-mono);
-        font-size: .62rem;
-        letter-spacing: .16em;
-        text-transform: uppercase;
-        color: var(--sb-muted);
-    }
+.ht-sidebar-bottom { margin-top: auto; padding: 18px 16px 14px; border-top: 1px solid var(--sb-line); }
+.ht-profile-info { display: flex; flex-direction: column; min-width: 0; flex: 1; overflow: hidden; }
+.ht-profile-info strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .9rem; color: var(--sb-text); }
 
 .ht-sidebar-collapse {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-    margin-top: 10px;
-    padding: 10px;
-    border: 1px solid transparent;
-    background: transparent;
-    cursor: pointer;
-    color: var(--sb-muted);
-    font-family: var(--ht-font-mono);
-    font-size: .66rem;
-    letter-spacing: .16em;
-    text-transform: uppercase;
-    text-align: left;
-    white-space: nowrap;
+  display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 10px; padding: 10px; border: 1px solid transparent; background: transparent; cursor: pointer;
+  color: var(--sb-muted); font-family: var(--ht-font-mono); font-size: .66rem; letter-spacing: .16em; text-transform: uppercase; text-align: left; white-space: nowrap;
 }
+.ht-sidebar-collapse:hover { color: var(--sb-text); border-color: var(--sb-line); }
+.ht-sidebar-collapse svg { width: 18px; height: 18px; flex: 0 0 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-    .ht-sidebar-collapse:hover {
-        color: var(--sb-text);
-        border-color: var(--sb-line);
-    }
-
-    .ht-sidebar-collapse svg {
-        width: 18px;
-        height: 18px;
-        flex: 0 0 18px;
-        fill: none;
-        stroke: currentColor;
-        stroke-width: 2;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-    }
-
-.ht-trainer-main {
-    min-height: 100vh;
-    min-height: 100dvh;
-    min-width: 0;
-    margin-left: var(--ht-sidebar-width);
-}
-/* 🔧 CHANGED: min-width:0 + dvh */
+.ht-trainer-main { min-height: 100vh; margin-left: var(--ht-sidebar-width); }
 .ht-trainer-topbar {
-    position: sticky;
-    top: 0;
-    z-index: 1020;
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    min-height: 66px;
-    padding: 10px clamp(16px, 3vw, 40px); /* 🔧 CHANGED: fluid padding */
-    background: var(--ht-bg);
-    border-bottom: 1px solid var(--ht-border);
+  position: sticky; top: 0; z-index: 1020; display: flex; align-items: center; gap: 18px; min-height: 66px; padding: 10px 40px;
+  background: var(--ht-bg); border-bottom: 1px solid var(--ht-border);
 }
+.ht-topbar-spacer { flex: 1; }
+.ht-topbar-user { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--ht-font-mono); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ht-text-muted); }
+.ht-logout-form { margin: 0; }
+.ht-logout-button { padding: 6px 0; border: 0; background: transparent; cursor: pointer; color: var(--ht-text); font-weight: 700; font-size: .82rem; border-bottom: 1px solid var(--ht-border-strong); }
+.ht-logout-button:hover { color: var(--ht-accent); border-color: var(--ht-accent); }
 
-.ht-topbar-spacer {
-    flex: 1;
-}
-
-.ht-topbar-user {
-    max-width: 260px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-family: var(--ht-font-mono);
-    font-size: .7rem;
-    letter-spacing: .1em;
-    text-transform: uppercase;
-    color: var(--ht-text-muted);
-}
-
-.ht-logout-form {
-    margin: 0;
-}
-
-.ht-logout-button {
-    padding: 6px 0;
-    border: 0;
-    background: transparent;
-    cursor: pointer;
-    color: var(--ht-text);
-    font-weight: 700;
-    font-size: .82rem;
-    border-bottom: 1px solid var(--ht-border-strong);
-}
-
-    .ht-logout-button:hover {
-        color: var(--ht-accent);
-        border-color: var(--ht-accent);
-    }
-
-.ht-trainer-content {
-    width: 100%;
-    max-width: 1560px;
-    min-width: 0;
-    margin: 0 auto;
-    padding: 36px clamp(18px, 3.4vw, 48px) 0;
-}
-
-    .ht-trainer-content .ht-page {
-        max-width: none;
-        margin: 0;
-        padding: 0;
-    }
-
-.ht-trainer-footer {
-    margin-top: 48px;
-    padding: 16px 0 10px;
-    border-top: 1px solid var(--ht-border);
-}
-
-    .ht-trainer-footer p {
-        margin: 0;
-    }
+.ht-trainer-content { width: 100%; max-width: 1560px; min-width: 0; margin: 0 auto; padding: 36px clamp(18px, 3.4vw, 48px) 0; }
+.ht-trainer-content .ht-page { max-width: none; margin: 0; padding: 0; }
+.ht-trainer-footer { margin-top: 48px; padding: 16px 0 10px; border-top: 1px solid var(--ht-border); }
+.ht-trainer-footer p { margin: 0; }
 
 .ht-mobile-menu {
-    display: none;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    padding: 8px;
-    border: 1px solid var(--ht-border-strong);
-    background: transparent;
-    color: var(--ht-text);
-    cursor: pointer;
+  display: none; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 8px;
+  border: 1px solid var(--ht-border-strong); background: transparent; color: var(--ht-text); cursor: pointer;
 }
-
-    .ht-mobile-menu svg {
-        width: 22px;
-        height: 22px;
-        fill: none;
-        stroke: currentColor;
-        stroke-width: 2;
-        stroke-linecap: round;
-    }
-
-.ht-sidebar-overlay {
-    display: none;
-}
+.ht-mobile-menu svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.ht-sidebar-overlay { display: none; }
 
 /* collapsed (desktop): numbers only */
-.ht-trainer-shell.sidebar-collapsed {
-    --ht-sidebar-width: 78px;
-}
-
-.sidebar-collapsed .ht-sidebar-brand {
-    justify-content: center;
-    padding: 20px 8px;
-}
-
+.ht-trainer-shell.sidebar-collapsed { --ht-sidebar-width: 78px; }
+.sidebar-collapsed .ht-sidebar-brand { justify-content: center; padding: 20px 8px; }
 .sidebar-collapsed .ht-wordmark,
 .sidebar-collapsed .ht-sidebar-section-label,
 .sidebar-collapsed .ht-side-label,
 .sidebar-collapsed .ht-profile-info,
-.sidebar-collapsed .ht-sidebar-collapse span {
-    display: none;
-}
-
-.sidebar-collapsed .ht-side-link {
-    justify-content: center;
-    padding: 16px 6px;
-}
-
-.sidebar-collapsed .ht-side-badge {
-    position: absolute;
-    top: 6px;
-    right: 8px;
-    margin: 0;
-    padding: 0 5px;
-}
-
-.sidebar-collapsed .ht-sidebar-profile {
-    justify-content: center;
-    padding: 6px 0;
-}
-
-.sidebar-collapsed .ht-sidebar-collapse {
-    justify-content: center;
-}
-
-    .sidebar-collapsed .ht-sidebar-collapse svg {
-        transform: rotate(180deg);
-    }
+.sidebar-collapsed .ht-sidebar-collapse span { display: none; }
+.sidebar-collapsed .ht-side-link { justify-content: center; padding: 16px 6px; }
+.sidebar-collapsed .ht-side-badge { position: absolute; top: 6px; right: 8px; margin: 0; padding: 0 5px; }
+.sidebar-collapsed .ht-sidebar-profile { justify-content: center; padding: 6px 0; }
+.sidebar-collapsed .ht-sidebar-collapse { justify-content: center; }
+.sidebar-collapsed .ht-sidebar-collapse svg { transform: rotate(180deg); }
 
 /* mobile: slide-out menu */
 @media (max-width: 767.98px) {
-    .ht-sidebar {
-        width: min(300px, 86vw);
-        transform: translateX(-105%);
-    }
+  .ht-sidebar { width: min(300px, 86vw); transform: translateX(-105%); }
+  .ht-trainer-main { margin-left: 0; }
+  .ht-mobile-menu { display: inline-flex; }
+  .ht-trainer-topbar { min-height: 60px; padding: 9px 16px; gap: 12px; }
+  .ht-trainer-content { padding: 26px 16px 0; }
+  .ht-sidebar-overlay { position: fixed; inset: 0; z-index: 1030; background: rgba(0, 0, 0, .6); }
+  .ht-trainer-shell.mobile-sidebar-open .ht-sidebar { transform: translateX(0); }
+  .ht-trainer-shell.mobile-sidebar-open .ht-sidebar-overlay { display: block; }
+  .ht-topbar-user { max-width: 130px; }
 
-    .ht-trainer-main {
-        margin-left: 0;
-    }
-
-    .ht-mobile-menu {
-        display: inline-flex;
-    }
-
-    .ht-trainer-topbar {
-        min-height: 60px;
-        padding: 9px 16px;
-        gap: 12px;
-    }
-
-    .ht-trainer-content {
-        padding: 26px 16px 0;
-    }
-
-    .ht-sidebar-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 1030;
-        background: rgba(0, 0, 0, .6);
-    }
-
-    .ht-trainer-shell.mobile-sidebar-open .ht-sidebar {
-        transform: translateX(0);
-    }
-
-    .ht-trainer-shell.mobile-sidebar-open .ht-sidebar-overlay {
-        display: block;
-    }
-
-    .ht-topbar-user {
-        max-width: 130px;
-    }
-
-    body:has(.ht-trainer-shell.mobile-sidebar-open) {
-        overflow: hidden;
-    }
-    /* 🔧 CHANGED: no page scroll behind the open menu */
-
-    /* the menu is always full-width on mobile, even if "collapsed" on desktop */
-    .ht-trainer-shell.sidebar-collapsed {
-        --ht-sidebar-width: 270px;
-    }
-
-        .ht-trainer-shell.sidebar-collapsed .ht-sidebar-brand {
-            justify-content: flex-start;
-            padding: 20px 26px;
-        }
-
-        .ht-trainer-shell.sidebar-collapsed .ht-wordmark {
-            display: block;
-        }
-
-        .ht-trainer-shell.sidebar-collapsed .ht-sidebar-section-label {
-            display: block;
-        }
-
-        .ht-trainer-shell.sidebar-collapsed .ht-side-label {
-            display: inline;
-        }
-
-        .ht-trainer-shell.sidebar-collapsed .ht-profile-info {
-            display: flex;
-        }
-
-        .ht-trainer-shell.sidebar-collapsed .ht-sidebar-collapse span {
-            display: inline;
-        }
-
-        .ht-trainer-shell.sidebar-collapsed .ht-side-link {
-            justify-content: flex-start;
-            padding: 15px 26px;
-        }
-
-        .ht-trainer-shell.sidebar-collapsed .ht-side-badge {
-            position: static;
-            margin-left: auto;
-            padding: 2px 7px;
-        }
-
-        .ht-trainer-shell.sidebar-collapsed .ht-sidebar-profile {
-            justify-content: flex-start;
-            padding: 8px 10px;
-        }
-
-        .ht-trainer-shell.sidebar-collapsed .ht-sidebar-collapse {
-            justify-content: flex-start;
-        }
+  /* the menu is always full-width on mobile, even if "collapsed" on desktop */
+  .ht-trainer-shell.sidebar-collapsed { --ht-sidebar-width: 270px; }
+  .ht-trainer-shell.sidebar-collapsed .ht-sidebar-brand { justify-content: flex-start; padding: 20px 26px; }
+  .ht-trainer-shell.sidebar-collapsed .ht-wordmark { display: block; }
+  .ht-trainer-shell.sidebar-collapsed .ht-sidebar-section-label { display: block; }
+  .ht-trainer-shell.sidebar-collapsed .ht-side-label { display: inline; }
+  .ht-trainer-shell.sidebar-collapsed .ht-profile-info { display: flex; }
+  .ht-trainer-shell.sidebar-collapsed .ht-sidebar-collapse span { display: inline; }
+  .ht-trainer-shell.sidebar-collapsed .ht-side-link { justify-content: flex-start; padding: 15px 26px; }
+  .ht-trainer-shell.sidebar-collapsed .ht-side-badge { position: static; margin-left: auto; padding: 2px 7px; }
+  .ht-trainer-shell.sidebar-collapsed .ht-sidebar-profile { justify-content: flex-start; padding: 8px 10px; }
+  .ht-trainer-shell.sidebar-collapsed .ht-sidebar-collapse { justify-content: flex-start; }
 }
+@media (prefers-reduced-motion: reduce) { .ht-sidebar, .ht-trainer-main, .ht-side-link { transition: none; } }
 
-@media (prefers-reduced-motion: reduce) {
-    .ht-sidebar, .ht-trainer-main, .ht-side-link {
-        transition: none;
-    }
+/* ---------- profile row: avatar, name and a cogwheel in the corner ---------- */
+.ht-sidebar-profile { display: flex; align-items: center; gap: 12px; padding: 8px 6px 8px 10px; min-width: 0; color: var(--sb-text); }
+.ht-profile-avatar {
+  display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; flex: 0 0 42px; padding: 0; border-radius: 50%;
+  border: 1px solid #3a4b69; background: transparent; cursor: pointer;
+  font-family: var(--ht-font-display); font-weight: 700; letter-spacing: .04em; color: var(--sb-text); transition: border-color .2s;
 }
-
-/* 🔧 CHANGED: tablets + 14" laptops (sidebar visible but narrower so content gets room) */
-@media (min-width: 768px) and (max-width: 1199.98px) {
-    .ht-trainer-shell {
-        --ht-sidebar-width: 232px;
-    }
-
-    .ht-sidebar-brand {
-        padding: 20px;
-    }
-
-    .ht-sidebar-section-label {
-        padding: 24px 20px 10px;
-    }
-
-    .ht-side-link {
-        padding: 14px 20px;
-        gap: 14px;
-    }
-
-    .ht-trainer-content {
-        padding-top: 28px;
-    }
+.ht-profile-avatar:hover { border-color: #e0636d; }
+.ht-profile-info small { font-family: var(--ht-font-mono); font-size: .62rem; letter-spacing: .16em; text-transform: uppercase; color: var(--sb-muted); }
+.ht-profile-cog {
+  flex: 0 0 auto; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; padding: 0;
+  border: 1px solid transparent; background: transparent; color: var(--sb-muted); cursor: pointer; transition: color .2s, border-color .2s;
 }
-/* phones: tighter topbar, hide the name text when space runs out */
-@media (max-width: 420px) {
-    .ht-topbar-user {
-        display: none;
-    }
+.ht-profile-cog svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform .5s cubic-bezier(.22, .8, .22, 1); }
+.ht-profile-cog:hover, .ht-profile-cog.active, .ht-profile-cog[aria-expanded="true"] { color: var(--sb-text); border-color: var(--sb-line); }
+.ht-profile-cog:hover svg, .ht-profile-cog[aria-expanded="true"] svg { transform: rotate(90deg); }
+.sidebar-collapsed .ht-profile-cog { display: none; }          /* collapsed: the avatar opens the menu */
+.sidebar-collapsed .ht-sidebar-profile { padding: 6px 0; }
 
-    .ht-trainer-topbar {
-        gap: 10px;
-    }
+/* ---------- profile / settings menu (outside the sidebar so it is never clipped) ---------- */
+.ht-profile-menu {
+  position: fixed; z-index: 1070; width: 250px; background: #0a1220; color: #ede8df;
+  border: 1px solid #2a3a56; box-shadow: 0 18px 44px rgba(0, 0, 0, .5);
 }
-/* big monitors */
-@media (min-width: 1920px) {
-    .ht-trainer-shell {
-        --ht-sidebar-width: 290px;
-    }
+.ht-profile-menu[hidden] { display: none; }
+.ht-profile-menu:not([hidden]) { animation: ht-pop .22s cubic-bezier(.22, .8, .22, 1); }
+@keyframes ht-pop { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.ht-profile-menu-head { padding: 14px 16px; border-bottom: 1px solid #1c2940; min-width: 0; }
+.ht-profile-menu-head strong { display: block; font-size: .92rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ht-profile-menu-head small { display: block; margin-top: 3px; font-family: var(--ht-font-mono); font-size: .62rem; letter-spacing: .08em; color: #8f9aac; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ht-profile-menu a {
+  display: flex; align-items: center; justify-content: space-between; padding: 15px 16px; color: #ede8df; text-decoration: none;
+  font-weight: 600; font-size: .82rem; letter-spacing: .09em; text-transform: uppercase; border-top: 1px solid #1c2940;
 }
+.ht-profile-menu a:first-of-type { border-top: 0; }
+.ht-profile-menu a::after { content: "\2197"; color: #8f9aac; }
+.ht-profile-menu a:hover { background: rgba(237, 232, 223, .07); color: #fff; }
+.ht-profile-menu a.active { box-shadow: inset 3px 0 0 #b3303b; background: rgba(237, 232, 223, .05); }
+
+/* ---------- responsive extras ---------- */
+body.ht-no-scroll { overflow: hidden; }
+.ht-trainer-shell, .ht-trainer-main { min-height: 100vh; min-height: 100dvh; }
+@media (min-width: 768px) and (max-width: 1099.98px) {
+  .ht-trainer-topbar { padding: 10px 22px; }
+  .ht-trainer-content { padding: 30px 22px 0; }
+}
+@media (max-width: 575.98px) {
+  .ht-trainer-topbar { gap: 10px; }
+  .ht-trainer-content { padding: 22px 14px 0; }
+}
+@media (max-width: 419.98px) { .ht-topbar-user { display: none; } }
+@media (min-width: 1920px) { .ht-trainer-shell { --ht-sidebar-width: 300px; } .ht-trainer-content { max-width: 1720px; } }
+@media (min-width: 2560px) { .ht-trainer-shell { --ht-sidebar-width: 340px; } .ht-trainer-content { max-width: 2000px; } }
+@media (max-width: 767.98px) { .ht-trainer-shell.sidebar-collapsed .ht-profile-cog { display: inline-flex; } .ht-trainer-shell.sidebar-collapsed .ht-sidebar-profile { padding: 8px 6px 8px 10px; } }

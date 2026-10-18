@@ -1,0 +1,390 @@
+/* =====================================================================
+   Overview stat cards: closed = just the name; hover opens one card and closes the others.
+   Phones / tablets (no hover) use tap, and the cards stack vertically.
+   All colours come from the theme tokens in theme.css.
+   ===================================================================== */
+.ht-acc {
+    display: flex;
+    margin-bottom: 28px;
+    border: 1px solid var(--ht-border);
+    background: var(--ht-surface);
+}
+
+.ht-acc-item {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 0;
+    height: 300px;
+    padding: 22px 24px; /* fixed height: opening never shifts the page */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-right: 1px solid var(--ht-border);
+    overflow: hidden;
+    cursor: pointer;
+    outline: none;
+    transition: flex-grow .6s cubic-bezier(.22, .8, .22, 1), background-color .3s;
+}
+
+    .ht-acc-item:last-child {
+        border-right: 0;
+    }
+
+    /* red line that draws across the top when a card opens */
+    .ht-acc-item::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 3px;
+        background: var(--ht-primary);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform .55s cubic-bezier(.22, .8, .22, 1);
+    }
+
+.ht-acc-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+    .ht-acc-top .ht-stat-index {
+        margin: 0;
+    }
+
+/* + that turns into x */
+.ht-acc-plus {
+    position: relative;
+    width: 16px;
+    height: 16px;
+    opacity: .55;
+    transition: transform .45s cubic-bezier(.22, .8, .22, 1), opacity .3s;
+}
+
+    .ht-acc-plus::before, .ht-acc-plus::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 50%;
+        height: 2px;
+        margin-top: -1px;
+        background: var(--ht-text);
+    }
+
+    .ht-acc-plus::after {
+        transform: rotate(90deg);
+    }
+
+/* details: hidden until the card is open */
+.ht-acc-body {
+    min-width: 220px;
+    opacity: 0;
+    transform: translateY(14px);
+    pointer-events: none;
+    transition: opacity .2s ease, transform .35s ease;
+}
+
+    .ht-acc-body .ht-stat-value {
+        font-size: clamp(3rem, 4vw, 4.4rem);
+    }
+
+.ht-acc-detail {
+    margin: 14px 0 16px;
+    font-family: var(--ht-font-serif);
+    font-size: 1.02rem;
+    line-height: 1.5;
+    color: var(--ht-text-muted);
+    max-width: 34ch;
+}
+
+/* the name is always visible */
+.ht-acc-name {
+    font-family: var(--ht-font-display);
+    font-weight: 700;
+    text-transform: uppercase;
+    line-height: .98;
+    letter-spacing: -.005em;
+    font-size: clamp(1.25rem, 1.7vw, 1.75rem);
+    color: var(--ht-text);
+    transition: color .3s;
+}
+
+/* ---- open state: hover (mouse), keyboard focus, or tapped (.is-open) ---- */
+@media (hover: hover) {
+    .ht-acc-item:hover {
+        flex-grow: 3.6;
+        background-color: var(--ht-surface-2);
+    }
+
+        .ht-acc-item:hover::before {
+            transform: scaleX(1);
+        }
+
+        .ht-acc-item:hover .ht-acc-plus {
+            transform: rotate(45deg);
+            opacity: 1;
+        }
+
+        .ht-acc-item:hover .ht-acc-body {
+            opacity: 1;
+            transform: none;
+            pointer-events: auto;
+            transition: opacity .35s ease .18s, transform .5s ease .18s;
+        }
+
+        .ht-acc-item:hover .ht-acc-name {
+            color: var(--ht-accent);
+        }
+}
+
+.ht-acc-item:focus-visible, .ht-acc-item.is-open {
+    flex-grow: 3.6;
+    background-color: var(--ht-surface-2);
+}
+
+    .ht-acc-item:focus-visible::before, .ht-acc-item.is-open::before {
+        transform: scaleX(1);
+    }
+
+    .ht-acc-item:focus-visible .ht-acc-plus, .ht-acc-item.is-open .ht-acc-plus {
+        transform: rotate(45deg);
+        opacity: 1;
+    }
+
+    .ht-acc-item:focus-visible .ht-acc-body, .ht-acc-item.is-open .ht-acc-body {
+        opacity: 1;
+        transform: none;
+        pointer-events: auto;
+        transition: opacity .35s ease .18s, transform .5s ease .18s;
+    }
+
+    .ht-acc-item:focus-visible .ht-acc-name, .ht-acc-item.is-open .ht-acc-name {
+        color: var(--ht-accent);
+    }
+
+/* narrower laptops: a little less padding so long names fit the closed cards */
+@media (min-width: 992px) and (max-width: 1299.98px) {
+    .ht-acc-item {
+        padding: 20px 16px;
+    }
+
+    .ht-acc-name {
+        font-size: clamp(1.1rem, 1.5vw, 1.4rem);
+    }
+}
+
+/* ---- tablet / phone: stack, open downwards ---- */
+@media (max-width: 991.98px) {
+    .ht-acc {
+        flex-direction: column;
+    }
+
+    .ht-acc-item {
+        flex: none;
+        height: auto;
+        min-height: 0;
+        padding: 18px 20px;
+        border-right: 0;
+        border-bottom: 1px solid var(--ht-border);
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        grid-template-areas: "idx name plus" "body body body";
+        align-items: center;
+        column-gap: 18px;
+        transition: background-color .3s;
+    }
+
+        .ht-acc-item:last-child {
+            border-bottom: 0;
+        }
+
+    .ht-acc-top {
+        display: contents;
+    }
+
+        .ht-acc-top .ht-stat-index {
+            grid-area: idx;
+        }
+
+    .ht-acc-plus {
+        grid-area: plus;
+    }
+
+    .ht-acc-name {
+        grid-area: name;
+        font-size: 1.4rem;
+    }
+
+    .ht-acc-body {
+        grid-area: body;
+        min-width: 0;
+        max-height: 0;
+        overflow: hidden;
+        transform: none;
+        transition: max-height .5s cubic-bezier(.22, .8, .22, 1), opacity .3s ease, margin-top .4s ease;
+    }
+
+    .ht-acc-item:focus-visible, .ht-acc-item.is-open {
+        flex-grow: 0;
+    }
+
+        .ht-acc-item.is-open .ht-acc-body, .ht-acc-item:focus-visible .ht-acc-body {
+            max-height: 260px;
+            margin-top: 16px;
+            transition: max-height .5s cubic-bezier(.22, .8, .22, 1), opacity .35s ease .1s, margin-top .4s ease;
+        }
+
+    .ht-acc-body .ht-stat-value {
+        font-size: 3rem;
+    }
+
+    @media (hover: hover) {
+        .ht-acc-item:hover {
+            flex-grow: 0;
+        }
+
+            .ht-acc-item:hover .ht-acc-body {
+                max-height: 260px;
+                margin-top: 16px;
+                transition: max-height .5s cubic-bezier(.22, .8, .22, 1), opacity .35s ease .1s, margin-top .4s ease;
+            }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ht-acc-item, .ht-acc-item::before, .ht-acc-plus, .ht-acc-body {
+        transition: none !important;
+    }
+}
+
+
+/* =====================================================================
+   Upcoming sessions card: closed = title + count in the corner, open (hover / tap) = the list
+   ===================================================================== */
+.ht-reveal {
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 20px;
+    cursor: pointer;
+    outline: none;
+    transition: background-color .3s;
+}
+
+    .ht-reveal::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 3px;
+        background: var(--ht-primary);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform .55s cubic-bezier(.22, .8, .22, 1);
+    }
+
+.ht-reveal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+    .ht-reveal-head .ht-card-title {
+        transition: color .3s;
+    }
+
+.ht-reveal-corner {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.ht-reveal-count {
+    font-family: var(--ht-font-display);
+    font-weight: 700;
+    font-size: 2.6rem;
+    line-height: 1;
+    color: var(--ht-text);
+}
+
+.ht-reveal-body {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height .6s cubic-bezier(.22, .8, .22, 1), opacity .25s ease, margin-top .45s ease;
+}
+
+.ht-reveal-inner {
+    padding-top: 20px;
+    border-top: 1px solid var(--ht-border);
+}
+
+@media (hover: hover) {
+    .ht-reveal:hover {
+        background-color: var(--ht-surface-2);
+    }
+
+        .ht-reveal:hover::before {
+            transform: scaleX(1);
+        }
+
+        .ht-reveal:hover .ht-acc-plus {
+            transform: rotate(45deg);
+            opacity: 1;
+        }
+
+        .ht-reveal:hover .ht-card-title {
+            color: var(--ht-accent);
+        }
+
+        .ht-reveal:hover .ht-reveal-body {
+            max-height: 1000px;
+            opacity: 1;
+            margin-top: 20px;
+            transition: max-height .75s cubic-bezier(.22, .8, .22, 1), opacity .4s ease .12s, margin-top .45s ease;
+        }
+}
+
+.ht-reveal:focus-visible, .ht-reveal.is-open {
+    background-color: var(--ht-surface-2);
+}
+
+    .ht-reveal:focus-visible::before, .ht-reveal.is-open::before {
+        transform: scaleX(1);
+    }
+
+    .ht-reveal:focus-visible .ht-acc-plus, .ht-reveal.is-open .ht-acc-plus {
+        transform: rotate(45deg);
+        opacity: 1;
+    }
+
+    .ht-reveal:focus-visible .ht-card-title, .ht-reveal.is-open .ht-card-title {
+        color: var(--ht-accent);
+    }
+
+    .ht-reveal:focus-visible .ht-reveal-body, .ht-reveal.is-open .ht-reveal-body {
+        max-height: 1000px;
+        opacity: 1;
+        margin-top: 20px;
+        transition: max-height .75s cubic-bezier(.22, .8, .22, 1), opacity .4s ease .12s, margin-top .45s ease;
+    }
+
+@media (max-width: 575.98px) {
+    .ht-reveal-count {
+        font-size: 2.1rem;
+    }
+
+    .ht-reveal-corner {
+        gap: 12px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ht-reveal, .ht-reveal::before, .ht-reveal-body {
+        transition: none !important;
+    }
+}

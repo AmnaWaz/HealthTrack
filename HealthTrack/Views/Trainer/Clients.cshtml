@@ -31,10 +31,10 @@
                         @foreach (var c in Model.Mine)
                         {
                             <tr>
-                                <td><div class="ht-name"><span class="ht-avatar">@c.Initials</span>@c.Name</div></td>
-                                <td>@(string.IsNullOrWhiteSpace(c.Goal) ? "—" : c.Goal)</td>
-                                <td>@c.Age</td>
-                                <td>
+                                <td data-label="Client"><div class="ht-name"><span class="ht-avatar">@c.Initials</span>@c.Name</div></td>
+                                <td data-label="Goal">@(string.IsNullOrWhiteSpace(c.Goal) ? "—" : c.Goal)</td>
+                                <td data-label="Age">@c.Age</td>
+                                <td data-label="Actions">
                                     <div class="ht-actions" style="justify-content:flex-start">
                                         @Html.ActionLink("Workout plan", "Create", "WorkoutPlans", new { clientId = c.ClientId }, new { @class = "ht-btn-ghost" })
                                         @Html.ActionLink("Diet plan", "Create", "DietPlans", new { clientId = c.ClientId }, new { @class = "ht-btn-ghost" })

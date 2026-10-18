@@ -406,3 +406,38 @@
         padding: clamp(96px, 7vw, 160px);
     }
 }
+
+@media (max-width: 900px) {
+    .ht-auth-hero {
+        padding: 40px 22px 36px;
+    }
+
+    .ht-auth-panel {
+        padding: 32px 20px 44px;
+    }
+
+    .ht-auth-box {
+        max-width: 560px;
+    }
+}
+
+@media (max-width: 479.98px) {
+    .auth-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .ht-auth-panel {
+        padding: 26px 16px 40px;
+    }
+
+    .auth-pill {
+        font-size: .68rem;
+        letter-spacing: .1em;
+    }
+}
+
+.auth-field input, .auth-field select, .auth-field textarea {
+    max-width: none;
+}
+
