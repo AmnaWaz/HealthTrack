@@ -6,9 +6,10 @@ using HealthTrack.ViewModels;
 
 namespace HealthTrack.Controllers
 {
-    // The settings link at the bottom of the sidebar.
+    // Opened from the cogwheel at the bottom of the sidebar: Profile + Settings.
     public class ProfileController : TrainerBaseController
     {
+        // ---------- PROFILE ----------
         public ActionResult Index()
         {
             return View(new ProfileViewModel
@@ -48,6 +49,32 @@ namespace HealthTrack.Controllers
 
             TempData["Success"] = "Profile saved.";
             return RedirectToAction("Index");
+        }
+
+        // ---------- SETTINGS ----------
+        // GET: /Profile/Settings   (theme and sidebar options are saved in the browser; the password lives here)
+        public ActionResult Settings()
+        {
+            return View(new ChangePasswordViewModel());
+        }
+
+        [HttpPost, ValidateAntiForgeryToken]
+        public ActionResult ChangePassword(ChangePasswordViewModel vm)
+        {
+            if (!string.IsNullOrEmpty(vm.CurrentPassword) &&
+                !PasswordHelper.Verify(vm.CurrentPassword, CurrentUser.PasswordHash))
+                ModelState.AddModelError("CurrentPassword", "That is not your current password.");
+
+            if (!string.IsNullOrEmpty(vm.NewPassword) && vm.NewPassword == vm.CurrentPassword)
+                ModelState.AddModelError("NewPassword", "Choose a password different from the current one.");
+
+            if (!ModelState.IsValid) return View("Settings", vm);
+
+            CurrentUser.PasswordHash = PasswordHelper.Hash(vm.NewPassword);
+            db.SaveChanges();
+
+            TempData["Success"] = "Password changed.";
+            return RedirectToAction("Settings");
         }
     }
 }

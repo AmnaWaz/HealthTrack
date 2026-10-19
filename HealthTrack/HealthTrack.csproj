@@ -170,6 +170,7 @@
     <Compile Include="ViewModels\AccountViewModels.cs" />
     <Compile Include="ViewModels\OnboardingViewModels.cs" />
     <Compile Include="ViewModels\PlanViewModels.cs" />
+    <Compile Include="ViewModels\SettingsViewModels.cs" />
     <Compile Include="ViewModels\TrainerClientsViewModel.cs" />
     <Compile Include="ViewModels\TrainerDashboardViewModel.cs" />
     <Compile Include="ViewModels\TrainerPagesViewModels.cs" />
@@ -195,6 +196,7 @@
     <Content Include="Content\brand.css" />
     <Content Include="Content\onboarding.css" />
     <Content Include="Content\option-picker.css" />
+    <Content Include="Content\profile.css" />
     <Content Include="Content\sidebar.css" />
     <Content Include="Content\stat-accordion.css" />
     <Content Include="Content\theme.css" />
@@ -258,6 +260,7 @@
     <Content Include="Views\Onboarding\Done.cshtml" />
     <Content Include="Views\Onboarding\Index.cshtml" />
     <Content Include="Views\Onboarding\_OptionPicker.cshtml" />
+    <Content Include="Views\Profile\Settings.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
