@@ -1,0 +1,34 @@
+@*
+    Full-screen layout for the mandatory onboarding (Person A).
+    Deliberately has NO site navigation or sidebar links: the only ways out are finishing,
+    switching theme, or logging out. (The server-side gate in Filters/OnboardingRequiredAttribute.cs
+    is what actually blocks other pages; this layout just doesn't offer them.)
+*@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-bs-theme="dark">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex" />
+    <title>@ViewBag.Title - HealthTrack</title>
+
+    <link rel="icon" type="image/svg+xml" href="@Url.Content("~/Content/favicon.svg")" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@500;600;700&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+
+    @Styles.Render("~/Content/css")
+    @Html.Partial("_ThemeHead")
+    <link href="@Url.Content("~/Content/brand.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/auth.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/option-picker.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/onboarding.css")" rel="stylesheet" />
+</head>
+<body class="ob-body">
+    <a class="ob-skip" href="#ob-main">Skip to the form</a>
+    @RenderBody()
+
+    @Html.Partial("_ThemeScripts")
+    @RenderSection("scripts", required: false)
+</body>
+</html>

@@ -89,40 +89,7 @@
                 </div>
                 @Html.ValidationMessageFor(m => m.ConfirmPassword)
 
-                <div id="clientFields">
-                    <h5 class="auth-section">Client details</h5>
-                    <div class="auth-row">
-                        <div>
-                            <label class="auth-label" for="DateOfBirth">Date of birth</label>
-                            <div class="auth-field">@Html.TextBoxFor(m => m.DateOfBirth, "{0:yyyy-MM-dd}", new { type = "date" })</div>
-                            @Html.ValidationMessageFor(m => m.DateOfBirth)
-                        </div>
-                        <div>
-                            <label class="auth-label" for="Gender">Gender</label>
-                            <div class="auth-field">@Html.DropDownListFor(m => m.Gender, new SelectList(new[] { "", "Male", "Female", "Other" }, Model.Gender))</div>
-                        </div>
-                    </div>
-                    <div class="auth-row">
-                        <div>
-                            <label class="auth-label" for="Height">Height (cm)</label>
-                            <div class="auth-field">@Html.TextBoxFor(m => m.Height, new { placeholder = "170" })</div>
-                        </div>
-                        <div>
-                            <label class="auth-label" for="Weight">Weight (kg)</label>
-                            <div class="auth-field">@Html.TextBoxFor(m => m.Weight, new { placeholder = "65" })</div>
-                        </div>
-                    </div>
-                    <label class="auth-label" for="Goal">Goal</label>
-                    <div class="auth-field">@Html.TextBoxFor(m => m.Goal, new { placeholder = "e.g. Build strength" })</div>
-                </div>
-
-                <div id="trainerFields" style="display:none">
-                    <h5 class="auth-section">Trainer details</h5>
-                    <label class="auth-label" for="Specialisation">Specialisation</label>
-                    <div class="auth-field">@Html.TextBoxFor(m => m.Specialisation, new { placeholder = "e.g. Strength and conditioning" })</div>
-                    <label class="auth-label" for="Bio">Bio</label>
-                    <div class="auth-field area">@Html.TextAreaFor(m => m.Bio, 3, 40, new { placeholder = "Tell clients about yourself" })</div>
-                </div>
+                <p class="auth-req">Next, a short profile set-up (about a minute) before you start.</p>
 
                 <button type="submit" class="auth-btn">Create account</button>
                 <p class="auth-foot">Already have an account? @Html.ActionLink("Log in", "Login", "Account")</p>
@@ -139,9 +106,11 @@
         var pills = document.querySelectorAll('.auth-pill');
         function setRole(r) {
             roleInput.value = r;
-            pills.forEach(function (p) { p.classList.toggle('active', p.getAttribute('data-role') === r); });
-            document.getElementById('clientFields').style.display = r === 'Client' ? '' : 'none';
-            document.getElementById('trainerFields').style.display = r === 'Trainer' ? '' : 'none';
+            pills.forEach(function (p) {
+                var on = p.getAttribute('data-role') === r;
+                p.classList.toggle('active', on);
+                p.setAttribute('aria-pressed', on ? 'true' : 'false');
+            });
         }
         pills.forEach(function (p) { p.addEventListener('click', function () { setRole(p.getAttribute('data-role')); }); });
         setRole(roleInput.value === 'Trainer' ? 'Trainer' : 'Client');

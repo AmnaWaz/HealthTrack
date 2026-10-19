@@ -1,0 +1,87 @@
+@model HealthTrack.ViewModels.OptionPickerViewModel
+@using System.Linq
+
+@{
+    var p = Model;
+    var errorKey = p.FieldName;
+    var hasError = !ViewData.ModelState.IsValidField(errorKey);
+    var hintId = p.Id + "-hint";
+    var errId = p.Id + "-error";
+    var selectedJson = Newtonsoft.Json.JsonConvert.SerializeObject(p.SelectedTokens ?? new System.Collections.Generic.List<string>());
+    var optionTokens = new System.Collections.Generic.HashSet<string>(p.Options.Select(o => o.Token));
+}
+<fieldset class="op@(hasError ? " op-has-error" : "")" id="@p.Id"
+          data-option-picker
+          data-field="@p.FieldName"
+          data-noun="@p.Noun"
+          data-min="@p.Min" data-max="@p.Max" data-max-new="@p.MaxNewCustom"
+          data-selected="@selectedJson"
+          aria-describedby="@hintId@(hasError ? " " + errId : "")">
+    <legend class="op-legend">@p.Label</legend>
+    <p class="op-hint" id="@hintId">@p.Hint</p>
+
+    
+    <div class="op-enhanced" hidden>
+        <div class="op-selected-head">
+            <span class="op-count" aria-hidden="true"><b data-op-count>0</b> / @p.Max selected</span>
+        </div>
+        <ul class="op-chips" data-op-chips aria-label="Selected @(p.Noun)s"></ul>
+
+        <label class="op-search-label" for="@(p.Id)-search">Search or add a @p.Noun</label>
+        <div class="op-search">
+            <svg class="op-search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
+            <input type="text" id="@(p.Id)-search" class="op-search-input" data-op-search
+                   autocomplete="off" spellcheck="false" maxlength="50"
+                   placeholder="Search, or type your own&hellip;"
+                   aria-controls="@(p.Id)-grid" aria-describedby="@(p.Id)-search-help" />
+            <button type="button" class="op-add" data-op-add hidden></button>
+        </div>
+        <p class="op-search-help" id="@(p.Id)-search-help">Enter selects a match or adds your own. Backspace in an empty box removes the last choice.</p>
+        <p class="op-inline-error" data-op-inline-error role="alert" hidden></p>
+    </div>
+
+    
+    <div class="op-grid" id="@(p.Id)-grid" data-op-grid>
+        @foreach (var o in p.Options)
+        {
+            <label class="op-pill@(o.IsCustom ? " is-custom" : "")">
+                <input type="checkbox" class="op-check" name="@p.FieldName" value="@o.Token" data-name="@o.Name" @(p.IsSelected(o.Token) ? "checked" : null) />
+                <span class="op-pill-text">@o.Name</span>
+                @if (o.IsCustom)
+                {<span class="op-tag">Custom</span>}
+            </label>
+        }
+        @foreach (var name in p.PendingCustomNames)
+        {
+            var token = "new:" + name;
+            if (optionTokens.Contains(token)) { continue; }
+            <label class="op-pill is-custom">
+                <input type="checkbox" class="op-check" name="@p.FieldName" value="@token" data-name="@name" checked />
+                <span class="op-pill-text">@name</span>
+                <span class="op-tag">Custom</span>
+            </label>
+        }
+        <p class="op-nomatch" data-op-nomatch hidden>No matching @(p.Noun)s. Press Enter or &ldquo;Add&rdquo; to add it as your own.</p>
+    </div>
+    <div data-op-hidden></div>
+    <p class="visually-hidden" data-op-status aria-live="polite" aria-atomic="true"></p>
+
+    <noscript>
+        <div class="op-fallback">
+            <span class="op-legend">Add your own (optional)</span>
+            @for (var i = 0; i < 3; i++)
+            {
+                <input type="text" class="op-fallback-input" name="@p.FallbackFieldName" maxlength="50" aria-label="Custom @p.Noun @(i + 1)" />
+            }
+        </div>
+    </noscript>
+
+    <span class="field-validation-error op-error" id="@errId" @(hasError ? null : "hidden") data-op-error>
+
+        @if (hasError)
+        {
+            @(string.Join(" ", ViewData.ModelState[errorKey].Errors.Select(e => e.ErrorMessage)))
+        }
+
+    </span>
+</fieldset>

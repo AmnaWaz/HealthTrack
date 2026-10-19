@@ -134,30 +134,41 @@
     <Compile Include="Controllers\FeedbackController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\NotificationsController.cs" />
+    <Compile Include="Controllers\OnboardingController.cs" />
     <Compile Include="Controllers\ProfileController.cs" />
     <Compile Include="Controllers\ReportsController.cs" />
     <Compile Include="Controllers\TrainerBaseController.cs" />
     <Compile Include="Controllers\TrainerController.cs" />
     <Compile Include="Controllers\WorkoutPlansController.cs" />
     <Compile Include="Data\HealthTrackContext.cs" />
+    <Compile Include="Filters\AllowIncompleteOnboardingAttribute.cs" />
+    <Compile Include="Filters\OnboardingRequiredAttribute.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\OnboardingStatus.cs" />
     <Compile Include="Helpers\PasswordHelper.cs" />
     <Compile Include="Helpers\PhoneHelper.cs" />
+    <Compile Include="Helpers\ProfileOptions.cs" />
     <Compile Include="Models\ApplicationUser.cs" />
     <Compile Include="Models\Appointment.cs" />
+    <Compile Include="Models\ClientGoal.cs" />
     <Compile Include="Models\ClientProfile.cs" />
     <Compile Include="Models\DietPlan.cs" />
+    <Compile Include="Models\FitnessGoal.cs" />
     <Compile Include="Models\HealthMetric.cs" />
     <Compile Include="Models\MealLog.cs" />
     <Compile Include="Models\Notification.cs" />
+    <Compile Include="Models\OnboardingDraft.cs" />
     <Compile Include="Models\Role.cs" />
+    <Compile Include="Models\Specialisation.cs" />
     <Compile Include="Models\TrainerProfile.cs" />
+    <Compile Include="Models\TrainerSpecialisation.cs" />
     <Compile Include="Models\WorkoutLog.cs" />
     <Compile Include="Models\WorkoutPlan.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModels\AccountViewModels.cs" />
+    <Compile Include="ViewModels\OnboardingViewModels.cs" />
     <Compile Include="ViewModels\PlanViewModels.cs" />
     <Compile Include="ViewModels\SettingsViewModels.cs" />
     <Compile Include="ViewModels\TrainerClientsViewModel.cs" />
@@ -183,10 +194,13 @@
     <Content Include="Content\bootstrap.rtl.css" />
     <Content Include="Content\bootstrap.rtl.min.css" />
     <Content Include="Content\brand.css" />
+    <Content Include="Content\onboarding.css" />
+    <Content Include="Content\option-picker.css" />
     <Content Include="Content\profile.css" />
     <Content Include="Content\sidebar.css" />
     <Content Include="Content\stat-accordion.css" />
     <Content Include="Content\theme.css" />
+    <Content Include="Database\02_onboarding_update.sql" />
     <Content Include="favicon.svg" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
@@ -207,6 +221,8 @@
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
+    <Content Include="Scripts\onboarding.js" />
+    <Content Include="Scripts\option-picker.js" />
     <Content Include="Scripts\sidebar.js" />
     <Content Include="Scripts\theme.js" />
     <Content Include="Web.config" />
@@ -239,6 +255,11 @@
     <Content Include="Views\Reports\Index.cshtml" />
     <Content Include="Views\Shared\_Brand.cshtml" />
     <Content Include="Views\Account\AccessDenied.cshtml" />
+    <Content Include="Views\Client\Plans.cshtml" />
+    <Content Include="Views\Shared\_OnboardingLayout.cshtml" />
+    <Content Include="Views\Onboarding\Done.cshtml" />
+    <Content Include="Views\Onboarding\Index.cshtml" />
+    <Content Include="Views\Onboarding\_OptionPicker.cshtml" />
     <Content Include="Views\Profile\Settings.cshtml" />
   </ItemGroup>
   <ItemGroup>

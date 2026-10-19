@@ -8,6 +8,7 @@ namespace HealthTrack
         public static void RegisterGlobalFilters(GlobalFilterCollection filters)
         {
             filters.Add(new HandleErrorAttribute());
+            filters.Add(new HealthTrack.Filters.OnboardingRequiredAttribute());   // Person A: mandatory onboarding gate
         }
     }
 }
