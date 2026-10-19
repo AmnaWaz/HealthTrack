@@ -1,0 +1,592 @@
+/* =====================================================================
+   HealthTrack - mandatory onboarding (Person A)
+   Full-screen "modal" page: navy progress panel (always dark, like the
+   Register hero) + themed form panel. Colours come ONLY from theme.css
+   tokens, so light and dark themes both work. Square corners (--ht-radius: 0).
+   ===================================================================== */
+
+.ob-body {
+    margin: 0;
+    background: var(--ht-bg);
+}
+
+    .ob-body input, .ob-body select, .ob-body textarea {
+        max-width: none; /* Site.css limits inputs to 280px */
+    }
+
+.ob-skip {
+    position: absolute;
+    left: -9999px;
+    top: 8px;
+    z-index: 10;
+    padding: 10px 14px;
+    background: var(--ht-primary);
+    color: var(--ht-primary-contrast);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+    .ob-skip:focus {
+        left: 8px;
+    }
+
+.ob-shell {
+    display: grid;
+    grid-template-columns: minmax(300px, 38%) minmax(0, 1fr);
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+
+/* ---------- left panel ---------- */
+.ob-aside {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    padding: clamp(24px, 4vw, 56px);
+    color: var(--ht-hero-text);
+    background: radial-gradient(640px 380px at 25% 0%, rgba(34, 72, 130, .55), transparent 70%), #0a0e17;
+    overflow-y: auto;
+}
+
+.ob-aside-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.ob-tools {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ob-logout {
+    margin: 0;
+}
+
+.ob-logout-btn {
+    height: 38px;
+    padding: 0 14px;
+    border: 1px solid #2a3a56;
+    background: transparent;
+    color: #aab3c2;
+    cursor: pointer;
+    font-family: var(--ht-font-mono);
+    font-size: .7rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+}
+
+    .ob-logout-btn:hover, .ob-logout-btn:focus-visible {
+        color: var(--ht-hero-text);
+        border-color: var(--ht-hero-text);
+    }
+
+.ob-aside-body {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+    .ob-aside-body .ht-eyebrow {
+        color: #8f9aac;
+        margin: 0;
+    }
+
+.ob-aside-title {
+    margin: 0;
+    font-family: var(--ht-font-display);
+    font-weight: 700;
+    text-transform: uppercase;
+    line-height: .92;
+    letter-spacing: -.015em;
+    font-size: clamp(2.4rem, 5vw, 4.6rem);
+    color: var(--ht-hero-text);
+    overflow-wrap: anywhere;
+}
+
+.ob-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid #22314a;
+}
+
+.ob-step {
+    border-bottom: 1px solid #22314a;
+}
+
+    .ob-step a, .ob-step .ob-step-inner {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        min-height: 52px;
+        padding: 10px 0 10px 14px;
+        color: #8f9aac;
+        text-decoration: none;
+        border-left: 3px solid transparent;
+    }
+
+    .ob-step a:hover, .ob-step a:focus-visible {
+        color: var(--ht-hero-text);
+    }
+
+.ob-step-num {
+    font-family: var(--ht-font-mono);
+    font-size: .72rem;
+    letter-spacing: .14em;
+}
+
+.ob-step-name {
+    font-family: var(--ht-font-display);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 1.15rem;
+    letter-spacing: .02em;
+}
+
+.ob-step.is-current .ob-step-inner {
+    color: var(--ht-hero-text);
+    border-left-color: var(--ht-primary);
+    background: rgba(237, 232, 223, .04);
+}
+
+.ob-step.is-done a::after {
+    content: "\2713";
+    margin-left: auto;
+    color: #3ecf7a;
+    font-size: .95rem;
+}
+
+.ob-step.is-locked .ob-step-inner {
+    color: #4d5a70;
+}
+
+.ob-aside-note {
+    margin: 0;
+    max-width: 42ch;
+    color: #aab3c2;
+    font-family: var(--ht-font-serif);
+    font-size: 1rem;
+    line-height: 1.55;
+}
+
+/* ---------- right panel ---------- */
+.ob-main {
+    display: flex;
+    justify-content: center;
+    padding: clamp(28px, 5vw, 80px) clamp(18px, 5vw, 72px);
+    background: var(--ht-bg);
+}
+
+.ob-panel {
+    width: 100%;
+    max-width: 620px;
+}
+
+.ob-progress {
+    height: 4px;
+    background: var(--ht-border);
+    margin-bottom: 22px;
+}
+
+    .ob-progress > span {
+        display: block;
+        height: 100%;
+        background: var(--ht-primary);
+        transition: width .3s ease;
+    }
+
+.ob-stepcount {
+    margin: 0 0 14px;
+    font-family: var(--ht-font-mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ht-text-muted);
+}
+
+.ob-title {
+    margin: 0 0 14px;
+    font-family: var(--ht-font-display);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: clamp(2rem, 4.4vw, 3.4rem);
+    line-height: .95;
+    letter-spacing: -.012em;
+    color: var(--ht-text);
+    outline: none;
+}
+
+.ob-intro {
+    margin: 0 0 30px;
+    max-width: 52ch;
+    font-family: var(--ht-font-serif);
+    font-size: 1.08rem;
+    line-height: 1.55;
+    color: var(--ht-text-muted);
+}
+
+.ob-form .auth-label.first {
+    margin-top: 0;
+}
+
+/* error summary */
+.ob-errors {
+    margin: 0 0 24px;
+    padding: 16px 18px;
+    border: 1px solid var(--ht-danger);
+    border-left-width: 4px;
+    background: var(--ht-danger-soft);
+    color: var(--ht-text);
+    outline: none;
+}
+
+    .ob-errors:focus-visible {
+        box-shadow: 0 0 0 3px var(--ht-danger-soft);
+    }
+
+.ob-errors-title {
+    margin: 0 0 8px;
+    font-weight: 700;
+}
+
+.ob-errors ul {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.ob-errors a {
+    color: var(--ht-danger);
+}
+
+/* fields */
+.ob-fieldset {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+}
+
+.ob-choices {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.ob-choice {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 52px;
+    padding: 0 16px;
+    border: 1px solid var(--ht-border-strong);
+    background: var(--ht-input-bg);
+    color: var(--ht-text);
+    cursor: pointer;
+    font-weight: 600;
+}
+
+    .ob-choice input {
+        position: absolute;
+        opacity: 0;
+        width: 1px;
+        height: 1px;
+    }
+
+    .ob-choice:hover {
+        border-color: var(--ht-text);
+    }
+
+    .ob-choice:has(input:checked) {
+        background: var(--ht-text);
+        color: var(--ht-bg);
+        border-color: var(--ht-text);
+    }
+
+    .ob-choice:has(input:focus-visible) {
+        outline: 2px solid var(--ht-primary);
+        outline-offset: 2px;
+    }
+
+.ob-fieldset.is-invalid .ob-choice,
+.ob-fieldset:has(.field-validation-error) .ob-choice {
+    border-color: var(--ht-danger);
+}
+
+.ob-unit .ob-unit-label {
+    font-family: var(--ht-font-mono);
+    font-size: .74rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ht-text-muted);
+}
+
+.auth-field:has([aria-invalid="true"]) {
+    border-color: var(--ht-danger);
+}
+
+.ob-counter {
+    margin: 8px 0 0;
+    font-family: var(--ht-font-mono);
+    font-size: .7rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ht-text-muted);
+}
+
+    .ob-counter.is-warn {
+        color: var(--ht-warning);
+    }
+
+/* review */
+.ob-review {
+    margin: 0;
+    border-top: 1px solid var(--ht-border-strong);
+}
+
+.ob-review-row {
+    display: grid;
+    grid-template-columns: 150px minmax(0, 1fr) auto;
+    gap: 6px 18px;
+    align-items: start;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--ht-border);
+}
+
+    .ob-review-row dt {
+        font-family: var(--ht-font-mono);
+        font-size: .7rem;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+        color: var(--ht-text-muted);
+        font-weight: 500;
+        padding-top: 4px;
+    }
+
+    .ob-review-row dd {
+        margin: 0;
+        color: var(--ht-text);
+    }
+
+.ob-review-value {
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.ob-review-edit a {
+    font-weight: 700;
+    font-size: .88rem;
+    color: var(--ht-text);
+    border-bottom: 1px solid var(--ht-border-strong);
+    text-decoration: none;
+}
+
+    .ob-review-edit a:hover, .ob-review-edit a:focus-visible {
+        color: var(--ht-accent);
+        border-color: var(--ht-accent);
+    }
+
+/* actions: Continue is first in the HTML (Enter = Continue) but shown on the right */
+.ob-actions {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: stretch;
+    gap: 12px;
+    margin-top: 34px;
+}
+
+    .ob-actions .auth-btn {
+        margin-top: 0;
+        flex: 1;
+    }
+
+.ob-back {
+    flex: 0 0 auto;
+    min-width: 120px;
+    height: 56px;
+    padding: 0 22px;
+    border: 1px solid var(--ht-border-strong);
+    background: transparent;
+    color: var(--ht-text);
+    font-weight: 700;
+    cursor: pointer;
+}
+
+    .ob-back::before {
+        content: "\2190  ";
+    }
+
+    .ob-back:hover {
+        background: var(--ht-text);
+        color: var(--ht-bg);
+        border-color: var(--ht-text);
+    }
+
+.ob-form .auth-btn:focus-visible, .ob-back:focus-visible, .ob-done .auth-btn:focus-visible {
+    outline: 2px solid var(--ht-text);
+    outline-offset: 3px;
+}
+
+.ob-form[aria-busy="true"] .ob-actions button {
+    opacity: .6;
+    pointer-events: none;
+}
+
+/* success */
+.ob-done .auth-btn {
+    text-decoration: none;
+}
+
+.ob-done-mark {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 22px;
+    border: 2px solid var(--ht-success);
+    color: var(--ht-success);
+}
+
+    .ob-done-mark svg {
+        width: 34px;
+        height: 34px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+.ob-countdown {
+    margin: 16px 0 0;
+    color: var(--ht-text-muted);
+    font-size: .92rem;
+}
+
+.ob-link-btn {
+    margin-left: 6px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ht-text);
+    font-weight: 700;
+    border-bottom: 1px solid var(--ht-border-strong);
+    cursor: pointer;
+}
+
+/* ---------- responsive ---------- */
+@media (max-width: 900px) {
+    .ob-shell {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr; /* progress bar stays compact; the form takes the rest */
+    }
+
+    .ob-aside {
+        position: static;
+        height: auto;
+        gap: 18px;
+        padding: 16px 18px 20px;
+    }
+
+    .ob-aside-body {
+        margin: 0;
+        gap: 14px;
+    }
+
+    .ob-aside-title, .ob-aside-note {
+        display: none;
+    }
+
+    /* steps become a compact segmented bar */
+    .ob-steps {
+        display: flex;
+        border-top: 0;
+        gap: 4px;
+    }
+
+    .ob-step {
+        flex: 1;
+        border-bottom: 0;
+    }
+
+        .ob-step a, .ob-step .ob-step-inner {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+            min-height: 44px;
+            padding: 8px 0 0;
+            border-left: 0;
+            border-top: 3px solid #22314a;
+        }
+
+        .ob-step.is-current .ob-step-inner {
+            border-top-color: var(--ht-primary);
+            background: none;
+        }
+
+        .ob-step.is-done a {
+            border-top-color: #3ecf7a;
+        }
+
+            .ob-step.is-done a::after {
+                display: none;
+            }
+
+    .ob-step-name {
+        font-size: .8rem;
+    }
+
+    .ob-main {
+        padding: 26px 18px 48px;
+    }
+}
+
+@media (max-width: 479.98px) {
+    .ob-step-name {
+        display: none;
+    }
+
+    .ob-step.is-current .ob-step-name {
+        display: inline;
+    }
+
+    .ob-choices {
+        grid-template-columns: 1fr;
+    }
+
+    .ob-review-row {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+        .ob-review-row dt {
+            grid-column: 1 / -1;
+        }
+
+    .ob-actions {
+        flex-direction: column;
+    }
+
+        .ob-actions .auth-btn {
+            flex: none;
+            width: 100%;
+        }
+
+    .ob-back {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ob-progress > span {
+        transition: none;
+    }
+}

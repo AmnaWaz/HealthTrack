@@ -1,15 +1,18 @@
 using System;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Security;
 using HealthTrack.Data;
+using HealthTrack.Filters;
 using HealthTrack.Helpers;
 using HealthTrack.Models;
 using HealthTrack.ViewModels;
 
 namespace HealthTrack.Controllers
 {
+    [AllowIncompleteOnboarding]   // login / logout / register must work before onboarding is finished
     public class AccountController : Controller
     {
         private readonly HealthTrackContext db = new HealthTrackContext();
@@ -23,17 +26,19 @@ namespace HealthTrack.Controllers
             return View(new RegisterViewModel { Role = "Client" });
         }
 
+        // Stage 1 of 2: only the account is created here. The Client/Trainer profile is created by
+        // OnboardingController when the mandatory onboarding is finished (see Filters/OnboardingRequiredAttribute).
         [HttpPost, ValidateAntiForgeryToken]
         public ActionResult Register(RegisterViewModel vm)
         {
             if (vm.Role != "Client" && vm.Role != "Trainer")
                 ModelState.AddModelError("Role", "Choose Client or Trainer.");
-            if (vm.Role == "Client" && vm.DateOfBirth == null)
-                ModelState.AddModelError("DateOfBirth", "Date of birth is required for clients.");
 
             var phone = PhoneHelper.Normalize(vm.Phone);
             if (phone == null)
                 ModelState.AddModelError("Phone", "Enter a valid phone number.");
+            else if (phone.Length > 20)                                   // ApplicationUser.Phone is nvarchar(20)
+                ModelState.AddModelError("Phone", "That phone number is too long.");
 
             var users = db.Set<ApplicationUser>();
             if (users.Any(u => u.Email == vm.Email))
@@ -47,49 +52,33 @@ namespace HealthTrack.Controllers
 
             if (!ModelState.IsValid) return View(vm);
 
-            using (var tx = db.Database.BeginTransaction())
+            var user = new ApplicationUser
             {
-                var user = new ApplicationUser
-                {
-                    FirstName = vm.FirstName,
-                    LastName = vm.LastName,
-                    Email = vm.Email,
-                    Phone = phone,
-                    PasswordHash = PasswordHelper.Hash(vm.Password),
-                    RoleId = role.RoleId,
-                    DateJoined = DateTime.UtcNow,
-                    IsActive = true
-                };
-                users.Add(user);
-                db.SaveChanges();                       // user.UserId is now filled in
+                FirstName = vm.FirstName.Trim(),
+                LastName = vm.LastName.Trim(),
+                Email = vm.Email.Trim(),
+                Phone = phone,
+                PasswordHash = PasswordHelper.Hash(vm.Password),
+                RoleId = role.RoleId,
+                DateJoined = DateTime.UtcNow,
+                IsActive = true
+            };
+            users.Add(user);
 
-                if (vm.Role == "Client")
-                {
-                    db.Set<ClientProfile>().Add(new ClientProfile
-                    {
-                        UserId = user.UserId,
-                        DateOfBirth = vm.DateOfBirth.Value,
-                        Gender = vm.Gender,
-                        Height = vm.Height ?? 0,
-                        Weight = vm.Weight ?? 0,
-                        Goal = vm.Goal
-                    });
-                }
-                else
-                {
-                    db.Set<TrainerProfile>().Add(new TrainerProfile
-                    {
-                        UserId = user.UserId,
-                        Specialisation = vm.Specialisation,
-                        Bio = vm.Bio
-                    });
-                }
-                db.SaveChanges();
-                tx.Commit();
-
-                SignIn(user.Email, role.RoleName, false);
+            try
+            {
+                db.SaveChanges();   // one INSERT: either the account exists afterwards or nothing was saved
             }
-            return RedirectByRole(vm.Role);
+            catch (DbUpdateException)
+            {
+                // Someone registered the same email at the same moment (unique index on Email).
+                users.Remove(user);
+                ModelState.AddModelError("Email", "That email is already registered.");
+                return View(vm);
+            }
+
+            SignIn(user.Email, role.RoleName, false);
+            return RedirectToAction("Index", "Onboarding");
         }
 
         // ---------- LOGIN (email OR phone + password) ----------
@@ -135,6 +124,10 @@ namespace HealthTrack.Controllers
 
             var roleName = db.Set<Role>().Where(r => r.RoleId == user.RoleId).Select(r => r.RoleName).First();
             SignIn(user.Email, roleName, vm.RememberMe);
+
+            // Unfinished onboarding always comes first (a returnUrl would only be blocked by the gate anyway).
+            if (OnboardingStatus.Check(db, user.UserId, roleName) == OnboardingState.Incomplete)
+                return RedirectToAction("Index", "Onboarding");
 
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                 return Redirect(returnUrl);

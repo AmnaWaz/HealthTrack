@@ -1,0 +1,61 @@
+@model HealthTrack.ViewModels.ClientPlansViewModel
+@*
+    Client landing page after login / onboarding (Person A).
+    ClientController.Plans already existed and built this model, but the view file was missing,
+    so clients got "The view 'Plans' or its master was not found". Read-only list of the
+    workout and diet plans their trainer has assigned. Uses the shared theme classes only.
+*@
+@{ ViewBag.Title = "My plans"; }
+
+<div class="ht-page">
+    <div class="ht-page-head">
+        <div>
+            <p class="ht-eyebrow">Client / My plans</p>
+            <h1 class="ht-h1">Hi, @Model.FirstName.</h1>
+            <p class="ht-sub">The workout and diet plans your trainer has set for you.</p>
+        </div>
+    </div>
+
+    @foreach (var block in new[] { new { Title = "Workout plans", Rows = Model.Workout, Empty = "No workout plans yet." },
+                                     new { Title = "Diet plans", Rows = Model.Diet, Empty = "No diet plans yet." } })
+    {
+        <section class="ht-card" style="margin-bottom:24px" aria-labelledby="h-@block.Title.Replace(" ", "")">
+            <div class="ht-card-head">
+                <h2 class="ht-card-title" id="h-@block.Title.Replace(" ", "")">@block.Title</h2>
+                <span class="ht-badge muted">@block.Rows.Count</span>
+            </div>
+            @if (block.Rows.Count > 0)
+            {
+                <div class="ht-table-wrap">
+                    <table class="ht-table">
+                        <thead>
+                            <tr><th scope="col">Plan</th><th scope="col">Trainer</th><th scope="col">Dates</th><th scope="col">Status</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var p in block.Rows)
+                            {
+                                <tr>
+                                    <td data-label="Plan">
+                                        <div class="ht-list-title">@p.PlanName</div>
+                                        @if (!string.IsNullOrWhiteSpace(p.Description))
+                                        {<div class="ht-list-sub">@p.Description</div>}
+                                    </td>
+                                    <td data-label="Trainer">@p.TrainerName</td>
+                                    <td data-label="Dates">@p.StartDate.ToString("d MMM yyyy")@(p.EndDate.HasValue ? " – " + p.EndDate.Value.ToString("d MMM yyyy") : "")</td>
+                                    <td data-label="Status"><span class="ht-badge @HealthTrack.ViewModels.PlanStatusHelper.BadgeClass(p.Status)">@p.Status</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="ht-empty">
+                    <div>@block.Empty</div>
+                    <p class="ht-list-sub" style="margin-top:8px">Your trainer will add plans here once you&rsquo;re on their client list.</p>
+                </div>
+            }
+        </section>
+    }
+</div>

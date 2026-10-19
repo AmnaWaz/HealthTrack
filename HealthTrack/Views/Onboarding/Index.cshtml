@@ -1,0 +1,242 @@
+@model HealthTrack.ViewModels.OnboardingViewModel
+@using System.Linq
+@using HealthTrack.ViewModels
+@*
+    Mandatory onboarding (Person A). One step per request; each Continue is validated and saved
+    on the server (OnboardingController). Back keeps what was typed without validating it.
+*@
+@{
+    Layout = "~/Views/Shared/_OnboardingLayout.cshtml";
+    ViewBag.Title = "Set up your profile";
+
+    var errorList = ViewData.ModelState
+        .Where(kv => kv.Value.Errors.Count > 0)
+        .SelectMany(kv => kv.Value.Errors.Select(e => new { Key = kv.Key, Message = e.ErrorMessage }))
+        .ToList();
+    Func<string, string> anchorFor = key =>
+        key == "Gender" ? "Gender-0" :
+        key == "Selections" ? (Model.Picker != null ? Model.Picker.Id : "ob-form") :
+        string.IsNullOrEmpty(key) ? "ob-form" : key;
+    var currentTitle = Model.Steps[Model.Step - 1].Title;
+}
+
+<div class="ob-shell">
+    @* ---------- left: navy panel with progress ---------- *@
+    <aside class="ob-aside" aria-label="Profile set-up progress">
+        <div class="ob-aside-top">
+            <span class="ht-brand">@Html.Partial("_Brand")</span>
+            <div class="ob-tools">
+                <button type="button" class="ht-theme-toggle" data-theme-toggle aria-label="Switch light / dark theme" title="Switch light / dark theme">
+                    <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
+                    <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z" /></svg>
+                </button>
+                @using (Html.BeginForm("Logout", "Account", new { area = "" }, FormMethod.Post, new { @class = "ob-logout" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="ob-logout-btn">Log out</button>
+                }
+            </div>
+        </div>
+
+        <div class="ob-aside-body">
+            <p class="ht-eyebrow">Set up your profile &middot; @Model.Role</p>
+            <p class="ob-aside-title">Welcome,<br />@Model.FirstName.</p>
+
+            <ol class="ob-steps">
+                @foreach (var s in Model.Steps)
+                {
+                    var isCurrent = s.Number == Model.Step;
+                    var isDone = s.Number < Model.MaxStep && !isCurrent;
+                    var canOpen = s.Number <= Model.MaxStep && !isCurrent;
+                    var cls = isCurrent ? "is-current" : (isDone ? "is-done" : (canOpen ? "is-open" : "is-locked"));
+                    <li class="ob-step @cls" @(isCurrent ? "aria-current=step" : null)>
+                        @if (canOpen)
+                        {
+                            <a href="@Url.Action("Index", "Onboarding", new { step = s.Number })">
+                                <span class="ob-step-num" aria-hidden="true">@s.Number.ToString("00")</span>
+                                <span class="ob-step-name">@s.Title</span>
+                                <span class="visually-hidden">@(isDone ? "(completed)" : "")</span>
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="ob-step-inner">
+                                <span class="ob-step-num" aria-hidden="true">@s.Number.ToString("00")</span>
+                                <span class="ob-step-name">@s.Title</span>
+                                <span class="visually-hidden">@(isCurrent ? "(current step)" : "(not available yet)")</span>
+                            </span>
+                        }
+                    </li>
+                }
+            </ol>
+
+            <p class="ob-aside-note">Your answers are saved at every step, so you can close this page and carry on later. Your profile has to be finished before you can use HealthTrack.</p>
+        </div>
+    </aside>
+
+    @* ---------- right: the step ---------- *@
+    <main class="ob-main" id="ob-main">
+        <div class="ob-panel">
+            <div class="ob-progress" aria-hidden="true"><span style="width:@(Model.PercentComplete)%"></span></div>
+            <p class="ob-stepcount">Step @Model.Step of @Model.TotalSteps &middot; @currentTitle</p>
+            <h1 class="ob-title" tabindex="-1" data-ob-heading>@Model.Heading</h1>
+            <p class="ob-intro">@Model.Intro</p>
+
+            @if (TempData["Error"] != null)
+            {<div class="ht-alert bad" role="alert">@TempData["Error"]</div>}
+
+            @if (errorList.Any())
+            {
+                <div class="ob-errors" role="alert" tabindex="-1" data-ob-errors>
+                    <p class="ob-errors-title">@(errorList.Count == 1 ? "Please fix this:" : "Please fix these " + errorList.Count + " things:")</p>
+                    <ul>
+                        @foreach (var e in errorList)
+                        {
+                            <li><a href="#@anchorFor(e.Key)">@e.Message</a></li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            @using (Html.BeginForm("Index", "Onboarding", FormMethod.Post, new { @class = "ob-form", id = "ob-form", novalidate = "novalidate", data_ob_form = "" }))
+            {
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="Step" value="@Model.Step" />
+
+                switch (Model.StepKey)
+                {
+                    case "about":
+                        <label class="auth-label first" for="DateOfBirth">Date of birth</label>
+                        <div class="auth-field">
+                            @Html.TextBoxFor(m => m.DateOfBirth, "{0:yyyy-MM-dd}", new
+                            {
+                                type = "date", required = "required", autocomplete = "bday",
+                                min = Model.MinBirthDate, max = Model.MaxBirthDate,
+                                aria_describedby = "DateOfBirth-error",
+                                data_msg_required = "Enter your date of birth.",
+                                data_msg_range = "You must be between 13 and 100 years old."
+                            })
+                        </div>
+                        @Html.ValidationMessageFor(m => m.DateOfBirth, null, new { id = "DateOfBirth-error", data_ob_error = "DateOfBirth" })
+
+                        <fieldset class="ob-fieldset" aria-describedby="Gender-error" data-ob-radio-group="Gender" data-msg-required="Choose an option.">
+                            <legend class="auth-label">Gender</legend>
+                            <div class="ob-choices">
+                                @for (var i = 0; i < OnboardingViewModel.GenderOptions.Length; i++)
+                                {
+                                    var g = OnboardingViewModel.GenderOptions[i];
+                                    <label class="ob-choice" for="Gender-@i">
+                                        <input type="radio" name="Gender" id="Gender-@i" value="@g" required @(Model.Gender == g ? "checked" : null) />
+                                        <span>@g</span>
+                                    </label>
+                                }
+                            </div>
+                            @Html.ValidationMessageFor(m => m.Gender, null, new { id = "Gender-error", data_ob_error = "Gender" })
+                        </fieldset>
+                        break;
+
+                    case "body":
+                        <div class="auth-row">
+                            <div>
+                                <label class="auth-label first" for="Height">Height (cm)</label>
+                                <div class="auth-field ob-unit">
+                                    @Html.TextBoxFor(m => m.Height, "{0:0.##}", new
+                                    {
+                                        type = "number", inputmode = "decimal", step = "0.1", min = "50", max = "260",
+                                        required = "required", placeholder = "170", aria_describedby = "Height-error",
+                                        data_msg_required = "Enter your height.",
+                                        data_msg_range = "Enter a height between 50 and 260 cm."
+                                    })
+                                    <span class="ob-unit-label" aria-hidden="true">cm</span>
+                                </div>
+                                @Html.ValidationMessageFor(m => m.Height, null, new { id = "Height-error", data_ob_error = "Height" })
+                            </div>
+                            <div>
+                                <label class="auth-label first" for="Weight">Weight (kg)</label>
+                                <div class="auth-field ob-unit">
+                                    @Html.TextBoxFor(m => m.Weight, "{0:0.##}", new
+                                    {
+                                        type = "number", inputmode = "decimal", step = "0.1", min = "20", max = "500",
+                                        required = "required", placeholder = "65", aria_describedby = "Weight-error",
+                                        data_msg_required = "Enter your weight.",
+                                        data_msg_range = "Enter a weight between 20 and 500 kg."
+                                    })
+                                    <span class="ob-unit-label" aria-hidden="true">kg</span>
+                                </div>
+                                @Html.ValidationMessageFor(m => m.Weight, null, new { id = "Weight-error", data_ob_error = "Weight" })
+                            </div>
+                        </div>
+                        break;
+
+                    case "goals":
+                    case "specialisations":
+                        @Html.Partial("_OptionPicker", Model.Picker)
+                        break;
+
+                    case "bio":
+                        <label class="auth-label first" for="Bio">Bio</label>
+                        <div class="auth-field area">
+                            @Html.TextAreaFor(m => m.Bio, 7, 40, new
+                            {
+                                maxlength = "500", minlength = "20", required = "required",
+                                aria_describedby = "Bio-count Bio-error",
+                                placeholder = "e.g. Former amateur boxer. I coach beginners and busy professionals, focusing on technique, conditioning and steady progress.",
+                                data_msg_required = "Write a short bio for your clients.",
+                                data_msg_minlength = "Write at least 20 characters.",
+                                data_ob_counter = "Bio-count"
+                            })
+                        </div>
+                        <p class="ob-counter" id="Bio-count"><span data-ob-count>@((Model.Bio ?? "").Length)</span> / 500 characters (at least 20)</p>
+                        @Html.ValidationMessageFor(m => m.Bio, null, new { id = "Bio-error", data_ob_error = "Bio" })
+                        break;
+
+                    default:
+                        <dl class="ob-review">
+                            @foreach (var r in Model.Review)
+                            {
+                                <div class="ob-review-row">
+                                    <dt>@r.Label</dt>
+                                    <dd class="ob-review-value">
+                                        @if (r.Chips != null)
+                                        {
+                                            <ul class="op-chips is-static">
+                                                @foreach (var c in r.Chips)
+                                                {<li class="op-chip"><span class="op-chip-text">@c</span></li>}
+                                            </ul>
+                                        }
+                                        else
+                                        {
+                                            @r.Value
+                                        }
+                                    </dd>
+                                    <dd class="ob-review-edit">
+                                        <a href="@Url.Action("Index", "Onboarding", new { step = r.EditStep })">Edit<span class="visually-hidden"> @r.Label</span></a>
+                                    </dd>
+                                </div>
+                            }
+                        </dl>
+                        break;
+                }
+
+                <div class="ob-actions">
+                    @* Continue comes first in the HTML so pressing Enter submits Continue, not Back. *@
+                    <button type="submit" name="Nav" value="next" class="auth-btn ob-next" data-ob-next>
+                        @(Model.IsReview ? "Finish set-up" : "Continue")
+                    </button>
+                    @if (!Model.IsFirst)
+                    {
+                        <button type="submit" name="Nav" value="back" class="ob-back" formnovalidate data-ob-back>Back</button>
+                    }
+                </div>
+            }
+        </div>
+    </main>
+</div>
+
+@section scripts {
+    @if (Model.Picker != null)
+    {
+        <script src="@Url.Content("~/Scripts/option-picker.js")"></script>
+    }
+    <script src="@Url.Content("~/Scripts/onboarding.js")"></script>
+}

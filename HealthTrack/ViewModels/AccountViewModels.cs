@@ -17,7 +17,12 @@ namespace HealthTrack.ViewModels
         [Required(ErrorMessage = "Phone number is required (you can log in with it)."), Phone, StringLength(25)]
         public string Phone { get; set; }
 
-        [Required, MinLength(6), DataType(DataType.Password)]
+        // Same rule the strength meter on Register.cshtml shows: 8+ characters, upper and lower case, a number.
+        // (Login does not re-check this, so accounts created under the old 6-character rule can still sign in.)
+        [Required]
+        [StringLength(100, MinimumLength = 8, ErrorMessage = "Use 8 to 100 characters.")]
+        [RegularExpression(PasswordRule.Pattern, ErrorMessage = PasswordRule.Message)]
+        [DataType(DataType.Password)]
         public string Password { get; set; }
 
         [Required, DataType(DataType.Password), Display(Name = "Confirm password")]
@@ -27,17 +32,15 @@ namespace HealthTrack.ViewModels
         [Required]
         public string Role { get; set; }          // "Client" or "Trainer"
 
-        // Client only
-        [DataType(DataType.Date), Display(Name = "Date of birth")]
-        public DateTime? DateOfBirth { get; set; }
-        public string Gender { get; set; }
-        public decimal? Height { get; set; }
-        public decimal? Weight { get; set; }
-        public string Goal { get; set; }
+        // Client details (date of birth, gender, height, weight, goals) and trainer details
+        // (specialisations, bio) are collected after sign-up by OnboardingController.
+    }
 
-        // Trainer only
-        public string Specialisation { get; set; }
-        public string Bio { get; set; }
+    /// <summary>Password rule shared by the registration form (server + unobtrusive client validation).</summary>
+    public static class PasswordRule
+    {
+        public const string Pattern = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$";
+        public const string Message = "Use 8+ characters with upper and lower case letters and a number.";
     }
 
     public class LoginViewModel

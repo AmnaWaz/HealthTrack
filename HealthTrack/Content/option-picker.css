@@ -1,0 +1,338 @@
+/* =====================================================================
+   HealthTrack - searchable multi-select with chips (Person A)
+   Views/Shared/_OptionPicker.cshtml + Scripts/option-picker.js
+   Theme tokens only (light + dark), square corners.
+   ===================================================================== */
+
+.op {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+}
+
+.op-legend {
+    display: block;
+    float: none;
+    width: auto;
+    margin: 0 0 8px;
+    padding: 0;
+    font-family: var(--ht-font-mono);
+    font-size: .7rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ht-text-muted);
+    font-weight: 500;
+}
+
+.op-hint {
+    margin: -2px 0 16px;
+    color: var(--ht-text-muted);
+    font-size: .92rem;
+}
+
+.op-selected-head {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 8px;
+}
+
+.op-count {
+    font-family: var(--ht-font-mono);
+    font-size: .7rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ht-text-muted);
+}
+
+    .op-count b {
+        color: var(--ht-text);
+    }
+
+/* ---- chips ---- */
+.op-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    list-style: none;
+    margin: 0 0 16px;
+    padding: 0;
+    min-height: 0;
+}
+
+    .op-chips:empty {
+        display: none;
+    }
+
+.op-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 36px;
+    max-width: 100%;
+    padding: 0 4px 0 12px;
+    border: 1px solid var(--ht-primary-border);
+    background: var(--ht-primary-soft);
+    color: var(--ht-text);
+    font-weight: 600;
+    font-size: .9rem;
+}
+
+.op-chips.is-static .op-chip {
+    padding-right: 12px;
+}
+
+.op-chip-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.op-chip-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    flex: none;
+    border: 0;
+    background: transparent;
+    color: var(--ht-text-muted);
+    cursor: pointer;
+    font-size: 1.15rem;
+    line-height: 1;
+}
+
+    .op-chip-remove:hover, .op-chip-remove:focus-visible {
+        color: var(--ht-primary-contrast);
+        background: var(--ht-primary);
+    }
+
+    .op-chip-remove:focus-visible {
+        outline: 2px solid var(--ht-text);
+        outline-offset: 1px;
+    }
+
+/* ---- search ---- */
+.op-search-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+.op-search {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 52px;
+    padding: 0 8px 0 14px;
+    background: var(--ht-input-bg);
+    border: 1px solid var(--ht-border-strong);
+    transition: border-color .15s;
+}
+
+    .op-search:focus-within {
+        border-color: var(--ht-text);
+    }
+
+.op-search-input {
+    flex: 1;
+    min-width: 0;
+    max-width: none !important;  /* Site.css limits inputs to 280px */
+    height: 50px;
+    padding: 0;
+    border: 0 !important;
+    outline: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--ht-text);
+    font-family: var(--ht-font-body);
+    font-size: 1rem;
+}
+
+    .op-search-input::placeholder {
+        color: var(--ht-text-faint);
+    }
+
+.op-search .op-search-icon {
+    display: block;
+    width: 18px;
+    height: 18px;
+    flex: none;
+    fill: none;
+    stroke: var(--ht-text-muted);
+    stroke-width: 2;
+    stroke-linecap: round;
+}
+
+.op-add {
+    flex: none;
+    max-width: 55%;
+    height: 36px;
+    padding: 0 12px;
+    border: 0;
+    background: var(--ht-primary);
+    color: var(--ht-primary-contrast);
+    font-weight: 700;
+    font-size: .82rem;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+    .op-add:hover {
+        background: var(--ht-primary-hover);
+    }
+
+    .op-add:focus-visible {
+        outline: 2px solid var(--ht-text);
+        outline-offset: 2px;
+    }
+
+    .op-add[disabled] {
+        opacity: .5;
+        cursor: not-allowed;
+    }
+
+.op-search-help {
+    margin: 8px 0 0;
+    color: var(--ht-text-faint);
+    font-size: .8rem;
+}
+
+.op-inline-error {
+    margin: 8px 0 0;
+    color: var(--ht-danger);
+    font-size: .85rem;
+}
+
+/* ---- options (checkbox pills) ---- */
+.op-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.op-pill {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 16px;
+    border: 1px solid var(--ht-border-strong);
+    background: var(--ht-input-bg);
+    color: var(--ht-text);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: .92rem;
+    user-select: none;
+}
+
+    .op-pill[hidden] {
+        display: none;
+    }
+
+    /* visually hidden but still focusable / announced */
+    .op-pill input {
+        position: absolute;
+        opacity: 0;
+        width: 1px;
+        height: 1px;
+        margin: 0;
+    }
+
+    .op-pill::before {
+        content: "+";
+        font-family: var(--ht-font-mono);
+        color: var(--ht-text-muted);
+    }
+
+    .op-pill:hover {
+        border-color: var(--ht-text);
+    }
+
+    .op-pill:has(input:checked) {
+        background: var(--ht-text);
+        color: var(--ht-bg);
+        border-color: var(--ht-text);
+    }
+
+        .op-pill:has(input:checked)::before {
+            content: "\2713";
+            color: var(--ht-bg);
+        }
+
+    .op-pill:has(input:focus-visible) {
+        outline: 2px solid var(--ht-primary);
+        outline-offset: 2px;
+    }
+
+    .op-pill:has(input:disabled:not(:checked)) {
+        opacity: .45;
+        cursor: not-allowed;
+    }
+
+.op-tag {
+    font-family: var(--ht-font-mono);
+    font-size: .6rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    padding: 2px 5px;
+    border: 1px solid currentColor;
+    opacity: .7;
+}
+
+.op-nomatch {
+    width: 100%;
+    margin: 4px 0 0;
+    color: var(--ht-text-muted);
+    font-family: var(--ht-font-serif);
+}
+
+.op-has-error .op-pill:not(:has(input:checked)), .op-has-error .op-search {
+    border-color: var(--ht-danger);
+}
+
+.op .field-validation-error {
+    display: block;
+    margin-top: 10px;
+    color: var(--ht-danger);
+    font-size: .85rem;
+}
+
+.op-error[hidden] {
+    display: none;
+}
+
+.op-fallback {
+    margin-top: 16px;
+}
+
+.op-fallback-input {
+    display: block;
+    width: 100%;
+    max-width: none;
+    height: 48px;
+    margin-bottom: 8px;
+    padding: 0 14px;
+    border: 1px solid var(--ht-border-strong);
+    background: var(--ht-input-bg);
+    color: var(--ht-text);
+}
+
+@media (max-width: 479.98px) {
+    .op-pill {
+        padding: 0 12px;
+        font-size: .88rem;
+    }
+
+    .op-add {
+        max-width: 50%;
+    }
+}
