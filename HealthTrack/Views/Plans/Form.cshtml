@@ -1,6 +1,7 @@
 @model HealthTrack.ViewModels.PlanFormViewModel
 @{
-    ViewBag.Title = (Model.Id == 0 ? "New " : "Edit ") + Model.Kind.ToLower() + " plan";
+    var isNew = Model.Id == 0;
+    ViewBag.Title = (isNew ? "New " : "Edit ") + Model.Kind.ToLower() + " plan";
 
     // /WorkoutPlans/Create?clientId=5 pre-selects that client
     var qClient = Request.QueryString["clientId"];
@@ -10,64 +11,215 @@
         Text = i.Text,
         Selected = Model.ClientId == null && i.Value == qClient
     }).ToList();
+    var onlyOne = clientItems.Count == 1;
 }
+<link href="~/Content/plan-form.css" rel="stylesheet" />
 
 <div class="ht-page">
     <div class="ht-page-head">
         <div>
             <p class="ht-eyebrow">03 / Create plans / @Model.Kind</p>
-            <h1 class="ht-h1">@(Model.Id == 0 ? "New" : "Edit")<br />@Model.Kind.ToLower() plan.</h1>
+            <h1 class="ht-h1">@(isNew ? "New" : "Edit")<br />@Model.Kind.ToLower() plan.</h1>
+            <p class="ht-sub">@(Model.Kind == "Workout" ? "Name it, set the dates, add the sessions, and choose who it is for." : "Name it, set the dates, add the meals and targets, and choose who it is for.")</p>
         </div>
     </div>
 
-    <section class="ht-card ht-form-card">
-        @using (Html.BeginForm(Model.Id == 0 ? "Create" : "Edit", Model.Route, FormMethod.Post))
-        {
-            @Html.AntiForgeryToken()
-            @Html.HiddenFor(m => m.Id)
-            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @using (Html.BeginForm(isNew ? "Create" : "Edit", Model.Route, FormMethod.Post, new { id = "planForm", @class = "ht-pf-form" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.Id)
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
-            <div class="mb-4">
-                @Html.LabelFor(m => m.PlanName, new { @class = "form-label" })
-                @Html.TextBoxFor(m => m.PlanName, new { @class = "form-control", placeholder = Model.Kind == "Workout" ? "e.g. Four-week strength base" : "e.g. High-protein maintenance" })
-                @Html.ValidationMessageFor(m => m.PlanName, "", new { @class = "text-danger" })
+        <div class="ht-pf">
+            <div class="ht-pf-main">
+
+                <section class="ht-card">
+                    <div class="ht-pf-step"><b>01</b><h2>The basics</h2><span>What is this plan called, and what is in it?</span></div>
+
+                    <div class="mb-4">
+                        @Html.LabelFor(m => m.PlanName, new { @class = "form-label" })
+                        @Html.TextBoxFor(m => m.PlanName, new { @class = "form-control", placeholder = Model.Kind == "Workout" ? "e.g. Four-week strength base" : "e.g. High-protein maintenance", maxlength = 100, autofocus = "autofocus" })
+                        @Html.ValidationMessageFor(m => m.PlanName, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div>
+                        @Html.LabelFor(m => m.Description, new { @class = "form-label" })
+                        @Html.TextAreaFor(m => m.Description, 6, 40, new { @class = "form-control", maxlength = 500, placeholder = Model.Kind == "Workout" ? "Exercises, sets, reps, rest days..." : "Meals, calories, macros, notes..." })
+                        <div class="ht-pf-count" id="descCount">0 / 500</div>
+                        @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-danger" })
+
+                        <div class="ht-pf-chips">
+                            <span class="ht-pf-chips-label">Start from a template</span>
+                            @if (Model.Kind == "Workout")
+                            {
+                                <button type="button" class="ht-chipbtn" data-template="ppl">Push / Pull / Legs</button>
+                                <button type="button" class="ht-chipbtn" data-template="fullbody">Full body x3</button>
+                                <button type="button" class="ht-chipbtn" data-template="cardio">Cardio base</button>
+                            }
+                            else
+                            {
+                                <button type="button" class="ht-chipbtn" data-template="protein">High protein</button>
+                                <button type="button" class="ht-chipbtn" data-template="deficit">Calorie deficit</button>
+                                <button type="button" class="ht-chipbtn" data-template="plant">Plant based</button>
+                            }
+                        </div>
+                    </div>
+                </section>
+
+                <section class="ht-card">
+                    <div class="ht-pf-step"><b>02</b><h2>Schedule</h2><span>When does it run?</span></div>
+
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            @Html.LabelFor(m => m.StartDate, new { @class = "form-label" })
+                            @Html.TextBoxFor(m => m.StartDate, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+                            @Html.ValidationMessageFor(m => m.StartDate, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-sm-6">
+                            @Html.LabelFor(m => m.EndDate, new { @class = "form-label" })
+                            @Html.TextBoxFor(m => m.EndDate, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+                            @Html.ValidationMessageFor(m => m.EndDate, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="ht-pf-chips">
+                        <span class="ht-pf-chips-label">Quick length</span>
+                        <button type="button" class="ht-chipbtn" data-weeks="1">1 week</button>
+                        <button type="button" class="ht-chipbtn" data-weeks="2">2 weeks</button>
+                        <button type="button" class="ht-chipbtn" data-weeks="4">4 weeks</button>
+                        <button type="button" class="ht-chipbtn" data-weeks="8">8 weeks</button>
+                        <button type="button" class="ht-chipbtn" data-weeks="12">12 weeks</button>
+                    </div>
+                </section>
+
+                <section class="ht-card">
+                    <div class="ht-pf-step"><b>03</b><h2>Client</h2><span>Who is it for?</span></div>
+
+                    @if (clientItems.Any())
+                    {
+                        <div class="ht-pf-clients" role="radiogroup" aria-label="Client">
+                            @foreach (var c in clientItems)
+                            {
+                                var parts = (c.Text ?? "?").Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                                var initials = ((parts.Length > 0 ? parts[0].Substring(0, 1) : "?") + (parts.Length > 1 ? parts[parts.Length - 1].Substring(0, 1) : "")).ToUpper();
+                                var isSel = (Model.ClientId.HasValue && Model.ClientId.Value.ToString() == c.Value) || (!Model.ClientId.HasValue && (c.Selected || onlyOne));
+                                <label class="ht-pf-client @(isSel ? "is-selected" : "")">
+                                    <input type="radio" name="ClientId" value="@c.Value" data-label="@c.Text" @(isSel ? "checked" : "") />
+                                    <span class="ht-avatar">@initials</span>
+                                    <span class="ht-pf-client-name">@c.Text</span>
+                                    <span class="ht-pf-tick"></span>
+                                </label>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="ht-hint">You have no clients yet. @Html.ActionLink("Add a client first", "Clients", "Trainer").</p>
+                    }
+                    @Html.ValidationMessageFor(m => m.ClientId, "", new { @class = "text-danger" })
+                </section>
             </div>
 
-            <div class="mb-4">
-                @Html.LabelFor(m => m.Description, new { @class = "form-label" })
-                @Html.TextAreaFor(m => m.Description, 4, 40, new { @class = "form-control", placeholder = Model.Kind == "Workout" ? "Exercises, sets, reps, rest days..." : "Meals, calories, macros, notes..." })
-                @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-danger" })
-            </div>
-
-            <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                    @Html.LabelFor(m => m.StartDate, new { @class = "form-label" })
-                    @Html.TextBoxFor(m => m.StartDate, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
-                    @Html.ValidationMessageFor(m => m.StartDate, "", new { @class = "text-danger" })
+            <aside class="ht-pf-side">
+                <div class="ht-card ht-pf-summary">
+                    <p class="ht-eyebrow" style="margin-bottom:14px">Summary</p>
+                    <p class="ht-pf-sum-name ht-pf-muted" id="sumName">Untitled plan</p>
+                    <div class="ht-pf-row"><span class="ht-mono">Client</span><span id="sumClient">None selected</span></div>
+                    <div class="ht-pf-row"><span class="ht-mono">Starts</span><span id="sumStart">&mdash;</span></div>
+                    <div class="ht-pf-row"><span class="ht-mono">Ends</span><span id="sumEnd">&mdash;</span></div>
+                    <div class="ht-pf-row"><span class="ht-mono">Length</span><span id="sumLen">&mdash;</span></div>
+                    <p class="ht-pf-warn" id="sumWarn" hidden>The end date is before the start date.</p>
+                    <div class="ht-pf-actions">
+                        <button type="submit" class="ht-btn">@(isNew ? "Create plan" : "Save changes")</button>
+                        @Html.ActionLink("Cancel", "Index", Model.Route, null, new { @class = "ht-btn-ghost" })
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    @Html.LabelFor(m => m.EndDate, new { @class = "form-label" })
-                    @Html.TextBoxFor(m => m.EndDate, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
-                    @Html.ValidationMessageFor(m => m.EndDate, "", new { @class = "text-danger" })
-                </div>
-            </div>
-
-            <div class="mb-4">
-                @Html.LabelFor(m => m.ClientId, new { @class = "form-label" })
-                @Html.DropDownListFor(m => m.ClientId, clientItems, "Select a client…", new { @class = "form-select" })
-                @Html.ValidationMessageFor(m => m.ClientId, "", new { @class = "text-danger" })
-                @if (!Model.Clients.Any())
-                {
-                    <p class="ht-hint mt-2">You have no clients yet. @Html.ActionLink("Add a client first", "Clients", "Trainer").</p>
-                }
-            </div>
-
-            <div class="ht-head-actions">
-                <button type="submit" class="ht-btn">@(Model.Id == 0 ? "Create plan" : "Save changes")</button>
-                @Html.ActionLink("Cancel", "Index", Model.Route, null, new { @class = "ht-btn-ghost" })
-            </div>
-        }
-    </section>
+            </aside>
+        </div>
+    }
 </div>
 
-@section scripts { @Scripts.Render("~/bundles/jqueryval") }
+@section scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script>
+    (function () {
+      var kind = '@Model.Kind';
+      var q = function (s) { return document.querySelector(s); };
+      var name = q('#PlanName'), desc = q('#Description'), start = q('#StartDate'), end = q('#EndDate');
+      var count = q('#descCount'), warn = q('#sumWarn');
+      var sumName = q('#sumName'), sumClient = q('#sumClient'), sumStart = q('#sumStart'), sumEnd = q('#sumEnd'), sumLen = q('#sumLen');
+      var radios = [].slice.call(document.querySelectorAll('input[name="ClientId"]'));
+      var weekBtns = [].slice.call(document.querySelectorAll('[data-weeks]'));
+      var tplBtns = [].slice.call(document.querySelectorAll('[data-template]'));
+
+      var templates = {
+        ppl: 'Day 1 - Push: bench press 4x8, overhead press 3x10, triceps 3x12\nDay 2 - Pull: rows 4x8, pull-downs 3x10, curls 3x12\nDay 3 - Legs: squats 4x8, lunges 3x10, calf raises 3x15\nDay 4 - Rest or an easy walk\n',
+        fullbody: 'Mon - Full body: squat, press, row (3x8-10)\nWed - Full body: deadlift, push-ups, pull-downs (3x8-10)\nFri - Full body: lunges, dips, planks (3x10-12)\nTue / Thu - Rest or mobility\n',
+        cardio: '3 sessions a week: 30 min steady cardio at an easy pace\n1 session a week: 6 x 2 min intervals, 2 min rest\nDaily: 8,000 steps\n',
+        protein: 'Breakfast: eggs, oats, fruit\nLunch: chicken, rice, vegetables\nSnack: Greek yoghurt and nuts\nDinner: fish or lean meat with salad\nProtein target: 1.6-2.0 g per kg body weight\n',
+        deficit: 'Daily target: maintenance minus 400 kcal\nBreakfast: protein plus slow carbs\nLunch: lean protein, vegetables, a fist of carbs\nDinner: lighter carbs, plenty of vegetables\nWater: 2.5 L a day\n',
+        plant: 'Breakfast: tofu scramble or oats with soy milk and seeds\nLunch: lentils or chickpeas, grains, greens\nSnack: hummus and vegetables, or fruit and nuts\nDinner: beans, tofu or tempeh with vegetables\nWatch: B12, iron, protein spread across meals\n'
+      };
+
+      function parse(v) { if (!v) { return null; } var p = v.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
+      function fmt(d) { return d ? d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) : '\u2014'; }
+      function iso(d) { var m = d.getMonth() + 1, day = d.getDate(); return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day; }
+
+      function refresh() {
+        var title = name.value.trim();
+        sumName.textContent = title || 'Untitled plan';
+        sumName.classList.toggle('ht-pf-muted', !title);
+        count.textContent = desc.value.length + ' / 500';
+
+        var s = parse(start.value), e = parse(end.value);
+        sumStart.textContent = fmt(s);
+        sumEnd.textContent = fmt(e);
+        var days = (s && e) ? Math.round((e - s) / 86400000) : null;
+        warn.hidden = !(days !== null && days < 0);
+        if (days === null || days < 0) { sumLen.textContent = '\u2014'; }
+        else if (days % 7 === 0 && days > 0) { var w = days / 7; sumLen.textContent = w + (w === 1 ? ' week' : ' weeks') + ' (' + days + ' days)'; }
+        else { sumLen.textContent = days + (days === 1 ? ' day' : ' days'); }
+
+        weekBtns.forEach(function (b) {
+          b.classList.toggle('active', days !== null && days === parseInt(b.getAttribute('data-weeks'), 10) * 7);
+        });
+
+        var chosen = null;
+        radios.forEach(function (r) {
+          var on = r.checked;
+          r.parentNode.classList.toggle('is-selected', on);
+          if (on) { chosen = r.getAttribute('data-label'); }
+        });
+        sumClient.textContent = chosen || 'None selected';
+      }
+
+      name.addEventListener('input', refresh);
+      desc.addEventListener('input', refresh);
+      start.addEventListener('change', refresh);
+      end.addEventListener('change', refresh);
+      radios.forEach(function (r) { r.addEventListener('change', refresh); });
+
+      weekBtns.forEach(function (b) {
+        b.addEventListener('click', function () {
+          var s = parse(start.value) || new Date();
+          if (!start.value) { start.value = iso(s); }
+          var e = new Date(s.getFullYear(), s.getMonth(), s.getDate() + parseInt(b.getAttribute('data-weeks'), 10) * 7);
+          end.value = iso(e);
+          refresh();
+        });
+      });
+
+      tplBtns.forEach(function (b) {
+        b.addEventListener('click', function () {
+          var text = templates[b.getAttribute('data-template')] || '';
+          var current = desc.value.replace(/\s+$/, '');
+          desc.value = ((current ? current + '\n' : '') + text).slice(0, 500);
+          desc.focus();
+          refresh();
+        });
+      });
+
+      refresh();
+    })();
+    </script>
+}
