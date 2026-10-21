@@ -1,4 +1,5 @@
 ﻿
+
 @model HealthTrack.ViewModels.ClientTrainerViewModel
 @using System
 @using System.Linq
@@ -332,6 +333,11 @@
                 Your assigned trainer, personalized plans and consultations.
             </p>
         </div>
+
+        <a class="cmt-button cmt-button-outline"
+           href="@Url.Action("Index", "ClientTrainerDirectory")">
+            FIND A TRAINER
+        </a>
     </header>
 
     @if (!Model.HasAssignedTrainer)
@@ -345,6 +351,10 @@
                 You can continue logging workouts, meals and measurements.
             </p>
 
+            <a class="cmt-button"
+               href="@Url.Action("Index", "ClientTrainerDirectory")">
+                BROWSE TRAINERS
+            </a>
             <a class="cmt-button cmt-button-outline"
                href="@Url.Action("Overview", "Client")">
                 RETURN TO OVERVIEW
@@ -597,12 +607,6 @@
                     provide medical treatment. This feature is not monitored
                     for emergencies.
                 </div>
-
-                <p class="cmt-muted" style="margin-top:20px">
-                    Structured request submission will be enabled once the
-                    Trainer Requests database and trainer response workflow
-                    are connected.
-                </p>
 
                 <a class="cmt-button"
                    href="@Url.Action("Index", "ClientTrainerRequests")">

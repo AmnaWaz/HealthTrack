@@ -137,6 +137,7 @@
     <Compile Include="Controllers\ClientProgressController.cs" />
     <Compile Include="Controllers\ClientSessionsController.cs" />
     <Compile Include="Controllers\ClientTrainerController.cs" />
+    <Compile Include="Controllers\ClientTrainerDirectoryController.cs" />
     <Compile Include="Controllers\ClientTrainerRequestsController.cs" />
     <Compile Include="Controllers\ClientTrainingController.cs" />
     <Compile Include="Controllers\DietPlansController.cs" />
@@ -149,6 +150,7 @@
     <Compile Include="Controllers\TrainerBaseController.cs" />
     <Compile Include="Controllers\TrainerController.cs" />
     <Compile Include="Controllers\TrainerRequestsController.cs" />
+    <Compile Include="Controllers\TrainerSelectionController.cs" />
     <Compile Include="Controllers\WorkoutPlansController.cs" />
     <Compile Include="Data\HealthTrackContext.cs" />
     <Compile Include="Filters\AllowIncompleteOnboardingAttribute.cs" />
@@ -174,10 +176,13 @@
     <Compile Include="Models\Specialisation.cs" />
     <Compile Include="Models\TrainerProfile.cs" />
     <Compile Include="Models\TrainerRequest.cs" />
+    <Compile Include="Models\TrainerSelectionRequest.cs" />
     <Compile Include="Models\TrainerSpecialisation.cs" />
     <Compile Include="Models\WorkoutLog.cs" />
     <Compile Include="Models\WorkoutPlan.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\TrainerRequestAiService.cs" />
+    <Compile Include="Services\TrainerRequestPriorityAnalyzer.cs" />
     <Compile Include="ViewModels\AccountViewModels.cs" />
     <Compile Include="ViewModels\ClientNotificationsViewModel.cs" />
     <Compile Include="ViewModels\ClientNutritionViewModel.cs" />
@@ -185,6 +190,7 @@
     <Compile Include="ViewModels\ClientProfileViewModel.cs" />
     <Compile Include="ViewModels\ClientProgressViewModel.cs" />
     <Compile Include="ViewModels\ClientSessionsViewModel.cs" />
+    <Compile Include="ViewModels\ClientTrainerDirectoryViewModel.cs" />
     <Compile Include="ViewModels\ClientTrainerRequestViewModel.cs" />
     <Compile Include="ViewModels\ClientTrainerViewModel.cs" />
     <Compile Include="ViewModels\ClientTrainingViewModel.cs" />
@@ -195,6 +201,7 @@
     <Compile Include="ViewModels\TrainerDashboardViewModel.cs" />
     <Compile Include="ViewModels\TrainerPagesViewModels.cs" />
     <Compile Include="ViewModels\TrainerRequestsViewModel.cs" />
+    <Compile Include="ViewModels\TrainerSelectionViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\auth.css" />
@@ -294,6 +301,8 @@
     <Content Include="Views\ClientProfile\Settings.cshtml" />
     <Content Include="Views\ClientTrainerRequests\Index.cshtml" />
     <Content Include="Views\TrainerRequests\Index.cshtml" />
+    <Content Include="Views\ClientTrainerDirectory\Index.cshtml" />
+    <Content Include="Views\TrainerSelection\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

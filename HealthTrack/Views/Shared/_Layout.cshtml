@@ -84,6 +84,12 @@
                        aria-current="@(ctrl == "TrainerRequests" ? "page" : null)">
                         <span class="ht-side-num">08</span><span class="ht-side-label">Trainer Requests</span>
                     </a>
+                    <a class="ht-side-link @(ctrl == "TrainerSelection" ? "active" : "")"
+                       href="@Url.Action("Index", "TrainerSelection")"
+                       title="Client Selections"
+                       aria-current="@(ctrl == "TrainerSelection" ? "page" : null)">
+                        <span class="ht-side-num">09</span><span class="ht-side-label">Client Selections</span>
+                    </a>
                 </nav>
 
                 <div class="ht-sidebar-bottom">

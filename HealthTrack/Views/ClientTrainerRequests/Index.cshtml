@@ -183,6 +183,21 @@
         line-height: 1.8;
     }
 
+        .ctr-notice strong {
+            display: block;
+            margin-bottom: 8px;
+            font: 700 15px "Archivo Narrow", sans-serif;
+            text-transform: uppercase;
+        }
+
+        .ctr-notice p {
+            margin: 0;
+        }
+
+    .ctr-emergency {
+        border-left-width: 5px;
+    }
+
     .ctr-list {
         display: grid;
         gap: 14px;
@@ -364,6 +379,22 @@
         </div>
     }
 
+    @if (TempData["EmergencyWarning"] != null)
+    {
+        <div class="ctr-notice ctr-emergency" role="alert">
+            <strong>IMPORTANT SAFETY NOTICE</strong>
+            <p>@TempData["EmergencyWarning"]</p>
+        </div>
+    }
+
+    @if (TempData["PriorityInfo"] != null)
+    {
+        <div class="ctr-notice" role="status">
+            <strong>HIGH-PRIORITY REQUEST</strong>
+            <p>@TempData["PriorityInfo"]</p>
+        </div>
+    }
+
     <div class="ctr-stats">
         <div class="ctr-stat">
             <span>Open</span>
@@ -397,6 +428,11 @@
                     You need an assigned trainer before you can submit a request.
                     Your request history remains available on the right.
                 </div>
+
+                <a class="ctr-button ctr-button-outline"
+                   href="@Url.Action("Index", "ClientTrainerDirectory")">
+                    FIND A TRAINER
+                </a>
             }
             else
             {
@@ -492,10 +528,30 @@
                         If you have a medical concern, share only the information
                         your trainer needs to adjust your fitness plan.
                         A trainer cannot diagnose or treat medical conditions.
+                        If you are experiencing a medical emergency, seek immediate
+                        medical assistance instead of waiting for a reply.
                     </div>
 
                     <button type="submit" class="ctr-button">
                         SUBMIT REQUEST
+
+                        <div class="ctr-field">
+                            <label for="aiConsent" style="display:flex;align-items:flex-start;gap:12px;text-transform:none;cursor:pointer">
+                                <input type="checkbox"
+                                       id="aiConsent"
+                                       name="aiConsent"
+                                       value="true"
+                                       style="width:auto;margin-top:3px;flex-shrink:0" />
+
+                                <span style="font-size:12px;line-height:1.8;font-weight:400">
+                                    I agree to have the category, subject and description
+                                    of this request sent to OpenAI for automated priority
+                                    analysis. I understand that this is optional and that
+                                    my request will still be submitted if I leave it unchecked.
+                                </span>
+                            </label>
+                        </div>
+
                     </button>
                 }
             }

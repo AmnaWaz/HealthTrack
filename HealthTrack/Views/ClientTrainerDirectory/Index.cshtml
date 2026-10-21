@@ -1,0 +1,736 @@
+
+@model HealthTrack.ViewModels.ClientTrainerDirectoryViewModel
+@using System
+@using System.Linq
+
+@{
+    ViewBag.Title = "Find a Trainer";
+    Layout = "~/Views/Shared/_ClientLayout.cshtml";
+}
+
+<style>
+    .ctd-page {
+        max-width: 1320px;
+        margin: 0 auto;
+        padding: 28px 16px 70px;
+    }
+
+    .ctd-eyebrow {
+        color: #b6505d;
+        font: 600 11px "IBM Plex Mono", monospace;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+    }
+
+    .ctd-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 18px;
+        margin-bottom: 30px;
+    }
+
+        .ctd-header h1 {
+            font: 700 clamp(38px, 5vw, 64px) "Archivo Narrow", sans-serif;
+            margin: 8px 0;
+            text-transform: uppercase;
+        }
+
+    .ctd-muted {
+        color: #858d99;
+        font-size: 13px;
+        line-height: 1.7;
+    }
+
+    .ctd-panel,
+    .ctd-card {
+        background: var(--ht-surface, #f4f0e8);
+        border: 1px solid var(--ht-border, #b9bdc2);
+    }
+
+    .ctd-panel {
+        padding: 22px;
+        margin-bottom: 24px;
+    }
+
+        .ctd-panel h2 {
+            font: 700 26px "Archivo Narrow", sans-serif;
+            margin: 7px 0 12px;
+            text-transform: uppercase;
+        }
+
+    .ctd-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 11px 16px;
+        border: 1px solid #b6505d;
+        border-radius: 0;
+        background: #b6505d;
+        color: #fff;
+        text-decoration: none;
+        font: 600 11px "IBM Plex Mono", monospace;
+        text-transform: uppercase;
+        cursor: pointer;
+    }
+
+        .ctd-button:hover {
+            background: #963f4a;
+            color: #fff;
+        }
+
+    .ctd-button-outline {
+        background: transparent;
+        border-color: #9da4ae;
+        color: inherit;
+    }
+
+        .ctd-button-outline:hover {
+            background: transparent;
+            border-color: #b6505d;
+            color: #b6505d;
+        }
+
+    .ctd-button:disabled {
+        opacity: .5;
+        cursor: not-allowed;
+    }
+
+    .ctd-alert {
+        padding: 14px 18px;
+        margin-bottom: 18px;
+        border-left: 3px solid #65967c;
+        background: rgba(101, 150, 124, .12);
+        font-size: 13px;
+    }
+
+    .ctd-alert-error {
+        border-color: #b6505d;
+        background: rgba(182, 80, 93, .1);
+    }
+
+    .ctd-status {
+        display: inline-flex;
+        padding: 7px 10px;
+        border: 1px solid var(--ht-border, #b9bdc2);
+        font: 600 10px "IBM Plex Mono", monospace;
+        text-transform: uppercase;
+    }
+
+    .ctd-status-pending {
+        color: #ae874e;
+        border-color: #ae874e;
+    }
+
+    .ctd-status-accepted {
+        color: #65967c;
+        border-color: #65967c;
+    }
+
+    .ctd-status-rejected {
+        color: #b6505d;
+        border-color: #b6505d;
+    }
+
+    .ctd-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+        margin-top: 20px;
+    }
+
+    .ctd-card {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        padding: 23px;
+        min-width: 0;
+    }
+
+    .ctd-avatar {
+        width: 68px;
+        height: 68px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #17283d;
+        color: #fff;
+        font: 700 32px "Archivo Narrow", sans-serif;
+    }
+
+    .ctd-card h3 {
+        font: 700 27px "Archivo Narrow", sans-serif;
+        text-transform: uppercase;
+        margin: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .ctd-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+    }
+
+    .ctd-tag {
+        border: 1px solid var(--ht-border, #b9bdc2);
+        padding: 7px 10px;
+        font: 600 10px "IBM Plex Mono", monospace;
+    }
+
+    .ctd-bio {
+        color: #858d99;
+        font-size: 13px;
+        line-height: 1.7;
+        overflow-wrap: anywhere;
+    }
+
+    .ctd-card-actions {
+        margin-top: auto;
+        padding-top: 12px;
+    }
+
+    .ctd-history {
+        display: grid;
+        gap: 10px;
+        margin-top: 18px;
+    }
+
+    .ctd-history-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 14px;
+        border-top: 1px solid var(--ht-border, #b9bdc2);
+        padding: 16px 0;
+    }
+
+        .ctd-history-item strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .ctd-history-item small {
+            color: #858d99;
+            font-size: 12px;
+        }
+
+    .ctd-history-actions {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .ctd-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 3000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        background: rgba(7, 13, 23, .76);
+    }
+
+        .ctd-modal[hidden] {
+            display: none;
+        }
+
+    .ctd-modal-content {
+        width: min(100%, 500px);
+        max-height: min(90vh, 780px);
+        overflow-y: auto;
+        background: var(--ht-surface, #f4f0e8);
+        color: var(--ht-text, inherit);
+        border: 1px solid var(--ht-border, #b9bdc2);
+        padding: 25px;
+        box-shadow: 0 24px 75px rgba(0, 0, 0, .35);
+    }
+
+    .ctd-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 18px;
+        margin-bottom: 22px;
+    }
+
+        .ctd-modal-header h2 {
+            font: 700 36px "Archivo Narrow", sans-serif;
+            text-transform: uppercase;
+            margin: 7px 0;
+        }
+
+    .ctd-close {
+        background: transparent;
+        border: 1px solid #9da4ae;
+        color: inherit;
+        padding: 6px 11px;
+        cursor: pointer;
+        font-size: 21px;
+        line-height: 1;
+    }
+
+    .ctd-modal-section {
+        padding: 18px 0;
+        border-top: 1px solid var(--ht-border, #b9bdc2);
+    }
+
+        .ctd-modal-section h3 {
+            font: 700 19px "Archivo Narrow", sans-serif;
+            text-transform: uppercase;
+            margin: 0 0 12px;
+        }
+
+    .ctd-modal-bio {
+        line-height: 1.8;
+        font-size: 13px;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        margin: 0;
+    }
+
+    .ctd-modal-footer {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 15px;
+    }
+
+    body.ctd-modal-open {
+        overflow: hidden;
+    }
+
+    @@media (max-width: 1050px) {
+        .ctd-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 650px) {
+        .ctd-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .ctd-header {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .ctd-modal-content {
+            padding: 18px;
+        }
+
+        .ctd-modal-header h2 {
+            font-size: 29px;
+        }
+    }
+</style>
+
+<div class="ctd-page">
+    <header class="ctd-header">
+        <div>
+            <span class="ctd-eyebrow">CLIENT / TRAINER DIRECTORY</span>
+            <h1>FIND A TRAINER</h1>
+            <p class="ctd-muted">
+                Explore trainer profiles and request someone who matches your goals.
+            </p>
+        </div>
+
+        <a class="ctd-button ctd-button-outline"
+           href="@Url.Action("Index", "ClientTrainer")">
+            BACK TO MY TRAINER
+        </a>
+    </header>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="ctd-alert" role="status">@TempData["Success"]</div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="ctd-alert ctd-alert-error" role="alert">@TempData["Error"]</div>
+    }
+
+    @if (Model.HasAssignedTrainer)
+    {
+        <section class="ctd-panel">
+            <span class="ctd-eyebrow">CURRENT ASSIGNMENT</span>
+            <h2>YOUR TRAINER</h2>
+            <p class="ctd-muted">
+                You're currently assigned to
+                <strong>@(Model.AssignedTrainerName ?? "a trainer")</strong>.
+                You can browse other profiles, but new requests are unavailable
+                while you have an assigned trainer.
+            </p>
+        </section>
+    }
+    else if (Model.HasPendingRequest)
+    {
+        <section class="ctd-panel">
+            <span class="ctd-eyebrow">AWAITING APPROVAL</span>
+            <h2>REQUEST PENDING</h2>
+            <p class="ctd-muted">
+                Your request to
+                <strong>@(Model.PendingTrainerName ?? "your selected trainer")</strong>
+                is awaiting a response. You can cancel it from your request history.
+            </p>
+        </section>
+    }
+    else
+    {
+        <section class="ctd-panel">
+            <span class="ctd-eyebrow">GET STARTED</span>
+            <h2>CHOOSE YOUR TRAINER</h2>
+            <p class="ctd-muted">
+                Select View Profile to learn more about a trainer, then submit
+                a request. Your trainer must approve the request before
+                you become assigned.
+            </p>
+        </section>
+    }
+
+    <section>
+        <span class="ctd-eyebrow">01 / AVAILABLE TRAINERS</span>
+        <h2 style="font:700 29px 'Archivo Narrow',sans-serif;text-transform:uppercase;margin:8px 0">
+            TRAINER DIRECTORY
+        </h2>
+
+        @if (Model.Trainers.Any())
+        {
+            <div class="ctd-grid">
+                @foreach (var trainer in Model.Trainers)
+                {
+                    <article class="ctd-card">
+                        <div class="ctd-avatar" aria-hidden="true">
+                            @(string.IsNullOrWhiteSpace(trainer.FullName)
+                                ? "T"
+                                : trainer.FullName.Substring(0, 1).ToUpperInvariant())
+                        </div>
+
+                        <h3>@trainer.FullName</h3>
+
+                        <div class="ctd-tags">
+                            @foreach (var specialisation in trainer.Specialisations.Take(3))
+                            {
+                                <span class="ctd-tag">@specialisation</span>
+                            }
+
+                            @if (!trainer.Specialisations.Any())
+                            {
+                                <span class="ctd-muted">No specialisations listed</span>
+                            }
+                        </div>
+
+                        <p class="ctd-bio">
+                            @(string.IsNullOrWhiteSpace(trainer.Bio)
+                                ? "Biography not provided."
+                                : trainer.Bio.Length > 125
+                                    ? trainer.Bio.Substring(0, 125) + "..."
+                                    : trainer.Bio)
+                        </p>
+
+                        @if (trainer.IsAssigned)
+                        {
+                            <span class="ctd-status ctd-status-accepted">
+                                YOUR TRAINER
+                            </span>
+                        }
+                        else if (trainer.IsPending)
+                        {
+                            <span class="ctd-status ctd-status-pending">
+                                REQUEST PENDING
+                            </span>
+                        }
+
+                        <div class="ctd-card-actions">
+                            <button type="button"
+                                    class="ctd-button ctd-button-outline ctd-open-profile"
+                                    data-trainer-id="@trainer.TrainerId">
+                                VIEW PROFILE
+                            </button>
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="ctd-panel">
+                <p class="ctd-muted">
+                    No active trainers are available right now.
+                </p>
+            </div>
+        }
+    </section>
+
+    <section style="margin-top:42px">
+        <span class="ctd-eyebrow">02 / SELECTION HISTORY</span>
+        <h2 style="font:700 29px 'Archivo Narrow',sans-serif;text-transform:uppercase;margin:8px 0">
+            YOUR TRAINER REQUESTS
+        </h2>
+
+        <div class="ctd-panel">
+            @if (Model.RequestHistory.Any())
+            {
+                <div class="ctd-history">
+                    @foreach (var request in Model.RequestHistory)
+                    {
+                        var statusClass = request.Status == "Pending"
+                            ? "ctd-status-pending"
+                            : request.Status == "Accepted"
+                                ? "ctd-status-accepted"
+                                : request.Status == "Rejected"
+                                    ? "ctd-status-rejected"
+                                    : "";
+
+                        <div class="ctd-history-item">
+                            <div>
+                                <strong>@request.TrainerName</strong>
+                                <small>
+                                    Requested @request.CreatedAt.ToString("dd MMM yyyy")
+                                </small>
+
+                                @if (!string.IsNullOrWhiteSpace(request.TrainerNote))
+                                {
+                                    <p class="ctd-muted" style="margin:8px 0 0">
+                                        Trainer note: @request.TrainerNote
+                                    </p>
+                                }
+                            </div>
+
+                            <div class="ctd-history-actions">
+                                <span class="ctd-status @statusClass">
+                                    @request.Status
+                                </span>
+
+                                @if (request.CanCancel)
+                                {
+                                    using (Html.BeginForm("CancelRequest", "ClientTrainerDirectory", FormMethod.Post))
+                                    {
+                                        @Html.AntiForgeryToken()
+
+                                        <input type="hidden"
+                                               name="id"
+                                               value="@request.TrainerSelectionRequestId" />
+
+                                        <button type="submit"
+                                                class="ctd-button ctd-button-outline"
+                                                onclick="return confirm('Cancel this trainer request?');">
+                                            CANCEL
+                                        </button>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="ctd-muted">
+                    You haven't requested a trainer yet.
+                </p>
+            }
+        </div>
+    </section>
+</div>
+
+<div id="ctdProfileModal"
+     class="ctd-modal"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="ctdModalName"
+     hidden>
+    <div class="ctd-modal-content">
+        <div class="ctd-modal-header">
+            <div>
+                <span class="ctd-eyebrow">TRAINER PROFILE</span>
+                <h2 id="ctdModalName"></h2>
+                <span class="ctd-muted">Registered HealthTrack trainer</span>
+            </div>
+
+            <button type="button"
+                    class="ctd-close"
+                    id="ctdCloseModal"
+                    aria-label="Close trainer profile">
+                &times;
+            </button>
+        </div>
+
+        <div class="ctd-modal-section">
+            <h3>SPECIALISATIONS</h3>
+            <div id="ctdModalSpecialisations" class="ctd-tags"></div>
+        </div>
+
+        <div class="ctd-modal-section">
+            <h3>ABOUT THIS TRAINER</h3>
+            <p id="ctdModalBio" class="ctd-modal-bio"></p>
+        </div>
+
+        <div class="ctd-modal-section">
+            <p class="ctd-muted">
+                Sending a selection request does not assign the trainer
+                immediately. The trainer must accept your request.
+            </p>
+        </div>
+
+        <div class="ctd-modal-footer">
+            <button type="button"
+                    class="ctd-button ctd-button-outline"
+                    id="ctdCancelModal">
+                CLOSE
+            </button>
+
+            @using (Html.BeginForm("RequestTrainer", "ClientTrainerDirectory", FormMethod.Post, new { id = "ctdRequestForm" }))
+            {
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" name="trainerId" id="ctdTrainerId" />
+
+                <button type="submit"
+                        class="ctd-button"
+                        id="ctdRequestButton">
+                    REQUEST TRAINER
+                </button>
+            }
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        (function () {
+            var trainers = @Html.Raw(
+                System.Web.Helpers.Json.Encode(
+                    Model.Trainers.Select(t => new
+                    {
+                        trainerId = t.TrainerId,
+                        fullName = t.FullName,
+                        bio = t.Bio,
+                        specialisations = t.Specialisations,
+                        canRequest = t.CanRequest,
+                        isAssigned = t.IsAssigned,
+                        isPending = t.IsPending
+                    }).ToList()
+                )
+            );
+
+            var modal = document.getElementById("ctdProfileModal");
+            var modalName = document.getElementById("ctdModalName");
+            var modalBio = document.getElementById("ctdModalBio");
+            var modalSpecialisations = document.getElementById("ctdModalSpecialisations");
+            var trainerIdField = document.getElementById("ctdTrainerId");
+            var requestButton = document.getElementById("ctdRequestButton");
+            var requestForm = document.getElementById("ctdRequestForm");
+            var lastTrigger = null;
+
+            function closeModal() {
+                modal.hidden = true;
+                document.body.classList.remove("ctd-modal-open");
+
+                if (lastTrigger) {
+                    lastTrigger.focus();
+                }
+            }
+
+            function openModal(trainerId, trigger) {
+                var trainer = trainers.find(function (t) {
+                    return t.trainerId === trainerId;
+                });
+
+                if (!trainer) {
+                    return;
+                }
+
+                lastTrigger = trigger;
+                modalName.textContent = trainer.fullName || "Trainer";
+                modalBio.textContent = trainer.bio || "Biography not provided.";
+                trainerIdField.value = trainer.trainerId;
+                modalSpecialisations.innerHTML = "";
+
+                if (trainer.specialisations && trainer.specialisations.length) {
+                    trainer.specialisations.forEach(function (name) {
+                        var tag = document.createElement("span");
+                        tag.className = "ctd-tag";
+                        tag.textContent = name;
+                        modalSpecialisations.appendChild(tag);
+                    });
+                } else {
+                    var empty = document.createElement("span");
+                    empty.className = "ctd-muted";
+                    empty.textContent = "No specialisations listed.";
+                    modalSpecialisations.appendChild(empty);
+                }
+
+                requestButton.disabled = !trainer.canRequest;
+                requestButton.textContent = trainer.isAssigned
+                    ? "ALREADY ASSIGNED"
+                    : trainer.isPending
+                        ? "REQUEST PENDING"
+                        : trainer.canRequest
+                            ? "REQUEST TRAINER"
+                            : "REQUEST UNAVAILABLE";
+
+                modal.hidden = false;
+                document.body.classList.add("ctd-modal-open");
+                document.getElementById("ctdCloseModal").focus();
+            }
+
+            document.querySelectorAll(".ctd-open-profile").forEach(function (button) {
+                button.addEventListener("click", function () {
+                    openModal(parseInt(button.getAttribute("data-trainer-id"), 10), button);
+                });
+            });
+
+            document.getElementById("ctdCloseModal").addEventListener("click", closeModal);
+            document.getElementById("ctdCancelModal").addEventListener("click", closeModal);
+
+            modal.addEventListener("click", function (event) {
+                if (event.target === modal) {
+                    closeModal();
+                }
+            });
+
+            document.addEventListener("keydown", function (event) {
+                if (event.key === "Escape" && !modal.hidden) {
+                    closeModal();
+                }
+
+                if (event.key === "Tab" && !modal.hidden) {
+                    var focusable = Array.prototype.slice.call(
+                        modal.querySelectorAll(
+                            'button:not([disabled]), a[href], input:not([type="hidden"])'
+                        )
+                    );
+
+                    if (!focusable.length) {
+                        return;
+                    }
+
+                    var first = focusable[0];
+                    var last = focusable[focusable.length - 1];
+
+                    if (event.shiftKey && document.activeElement === first) {
+                        event.preventDefault();
+                        last.focus();
+                    } else if (!event.shiftKey && document.activeElement === last) {
+                        event.preventDefault();
+                        first.focus();
+                    }
+                }
+            });
+
+            requestForm.addEventListener("submit", function (event) {
+                var name = modalName.textContent;
+
+                if (!confirm("Send a trainer selection request to " + name + "?")) {
+                    event.preventDefault();
+                }
+            });
+        })();
+    </script>
+}

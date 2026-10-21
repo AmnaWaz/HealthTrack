@@ -60,6 +60,18 @@ namespace HealthTrack.Models
         [StringLength(10)]
         public string ClosedByRole { get; set; }
 
+        [StringLength(10)]
+        public string AiSuggestedPriority { get; set; }
+
+        [StringLength(500)]
+        public string AiReason { get; set; }
+
+        public bool RequiresUrgentReview { get; set; }
+
+        [StringLength(20)]
+        public string AiAnalysisSource { get; set; }
+
+
         public static class Categories
         {
             public const string MedicalConcern = "Medical concern";

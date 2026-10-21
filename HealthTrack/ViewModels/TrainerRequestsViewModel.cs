@@ -21,6 +21,10 @@ namespace HealthTrack.ViewModels
 
         public int ClosedCount { get; set; }
 
+        public int HighPriorityCount { get; set; }
+
+        public int UrgentReviewCount { get; set; }
+
         public List<TrainerRequestInboxItem> Requests { get; set; }
 
         public TrainerRequestsViewModel()
@@ -59,6 +63,31 @@ namespace HealthTrack.ViewModels
         public DateTime? ClosedAt { get; set; }
 
         public string ClosedByRole { get; set; }
+
+        public string AiSuggestedPriority { get; set; }
+
+        public string AiReason { get; set; }
+
+        public bool RequiresUrgentReview { get; set; }
+
+        public string AiAnalysisSource { get; set; }
+
+        public bool IsHighPriority
+        {
+            get
+            {
+                return Priority == "High" ||
+                       AiSuggestedPriority == "High";
+            }
+        }
+
+        public bool HasPriorityAnalysis
+        {
+            get
+            {
+                return !string.IsNullOrWhiteSpace(AiAnalysisSource);
+            }
+        }
 
         public bool CanReview
         {

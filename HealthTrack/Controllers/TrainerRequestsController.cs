@@ -31,8 +31,13 @@ namespace HealthTrack.Controllers
 
             if (request.Status != TrainerRequest.Statuses.Open)
             {
-                TempData["Info"] = "Only open requests can be marked in review.";
-                return RedirectToAction("Index", new { filter = NormalizeFilter(filter) });
+                TempData["Info"] =
+                    "Only open requests can be marked in review.";
+
+                return RedirectToAction(
+                    "Index",
+                    new { filter = NormalizeFilter(filter) }
+                );
             }
 
             request.Status = TrainerRequest.Statuses.InReview;
@@ -40,14 +45,20 @@ namespace HealthTrack.Controllers
 
             db.SaveChanges();
 
-            TempData["Success"] = "Request marked as in review.";
+            TempData["Success"] =
+                "Request marked as in review.";
 
-            return RedirectToAction("Index", new { filter = NormalizeFilter(filter) });
+            return RedirectToAction(
+                "Index",
+                new { filter = NormalizeFilter(filter) }
+            );
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Respond(TrainerRequestResponseForm form, string filter)
+        public ActionResult Respond(
+            TrainerRequestResponseForm form,
+            string filter)
         {
             if (form == null)
             {
@@ -71,8 +82,13 @@ namespace HealthTrack.Controllers
             if (!canRespond ||
                 !string.IsNullOrWhiteSpace(request.TrainerResponse))
             {
-                TempData["Info"] = "This request cannot receive another response.";
-                return RedirectToAction("Index", new { filter = NormalizeFilter(filter) });
+                TempData["Info"] =
+                    "This request cannot receive another response.";
+
+                return RedirectToAction(
+                    "Index",
+                    new { filter = NormalizeFilter(filter) }
+                );
             }
 
             if (string.IsNullOrWhiteSpace(form.TrainerResponse))
@@ -92,19 +108,29 @@ namespace HealthTrack.Controllers
 
             if (!ModelState.IsValid)
             {
-                TempData["Error"] = "Enter a valid response between 5 and 1000 characters.";
-                return RedirectToAction("Index", new { filter = NormalizeFilter(filter) });
+                TempData["Error"] =
+                    "Enter a valid response between 5 and 1000 characters.";
+
+                return RedirectToAction(
+                    "Index",
+                    new { filter = NormalizeFilter(filter) }
+                );
             }
 
             var now = DateTime.Now;
 
-            request.TrainerResponse = form.TrainerResponse.Trim();
-            request.Status = TrainerRequest.Statuses.Answered;
+            request.TrainerResponse =
+                form.TrainerResponse.Trim();
+
+            request.Status =
+                TrainerRequest.Statuses.Answered;
+
             request.RespondedAt = now;
             request.UpdatedAt = now;
 
             var client = db.Set<ClientProfile>()
-                .FirstOrDefault(c => c.ClientId == request.ClientId);
+                .FirstOrDefault(c =>
+                    c.ClientId == request.ClientId);
 
             if (client != null)
             {
@@ -114,7 +140,8 @@ namespace HealthTrack.Controllers
 
                 if (notificationMessage.Length > 300)
                 {
-                    notificationMessage = notificationMessage.Substring(0, 300);
+                    notificationMessage =
+                        notificationMessage.Substring(0, 300);
                 }
 
                 db.Set<Notification>().Add(new Notification
@@ -129,9 +156,13 @@ namespace HealthTrack.Controllers
 
             db.SaveChanges();
 
-            TempData["Success"] = "Response sent successfully.";
+            TempData["Success"] =
+                "Response sent successfully.";
 
-            return RedirectToAction("Index", new { filter = NormalizeFilter(filter) });
+            return RedirectToAction(
+                "Index",
+                new { filter = NormalizeFilter(filter) }
+            );
         }
 
         [HttpPost]
@@ -150,8 +181,13 @@ namespace HealthTrack.Controllers
 
             if (request.Status != TrainerRequest.Statuses.Answered)
             {
-                TempData["Info"] = "Only answered requests can be closed.";
-                return RedirectToAction("Index", new { filter = NormalizeFilter(filter) });
+                TempData["Info"] =
+                    "Only answered requests can be closed.";
+
+                return RedirectToAction(
+                    "Index",
+                    new { filter = NormalizeFilter(filter) }
+                );
             }
 
             var now = DateTime.Now;
@@ -163,12 +199,17 @@ namespace HealthTrack.Controllers
 
             db.SaveChanges();
 
-            TempData["Success"] = "Request closed successfully.";
+            TempData["Success"] =
+                "Request closed successfully.";
 
-            return RedirectToAction("Index", new { filter = NormalizeFilter(filter) });
+            return RedirectToAction(
+                "Index",
+                new { filter = NormalizeFilter(filter) }
+            );
         }
 
-        private TrainerRequestsViewModel BuildViewModel(string filter)
+        private TrainerRequestsViewModel BuildViewModel(
+            string filter)
         {
             var trainerId = CurrentTrainerId;
             var selectedFilter = NormalizeFilter(filter);
@@ -180,7 +221,6 @@ namespace HealthTrack.Controllers
                 join u in db.Set<ApplicationUser>()
                     on c.UserId equals u.UserId
                 where r.TrainerId == trainerId
-                orderby r.CreatedAt descending, r.TrainerRequestId descending
                 select new TrainerRequestInboxItem
                 {
                     TrainerRequestId = r.TrainerRequestId,
@@ -196,53 +236,89 @@ namespace HealthTrack.Controllers
                     UpdatedAt = r.UpdatedAt,
                     RespondedAt = r.RespondedAt,
                     ClosedAt = r.ClosedAt,
-                    ClosedByRole = r.ClosedByRole
+                    ClosedByRole = r.ClosedByRole,
+                    AiSuggestedPriority = r.AiSuggestedPriority,
+                    AiReason = r.AiReason,
+                    RequiresUrgentReview = r.RequiresUrgentReview,
+                    AiAnalysisSource = r.AiAnalysisSource
                 }
             ).ToList();
+
+            var activeRequests = requests
+                .Where(r =>
+                    r.Status == TrainerRequest.Statuses.Open ||
+                    r.Status == TrainerRequest.Statuses.InReview)
+                .ToList();
 
             var vm = new TrainerRequestsViewModel
             {
                 TrainerName = TrainerName,
                 Filter = selectedFilter,
                 TotalCount = requests.Count,
+
                 OpenCount = requests.Count(r =>
                     r.Status == TrainerRequest.Statuses.Open),
+
                 InReviewCount = requests.Count(r =>
                     r.Status == TrainerRequest.Statuses.InReview),
+
                 AnsweredCount = requests.Count(r =>
                     r.Status == TrainerRequest.Statuses.Answered),
+
                 ClosedCount = requests.Count(r =>
-                    r.Status == TrainerRequest.Statuses.Closed)
+                    r.Status == TrainerRequest.Statuses.Closed),
+
+                HighPriorityCount = activeRequests.Count(r =>
+                    r.IsHighPriority),
+
+                UrgentReviewCount = activeRequests.Count(r =>
+                    r.RequiresUrgentReview)
             };
 
             if (selectedFilter == "open")
             {
-                vm.Requests = requests
-                    .Where(r => r.Status == TrainerRequest.Statuses.Open)
+                requests = requests
+                    .Where(r =>
+                        r.Status == TrainerRequest.Statuses.Open)
                     .ToList();
             }
             else if (selectedFilter == "review")
             {
-                vm.Requests = requests
-                    .Where(r => r.Status == TrainerRequest.Statuses.InReview)
+                requests = requests
+                    .Where(r =>
+                        r.Status == TrainerRequest.Statuses.InReview)
                     .ToList();
             }
             else if (selectedFilter == "answered")
             {
-                vm.Requests = requests
-                    .Where(r => r.Status == TrainerRequest.Statuses.Answered)
+                requests = requests
+                    .Where(r =>
+                        r.Status == TrainerRequest.Statuses.Answered)
                     .ToList();
             }
             else if (selectedFilter == "closed")
             {
-                vm.Requests = requests
-                    .Where(r => r.Status == TrainerRequest.Statuses.Closed)
+                requests = requests
+                    .Where(r =>
+                        r.Status == TrainerRequest.Statuses.Closed)
                     .ToList();
             }
-            else
-            {
-                vm.Requests = requests;
-            }
+
+            vm.Requests = requests
+                .OrderByDescending(r =>
+                    r.Status == TrainerRequest.Statuses.Open ||
+                    r.Status == TrainerRequest.Statuses.InReview)
+                .ThenByDescending(r =>
+                    (r.Status == TrainerRequest.Statuses.Open ||
+                     r.Status == TrainerRequest.Statuses.InReview) &&
+                    r.RequiresUrgentReview)
+                .ThenByDescending(r =>
+                    (r.Status == TrainerRequest.Statuses.Open ||
+                     r.Status == TrainerRequest.Statuses.InReview) &&
+                    r.IsHighPriority)
+                .ThenByDescending(r => r.CreatedAt)
+                .ThenByDescending(r => r.TrainerRequestId)
+                .ToList();
 
             return vm;
         }
