@@ -229,6 +229,7 @@
     <Content Include="Content\img\landing\trainer-detail.webp" />
     <Content Include="Content\onboarding.css" />
     <Content Include="Content\option-picker.css" />
+    <Content Include="Content\plan-form.css" />
     <Content Include="Content\profile.css" />
     <Content Include="Content\sidebar.css" />
     <Content Include="Content\stat-accordion.css" />
