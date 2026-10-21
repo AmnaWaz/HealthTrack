@@ -1,0 +1,528 @@
+
+@model HealthTrack.ViewModels.TrainerRequestsViewModel
+@using System
+@using System.Linq
+
+@{
+    ViewBag.Title = "Trainer Requests";
+
+    var tabs = new[]
+    {
+        new { Key = "all", Label = "All", Count = Model.TotalCount },
+        new { Key = "open", Label = "Open", Count = Model.OpenCount },
+        new { Key = "review", Label = "In review", Count = Model.InReviewCount },
+        new { Key = "answered", Label = "Answered", Count = Model.AnsweredCount },
+        new { Key = "closed", Label = "Closed", Count = Model.ClosedCount }
+    };
+
+    var orderedRequests = Model.Requests
+        .OrderByDescending(r => r.Priority == "High")
+        .ThenBy(r => r.Status == "Closed")
+        .ThenByDescending(r => r.CreatedAt)
+        .ToList();
+}
+
+<style>
+    .tri-page {
+        max-width: 1350px;
+        margin: 0 auto;
+        padding: 28px 12px 70px;
+    }
+
+    .tri-eyebrow {
+        color: #b6505d;
+        font: 600 11px "IBM Plex Mono", monospace;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .tri-page-head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 28px;
+    }
+
+    .tri-page h1 {
+        margin: 8px 0;
+        font: 700 clamp(36px, 5vw, 60px) "Archivo Narrow", sans-serif;
+        text-transform: uppercase;
+    }
+
+    .tri-page h2 {
+        font: 700 26px "Archivo Narrow", sans-serif;
+        text-transform: uppercase;
+        margin: 0;
+    }
+
+    .tri-muted {
+        color: #858d99;
+        font-size: 13px;
+        line-height: 1.7;
+    }
+
+    .tri-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 11px 15px;
+        background: #b6505d;
+        border: 1px solid #b6505d;
+        color: #fff;
+        text-decoration: none;
+        text-transform: uppercase;
+        font: 600 11px "IBM Plex Mono", monospace;
+        cursor: pointer;
+    }
+
+        .tri-button:hover {
+            background: #973d49;
+            color: #fff;
+        }
+
+    .tri-button-outline {
+        background: transparent;
+        border-color: #9da4ae;
+        color: inherit;
+    }
+
+        .tri-button-outline:hover {
+            background: transparent;
+            color: #b6505d;
+            border-color: #b6505d;
+        }
+
+    .tri-stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .tri-stat,
+    .tri-card {
+        background: var(--ht-surface, #f4f0e8);
+        border: 1px solid var(--ht-border, #b9bdc2);
+        min-width: 0;
+    }
+
+    .tri-stat {
+        padding: 20px;
+    }
+
+        .tri-stat span {
+            display: block;
+            color: #858d99;
+            font: 600 10px "IBM Plex Mono", monospace;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .tri-stat strong {
+            font: 700 34px "Archivo Narrow", sans-serif;
+        }
+
+    .tri-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 22px;
+    }
+
+    .tri-tab {
+        border: 1px solid var(--ht-border, #b9bdc2);
+        color: inherit;
+        text-decoration: none;
+        padding: 11px 14px;
+        font: 600 11px "IBM Plex Mono", monospace;
+        text-transform: uppercase;
+    }
+
+        .tri-tab:hover {
+            border-color: #b6505d;
+            color: #b6505d;
+        }
+
+        .tri-tab.active {
+            background: #17283d;
+            color: #fff;
+            border-color: #17283d;
+        }
+
+    .tri-list {
+        display: grid;
+        gap: 17px;
+    }
+
+    .tri-card {
+        padding: 23px;
+    }
+
+    .tri-card-high {
+        border-left: 4px solid #b6505d;
+    }
+
+    .tri-card-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+        margin-bottom: 15px;
+    }
+
+    .tri-card h3 {
+        font: 700 25px "Archivo Narrow", sans-serif;
+        text-transform: uppercase;
+        margin: 8px 0;
+        overflow-wrap: anywhere;
+    }
+
+    .tri-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 15px;
+    }
+
+    .tri-tag {
+        display: inline-block;
+        padding: 7px 10px;
+        border: 1px solid var(--ht-border, #b9bdc2);
+        font: 600 10px "IBM Plex Mono", monospace;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .tri-tag-high {
+        border-color: #b6505d;
+        color: #b6505d;
+    }
+
+    .tri-tag-review {
+        border-color: #bc9055;
+        color: #bc9055;
+    }
+
+    .tri-tag-answered {
+        border-color: #65967c;
+        color: #65967c;
+    }
+
+    .tri-description {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        font-size: 13px;
+        line-height: 1.8;
+        margin: 0;
+    }
+
+    .tri-response {
+        padding: 18px;
+        background: rgba(101, 150, 124, .09);
+        border-left: 3px solid #65967c;
+        margin-top: 20px;
+    }
+
+        .tri-response p {
+            font-size: 13px;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            margin: 10px 0;
+        }
+
+    .tri-response-form {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid var(--ht-border, #b9bdc2);
+    }
+
+        .tri-response-form label {
+            display: block;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            font: 600 11px "IBM Plex Mono", monospace;
+        }
+
+        .tri-response-form textarea {
+            display: block;
+            width: 100%;
+            min-height: 110px;
+            padding: 13px;
+            margin-bottom: 14px;
+            border: 1px solid #aeb3ba;
+            background: transparent;
+            color: inherit;
+            font-size: 13px;
+            line-height: 1.7;
+            resize: vertical;
+        }
+
+            .tri-response-form textarea:focus-visible {
+                outline: 2px solid #b6505d;
+            }
+
+    .tri-card-footer {
+        margin-top: 20px;
+        padding-top: 17px;
+        border-top: 1px solid var(--ht-border, #b9bdc2);
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+
+    .tri-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+        .tri-actions form {
+            margin: 0;
+        }
+
+    .tri-alert {
+        padding: 14px 18px;
+        margin-bottom: 18px;
+        background: rgba(101, 150, 124, .09);
+        border-left: 3px solid #65967c;
+        font-size: 13px;
+    }
+
+    .tri-alert-error {
+        background: rgba(182, 80, 93, .08);
+        border-color: #b6505d;
+    }
+
+    .tri-empty {
+        text-align: center;
+        padding: 55px 20px;
+        border: 1px dashed #aeb3ba;
+    }
+
+        .tri-empty h2 {
+            margin-bottom: 10px;
+        }
+
+    @@media (max-width: 750px) {
+        .tri-stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .tri-card-head,
+        .tri-page-head {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .tri-card {
+            padding: 16px;
+        }
+    }
+</style>
+
+<div class="tri-page">
+    <header class="tri-page-head">
+        <div>
+            <span class="tri-eyebrow">TRAINER / CLIENT COMMUNICATION</span>
+            <h1>TRAINER REQUESTS</h1>
+            <p class="tri-muted">
+                Review client concerns, respond to questions and manage requests.
+            </p>
+        </div>
+        <a class="tri-button tri-button-outline"
+           href="@Url.Action("Index", "Trainer")">
+            BACK TO OVERVIEW
+        </a>
+    </header>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="tri-alert" role="status">@TempData["Success"]</div>
+    }
+
+    @if (TempData["Info"] != null)
+    {
+        <div class="tri-alert" role="status">@TempData["Info"]</div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="tri-alert tri-alert-error" role="alert">@TempData["Error"]</div>
+    }
+
+    <div class="tri-stats">
+        <div class="tri-stat">
+            <span>Open</span>
+            <strong>@Model.OpenCount</strong>
+        </div>
+        <div class="tri-stat">
+            <span>In review</span>
+            <strong>@Model.InReviewCount</strong>
+        </div>
+        <div class="tri-stat">
+            <span>Answered</span>
+            <strong>@Model.AnsweredCount</strong>
+        </div>
+        <div class="tri-stat">
+            <span>Closed</span>
+            <strong>@Model.ClosedCount</strong>
+        </div>
+    </div>
+
+    <nav class="tri-tabs" aria-label="Request status filters">
+        @foreach (var tab in tabs)
+        {
+            <a class="tri-tab @(Model.Filter == tab.Key ? "active" : "")"
+               href="@Url.Action("Index", "TrainerRequests", new { filter = tab.Key })"
+               aria-current="@(Model.Filter == tab.Key ? "page" : null)">
+                @tab.Label (@tab.Count)
+            </a>
+        }
+    </nav>
+
+    @if (orderedRequests.Any())
+    {
+        <div class="tri-list">
+            @foreach (var request in orderedRequests)
+            {
+                var statusClass = request.Status == "In review"
+                    ? "tri-tag-review"
+                    : request.Status == "Answered"
+                        ? "tri-tag-answered"
+                        : "";
+
+                <article class="tri-card @(request.Priority == "High" ? "tri-card-high" : "")">
+                    <div class="tri-card-head">
+                        <div>
+                            <span class="tri-eyebrow">
+                                REQUEST #@request.TrainerRequestId
+                            </span>
+                            <h3>@request.Subject</h3>
+                            <p class="tri-muted">
+                                Client: <strong>@request.ClientName</strong>
+                            </p>
+                        </div>
+
+                        <span class="tri-tag @statusClass">
+                            @request.Status
+                        </span>
+                    </div>
+
+                    <div class="tri-tags">
+                        <span class="tri-tag">@request.Category</span>
+                        <span class="tri-tag @(request.Priority == "High" ? "tri-tag-high" : "")">
+                            @request.Priority PRIORITY
+                        </span>
+                    </div>
+
+                    <p class="tri-description">@request.Description</p>
+
+                    @if (request.HasResponse)
+                    {
+                        <div class="tri-response">
+                            <span class="tri-eyebrow">TRAINER RESPONSE</span>
+                            <p>@request.TrainerResponse</p>
+
+                            @if (request.RespondedAt.HasValue)
+                            {
+                                <span class="tri-muted">
+                                    Responded @request.RespondedAt.Value.ToString("dd MMM yyyy, hh:mm tt")
+                                </span>
+                            }
+                        </div>
+                    }
+
+                    @if (request.CanRespond)
+                    {
+                        <div class="tri-response-form">
+                            @using (Html.BeginForm("Respond", "TrainerRequests", FormMethod.Post))
+                            {
+                                @Html.AntiForgeryToken()
+
+                                <input type="hidden"
+                                       name="TrainerRequestId"
+                                       value="@request.TrainerRequestId" />
+
+                                <input type="hidden"
+                                       name="filter"
+                                       value="@Model.Filter" />
+
+                                <label for="response-@request.TrainerRequestId">
+                                    RESPOND TO CLIENT
+                                </label>
+
+                                <textarea id="response-@request.TrainerRequestId"
+                                          name="TrainerResponse"
+                                          minlength="5"
+                                          maxlength="1000"
+                                          placeholder="Write your response to this client..."
+                                          required></textarea>
+
+                                <button type="submit" class="tri-button">
+                                    SEND RESPONSE
+                                </button>
+                            }
+                        </div>
+                    }
+
+                    <div class="tri-card-footer">
+                        <span class="tri-muted">
+                            Submitted @request.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")
+                            @if (request.ClosedAt.HasValue)
+                            {
+                                <span>
+                                    · Closed @request.ClosedAt.Value.ToString("dd MMM yyyy")
+                                </span>
+                            }
+                        </span>
+
+                        <div class="tri-actions">
+                            @if (request.CanReview)
+                            {
+                                using (Html.BeginForm("MarkInReview", "TrainerRequests", FormMethod.Post))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@request.TrainerRequestId" />
+                                    <input type="hidden" name="filter" value="@Model.Filter" />
+
+                                    <button type="submit" class="tri-button tri-button-outline">
+                                        MARK IN REVIEW
+                                    </button>
+                                }
+                            }
+
+                            @if (request.CanClose)
+                            {
+                                using (Html.BeginForm("Close", "TrainerRequests", FormMethod.Post))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@request.TrainerRequestId" />
+                                    <input type="hidden" name="filter" value="@Model.Filter" />
+
+                                    <button type="submit"
+                                            class="tri-button tri-button-outline"
+                                            onclick="return confirm('Close this request?');">
+                                        CLOSE REQUEST
+                                    </button>
+                                }
+                            }
+                        </div>
+                    </div>
+                </article>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="tri-empty">
+            <h2>NO REQUESTS FOUND</h2>
+            <p class="tri-muted">
+                Client requests matching this filter will appear here.
+            </p>
+        </div>
+    }
+</div>

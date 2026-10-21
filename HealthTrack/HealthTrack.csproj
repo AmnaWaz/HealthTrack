@@ -129,7 +129,16 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\AppointmentsController.cs" />
+    <Compile Include="Controllers\ClientBaseController.cs" />
     <Compile Include="Controllers\ClientController.cs" />
+    <Compile Include="Controllers\ClientNotificationsController.cs" />
+    <Compile Include="Controllers\ClientNutritionController.cs" />
+    <Compile Include="Controllers\ClientProfileController.cs" />
+    <Compile Include="Controllers\ClientProgressController.cs" />
+    <Compile Include="Controllers\ClientSessionsController.cs" />
+    <Compile Include="Controllers\ClientTrainerController.cs" />
+    <Compile Include="Controllers\ClientTrainerRequestsController.cs" />
+    <Compile Include="Controllers\ClientTrainingController.cs" />
     <Compile Include="Controllers\DietPlansController.cs" />
     <Compile Include="Controllers\FeedbackController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
@@ -139,6 +148,7 @@
     <Compile Include="Controllers\ReportsController.cs" />
     <Compile Include="Controllers\TrainerBaseController.cs" />
     <Compile Include="Controllers\TrainerController.cs" />
+    <Compile Include="Controllers\TrainerRequestsController.cs" />
     <Compile Include="Controllers\WorkoutPlansController.cs" />
     <Compile Include="Data\HealthTrackContext.cs" />
     <Compile Include="Filters\AllowIncompleteOnboardingAttribute.cs" />
@@ -163,17 +173,28 @@
     <Compile Include="Models\Role.cs" />
     <Compile Include="Models\Specialisation.cs" />
     <Compile Include="Models\TrainerProfile.cs" />
+    <Compile Include="Models\TrainerRequest.cs" />
     <Compile Include="Models\TrainerSpecialisation.cs" />
     <Compile Include="Models\WorkoutLog.cs" />
     <Compile Include="Models\WorkoutPlan.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModels\AccountViewModels.cs" />
+    <Compile Include="ViewModels\ClientNotificationsViewModel.cs" />
+    <Compile Include="ViewModels\ClientNutritionViewModel.cs" />
+    <Compile Include="ViewModels\ClientOverviewViewModel.cs" />
+    <Compile Include="ViewModels\ClientProfileViewModel.cs" />
+    <Compile Include="ViewModels\ClientProgressViewModel.cs" />
+    <Compile Include="ViewModels\ClientSessionsViewModel.cs" />
+    <Compile Include="ViewModels\ClientTrainerRequestViewModel.cs" />
+    <Compile Include="ViewModels\ClientTrainerViewModel.cs" />
+    <Compile Include="ViewModels\ClientTrainingViewModel.cs" />
     <Compile Include="ViewModels\OnboardingViewModels.cs" />
     <Compile Include="ViewModels\PlanViewModels.cs" />
     <Compile Include="ViewModels\SettingsViewModels.cs" />
     <Compile Include="ViewModels\TrainerClientsViewModel.cs" />
     <Compile Include="ViewModels\TrainerDashboardViewModel.cs" />
     <Compile Include="ViewModels\TrainerPagesViewModels.cs" />
+    <Compile Include="ViewModels\TrainerRequestsViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\auth.css" />
@@ -261,6 +282,18 @@
     <Content Include="Views\Onboarding\Index.cshtml" />
     <Content Include="Views\Onboarding\_OptionPicker.cshtml" />
     <Content Include="Views\Profile\Settings.cshtml" />
+    <Content Include="Views\Client\Overview.cshtml" />
+    <Content Include="Views\Shared\_ClientLayout.cshtml" />
+    <Content Include="Views\ClientTraining\Index.cshtml" />
+    <Content Include="Views\ClientNutrition\Index.cshtml" />
+    <Content Include="Views\ClientProgress\Index.cshtml" />
+    <Content Include="Views\ClientSessions\Index.cshtml" />
+    <Content Include="Views\ClientTrainer\Index.cshtml" />
+    <Content Include="Views\ClientNotifications\Index.cshtml" />
+    <Content Include="Views\ClientProfile\Index.cshtml" />
+    <Content Include="Views\ClientProfile\Settings.cshtml" />
+    <Content Include="Views\ClientTrainerRequests\Index.cshtml" />
+    <Content Include="Views\TrainerRequests\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

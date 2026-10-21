@@ -1,0 +1,375 @@
+
+@model HealthTrack.ViewModels.ClientOverviewViewModel
+
+@{
+    ViewBag.Title = "Overview";
+    Layout = "~/Views/Shared/_ClientLayout.cshtml";
+}
+
+<div class="container py-4">
+    <div class="mb-5">
+        <div class="text-uppercase small mb-2">
+            01 / Overview
+        </div>
+
+        <h1 class="text-uppercase">
+            GOOD MORNING, @Model.FirstName.
+        </h1>
+
+        <p>
+            Your training, nutrition and progress in one place.
+        </p>
+    </div>
+
+    <section class="mb-5">
+        <h2 class="text-uppercase">YOUR WEEK</h2>
+
+
+        <section class="ht-activity-section mb-5">
+            <div class="ht-activity-heading">
+                <div>
+                    <span class="ht-activity-eyebrow">TRAINING / ACTIVITY</span>
+                    <h2>YOUR LAST SIX WEEKS</h2>
+                    <p>Select a week to explore your training activity.</p>
+                </div>
+                <span class="ht-activity-period">MON — SUN</span>
+            </div>
+
+            <div class="ht-activity-chart" id="trainingChart">
+                @foreach (var week in Model.TrainingWeeks)
+                {
+                    var height = week.TrainingDays * 100.0 / 7.0;
+
+                    <button type="button"
+                            class="ht-activity-bar @(week.IsCurrentWeek ? "is-selected" : "")"
+                            data-start="@week.WeekStart.ToString("yyyy-MM-dd")"
+                            data-end="@week.WeekEnd.ToString("yyyy-MM-dd")"
+                            data-days="@week.TrainingDays"
+                            data-sessions="@week.WorkoutSessions"
+                            data-exercises="@week.TotalExercises"
+                            data-minutes="@week.TotalMinutes.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                            aria-pressed="@(week.IsCurrentWeek ? "true" : "false")"
+                            aria-label="@week.WeekStart.ToString("dd MMM") to @week.WeekEnd.ToString("dd MMM"): @week.TrainingDays training days">
+                        <span class="ht-activity-count">@week.TrainingDays</span>
+                        <span class="ht-activity-track">
+                            <span class="ht-activity-fill" style="height: @height.ToString(System.Globalization.CultureInfo.InvariantCulture)%"></span>
+                        </span>
+                        <span class="ht-activity-week">
+                            @week.WeekStart.ToString("dd MMM")
+                        </span>
+                    </button>
+                }
+            </div>
+
+            <div class="ht-activity-details" id="trainingWeekDetails" aria-live="polite">
+                <div>
+                    <span class="ht-activity-eyebrow">SELECTED WEEK</span>
+                    <h3 id="selectedWeekLabel">CURRENT WEEK</h3>
+                </div>
+
+                <div class="ht-activity-stats">
+                    <div>
+                        <strong id="selectedTrainingDays">@Model.TrainingDaysThisWeek</strong>
+                        <span>Training days</span>
+                    </div>
+                    <div>
+                        <strong id="selectedSessions">@Model.WorkoutSessionsThisWeek</strong>
+                        <span>Sessions</span>
+                    </div>
+                    <div>
+                        <strong id="selectedExercises">0</strong>
+                        <span>Exercises logged</span>
+                    </div>
+                    <div>
+                        <strong id="selectedMinutes">0</strong>
+                        <span>Minutes logged</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <style>
+            .ht-activity-section {
+                padding: 30px;
+                border: 1px solid #d8d5cf;
+                background: #f5f2eb;
+                color: #172338;
+            }
+
+            .ht-activity-heading {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                gap: 20px;
+            }
+
+            .ht-activity-eyebrow,
+            .ht-activity-period {
+                font: 600 11px "IBM Plex Mono", monospace;
+                letter-spacing: 1.5px;
+                color: #a5515b;
+            }
+
+            .ht-activity-heading h2 {
+                margin: 10px 0;
+                font: 700 27px "Archivo Narrow", sans-serif;
+            }
+
+            .ht-activity-heading p {
+                margin: 0;
+                color: #687080;
+            }
+
+            .ht-activity-chart {
+                display: grid;
+                grid-template-columns: repeat(6, minmax(0, 1fr));
+                gap: 18px;
+                margin-top: 36px;
+                height: 220px;
+            }
+
+            .ht-activity-bar {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+                padding: 0;
+                border: 0;
+                background: transparent;
+                color: inherit;
+                cursor: pointer;
+                min-width: 0;
+            }
+
+            .ht-activity-count {
+                font: 700 16px "Archivo Narrow", sans-serif;
+            }
+
+            .ht-activity-track {
+                position: relative;
+                display: block;
+                width: 100%;
+                max-width: 90px;
+                flex: 1;
+                background: #e1ded8;
+                overflow: hidden;
+            }
+
+            .ht-activity-fill {
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: #a5aab2;
+                transition: height .25s ease, background .2s ease;
+            }
+
+            .ht-activity-bar.is-selected .ht-activity-fill,
+            .ht-activity-bar:hover .ht-activity-fill {
+                background: #b44d58;
+            }
+
+            .ht-activity-week {
+                font: 500 11px "IBM Plex Mono", monospace;
+                white-space: nowrap;
+            }
+
+            .ht-activity-bar.is-selected .ht-activity-week {
+                color: #b44d58;
+                font-weight: 700;
+            }
+
+            .ht-activity-bar:focus-visible {
+                outline: 2px solid #b44d58;
+                outline-offset: 5px;
+            }
+
+            .ht-activity-details {
+                margin-top: 32px;
+                padding-top: 22px;
+                border-top: 1px solid #d8d5cf;
+            }
+
+                .ht-activity-details h3 {
+                    margin: 8px 0 20px;
+                    font: 700 20px "Archivo Narrow", sans-serif;
+                }
+
+            .ht-activity-stats {
+                display: grid;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 20px;
+            }
+
+                .ht-activity-stats div {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 5px;
+                }
+
+                .ht-activity-stats strong {
+                    font: 700 28px "Archivo Narrow", sans-serif;
+                }
+
+                .ht-activity-stats span {
+                    font-size: 12px;
+                    color: #687080;
+                }
+
+            @@media (max-width: 650px) {
+                .ht-activity-section {
+                    padding: 18px;
+                }
+
+                .ht-activity-chart {
+                    gap: 8px;
+                    height: 170px;
+                }
+
+                .ht-activity-week {
+                    font-size: 9px;
+                }
+
+                .ht-activity-stats {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+
+                .ht-activity-heading h2 {
+                    font-size: 22px;
+                }
+
+                .ht-activity-period {
+                    display: none;
+                }
+            }
+        </style>
+
+        <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var chart = document.getElementById("trainingChart");
+
+        if (!chart) return;
+
+        var bars = Array.prototype.slice.call(
+            chart.querySelectorAll(".ht-activity-bar")
+        );
+
+        function formatDate(value) {
+            var parts = value.split("-");
+            var date = new Date(
+                Number(parts[0]),
+                Number(parts[1]) - 1,
+                Number(parts[2])
+            );
+
+            return date.toLocaleDateString("en-AU", {
+                day: "numeric",
+                month: "short",
+                year: "numeric"
+            });
+        }
+
+        function selectWeek(bar) {
+            bars.forEach(function (item) {
+                var selected = item === bar;
+
+                item.classList.toggle("is-selected", selected);
+                item.setAttribute("aria-pressed", String(selected));
+            });
+
+            document.getElementById("selectedWeekLabel").textContent =
+                formatDate(bar.dataset.start) + " — " +
+                formatDate(bar.dataset.end);
+
+            document.getElementById("selectedTrainingDays").textContent =
+                bar.dataset.days;
+
+            document.getElementById("selectedSessions").textContent =
+                bar.dataset.sessions;
+
+            document.getElementById("selectedExercises").textContent =
+                bar.dataset.exercises;
+
+            document.getElementById("selectedMinutes").textContent =
+                Number(bar.dataset.minutes).toLocaleString("en-AU", {
+                    maximumFractionDigits: 1
+                });
+        }
+
+        bars.forEach(function (bar) {
+            bar.addEventListener("click", function () {
+                selectWeek(bar);
+            });
+        });
+
+        var currentWeek = chart.querySelector(".is-selected");
+
+        if (currentWeek) {
+            selectWeek(currentWeek);
+        }
+    });
+        </script>
+
+    </section>
+
+    <hr />
+
+    <section class="my-5">
+        <h2 class="text-uppercase">YOUR PROGRESS</h2>
+
+        @if (Model.LatestWeight.HasValue)
+        {
+            <div class="mt-3">
+                <div class="small text-uppercase">
+                    @(Model.WeightIsFromProfile
+                        ? "Profile weight"
+                        : "Latest recorded weight")
+                </div>
+
+                <h3>
+                    @Model.LatestWeight.Value.ToString("0.##") kg
+                </h3>
+
+                @if (Model.LatestWeightDate.HasValue)
+                {
+                    <p>
+                        Recorded on
+                        @Model.LatestWeightDate.Value.ToString("dd MMM yyyy")
+                    </p>
+                }
+                else
+                {
+                    <p>
+                        From your profile. No measurements logged yet.
+                    </p>
+                }
+            </div>
+        }
+        else
+        {
+            <p>No weight information available yet.</p>
+        }
+    </section>
+
+    <hr />
+
+    <section class="my-5">
+        <h2 class="text-uppercase">MY FITNESS GOALS</h2>
+
+        @if (Model.FitnessGoals != null && Model.FitnessGoals.Any())
+        {
+            <div class="mt-3">
+                @foreach (var goal in Model.FitnessGoals)
+                {
+                    <span class="badge bg-secondary me-2 mb-2">
+                        @goal
+                    </span>
+                }
+            </div>
+        }
+        else
+        {
+            <p>No fitness goals selected yet.</p>
+        }
+    </section>
+</div>

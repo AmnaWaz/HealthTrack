@@ -1,0 +1,776 @@
+
+@model HealthTrack.ViewModels.ClientTrainingViewModel
+@using System.Linq
+@using System.Globalization
+
+@{
+    ViewBag.Title = "Training";
+    Layout = "~/Views/Shared/_ClientLayout.cshtml";
+
+    var selectedLogs = Model.WorkoutLogs
+        .Where(x => x.Date.Date == Model.SelectedDate.Date)
+        .ToList();
+}
+
+<style>
+    .ct-page {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 26px 12px 65px;
+        color: var(--ht-text, #172338);
+    }
+
+    .ct-eyebrow {
+        font: 600 11px "IBM Plex Mono", monospace;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #b45a65;
+    }
+
+    .ct-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+        .ct-header h1 {
+            font: 700 clamp(40px, 5vw, 68px) "Archivo Narrow", sans-serif;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            margin: 8px 0 10px;
+        }
+
+        .ct-header p,
+        .ct-muted {
+            color: #78818d;
+            font-size: 13px;
+        }
+
+    .ct-button {
+        border: 1px solid #b6505d;
+        background: #b6505d;
+        color: #fff;
+        padding: 13px 22px;
+        text-transform: uppercase;
+        font: 600 11px "IBM Plex Mono", monospace;
+        letter-spacing: 1px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+        .ct-button:hover {
+            background: #933e4a;
+            color: #fff;
+        }
+
+    .ct-button-secondary {
+        background: transparent;
+        color: inherit;
+        border-color: #9098a4;
+    }
+
+        .ct-button-secondary:hover {
+            color: #b6505d;
+            background: transparent;
+            border-color: #b6505d;
+        }
+
+    .ct-stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1px;
+        margin-bottom: 32px;
+        background: #c8c6c2;
+        border: 1px solid #c8c6c2;
+    }
+
+    .ct-stat {
+        padding: 22px;
+        background: var(--ht-surface, #f4f0e8);
+    }
+
+        .ct-stat span {
+            display: block;
+            font: 600 10px "IBM Plex Mono", monospace;
+            color: #868b93;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 14px;
+        }
+
+        .ct-stat strong {
+            font: 700 36px "Archivo Narrow", sans-serif;
+        }
+
+    .ct-section {
+        margin-top: 42px;
+    }
+
+    .ct-section-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 20px;
+    }
+
+        .ct-section-head h2 {
+            font: 700 28px "Archivo Narrow", sans-serif;
+            text-transform: uppercase;
+            margin: 6px 0 0;
+        }
+
+    .ct-plan-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+        gap: 14px;
+    }
+
+    .ct-plan {
+        padding: 22px;
+        border: 1px solid #b9bdc2;
+        background: var(--ht-surface, #f4f0e8);
+    }
+
+    .ct-plan-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+
+    .ct-status {
+        font: 600 10px "IBM Plex Mono", monospace;
+        text-transform: uppercase;
+        color: #a8545f;
+    }
+
+    .ct-plan h3 {
+        font: 700 24px "Archivo Narrow", sans-serif;
+        text-transform: uppercase;
+        margin: 0 0 14px;
+    }
+
+    .ct-plan p {
+        font-size: 13px;
+        color: #69717d;
+        margin: 7px 0;
+    }
+
+    .ct-plan details {
+        margin-top: 19px;
+        padding-top: 16px;
+        border-top: 1px solid #b9bdc2;
+    }
+
+    .ct-plan summary {
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 12px;
+    }
+
+    .ct-plan-description {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        font-size: 13px;
+        line-height: 1.7;
+        margin-top: 14px;
+    }
+
+    .ct-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 340px;
+        gap: 22px;
+    }
+
+    .ct-panel {
+        border: 1px solid #b9bdc2;
+        background: var(--ht-surface, #f4f0e8);
+        padding: 23px;
+        min-width: 0;
+    }
+
+    .ct-date-bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+
+        .ct-date-bar input,
+        .ct-field input,
+        .ct-field select {
+            width: 100%;
+            border: 1px solid #aaaeb6;
+            border-radius: 0;
+            background: transparent;
+            color: inherit;
+            padding: 12px;
+            font-size: 13px;
+        }
+
+        .ct-date-bar input {
+            max-width: 220px;
+        }
+
+    .ct-log {
+        border-top: 1px solid #c5c6c8;
+        padding: 17px 0;
+    }
+
+    .ct-log-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: start;
+    }
+
+    .ct-log h3 {
+        font: 700 19px "Archivo Narrow", sans-serif;
+        margin: 0 0 7px;
+    }
+
+    .ct-log-meta {
+        font-size: 12px;
+        color: #818896;
+        line-height: 1.8;
+    }
+
+    .ct-log-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .ct-text-button {
+        background: transparent;
+        border: none;
+        color: #b6505d;
+        font: 600 11px "IBM Plex Mono", monospace;
+        text-transform: uppercase;
+        cursor: pointer;
+        padding: 5px;
+    }
+
+    .ct-empty {
+        padding: 35px 15px;
+        border: 1px dashed #aaaeb6;
+        text-align: center;
+    }
+
+        .ct-empty h3 {
+            font: 700 20px "Archivo Narrow", sans-serif;
+            margin-bottom: 10px;
+        }
+
+    .ct-field {
+        margin-bottom: 15px;
+    }
+
+        .ct-field label {
+            display: block;
+            margin-bottom: 7px;
+            font: 600 11px "IBM Plex Mono", monospace;
+            text-transform: uppercase;
+        }
+
+    .ct-form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .ct-form-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+    }
+
+    .ct-alert {
+        border-left: 3px solid #65967c;
+        padding: 14px;
+        background: rgba(101,150,124,.12);
+        margin-bottom: 25px;
+        font-size: 13px;
+    }
+
+    .ct-validation {
+        color: #c34e5b;
+        font-size: 12px;
+    }
+
+    .ct-hidden {
+        display: none !important;
+    }
+
+    .ct-all-history {
+        margin-top: 28px;
+    }
+
+    .ct-history-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        border-top: 1px solid #b9bdc2;
+        padding: 14px 0;
+        font-size: 12px;
+    }
+
+        .ct-history-row strong {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+    @@media (max-width: 1000px) {
+        .ct-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .ct-stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 600px) {
+        .ct-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .ct-stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .ct-stat {
+            padding: 16px;
+        }
+
+            .ct-stat strong {
+                font-size: 29px;
+            }
+
+        .ct-plan-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .ct-form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .ct-log-head {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="ct-page">
+    <header class="ct-header">
+        <div>
+            <span class="ct-eyebrow">02 / CLIENT WORKSPACE</span>
+            <h1>YOUR TRAINING</h1>
+            <p>Assigned plans, recorded workouts and your training history.</p>
+        </div>
+
+        <button type="button" class="ct-button" id="ctJumpToLogger">
+            + LOG WORKOUT
+        </button>
+    </header>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="ct-alert" role="status">
+            @TempData["Success"]
+        </div>
+    }
+
+    <div class="ct-stats">
+        <div class="ct-stat">
+            <span>Training days</span>
+            <strong>@Model.TotalTrainingDays</strong>
+        </div>
+        <div class="ct-stat">
+            <span>Exercise entries</span>
+            <strong>@Model.TotalExerciseEntries</strong>
+        </div>
+        <div class="ct-stat">
+            <span>Total minutes</span>
+            <strong>@Model.TotalMinutes.ToString("0.#")</strong>
+        </div>
+        <div class="ct-stat">
+            <span>Recorded calories</span>
+            <strong>@Model.TotalCaloriesBurned.ToString("0.#")</strong>
+        </div>
+    </div>
+
+    <section class="ct-section">
+        <div class="ct-section-head">
+            <div>
+                <span class="ct-eyebrow">01 / YOUR PROGRAM</span>
+                <h2>ASSIGNED WORKOUT PLANS</h2>
+            </div>
+            <span class="ct-muted">@Model.ActivePlanCount active</span>
+        </div>
+
+        @if (Model.Plans.Any())
+        {
+            <div class="ct-plan-grid">
+                @foreach (var plan in Model.Plans)
+                {
+                    <article class="ct-plan">
+                        <div class="ct-plan-head">
+                            <span class="ct-eyebrow">PLAN @plan.WorkoutPlanId</span>
+                            <span class="ct-status">@plan.Status</span>
+                        </div>
+
+                        <h3>@plan.PlanName</h3>
+                        <p>Trainer: @plan.TrainerName</p>
+                        <p>
+                            @plan.StartDate.ToString("dd MMM yyyy")
+                            —
+                            @plan.EndDate.ToString("dd MMM yyyy")
+                        </p>
+                        <p>@plan.ExerciseEntries logged exercises</p>
+
+                        <details>
+                            <summary>VIEW TRAINER INSTRUCTIONS</summary>
+                            <div class="ct-plan-description">
+                                @(string.IsNullOrWhiteSpace(plan.Description)
+                                    ? "No additional instructions have been provided."
+                                    : plan.Description)
+                            </div>
+                        </details>
+                    </article>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="ct-empty">
+                <h3>NO WORKOUT PLANS ASSIGNED</h3>
+                <p class="ct-muted">
+                    Your assigned trainer's workout plans will appear here.
+                    You can still record independent workouts.
+                </p>
+            </div>
+        }
+    </section>
+
+    <section class="ct-section">
+        <div class="ct-section-head">
+            <div>
+                <span class="ct-eyebrow">02 / WORKOUT JOURNAL</span>
+                <h2>YOUR WORKOUTS</h2>
+            </div>
+        </div>
+
+        <div class="ct-layout">
+            <div class="ct-panel">
+                <form class="ct-date-bar"
+                      method="get"
+                      action="@Url.Action("Index", "ClientTraining")">
+                    <label for="ctSelectedDate">SELECT DATE</label>
+                    <input id="ctSelectedDate"
+                           name="date"
+                           type="date"
+                           value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
+                    <button class="ct-button ct-button-secondary" type="submit">
+                        VIEW
+                    </button>
+                </form>
+
+                <h3 style="font:700 23px 'Archivo Narrow',sans-serif;margin-bottom:18px">
+                    @Model.SelectedDate.ToString("dddd, dd MMMM yyyy").ToUpper()
+                </h3>
+
+                @if (selectedLogs.Any())
+                {
+                    foreach (var log in selectedLogs)
+                    {
+                        <article class="ct-log">
+                            <div class="ct-log-head">
+                                <div>
+                                    <h3>@log.Exercise</h3>
+                                    <div class="ct-log-meta">
+                                        @log.PlanName
+                                        <div>
+                                            @log.Sets sets · @log.Reps reps ·
+                                            @log.Duration.ToString("0.#") min
+                                        </div>
+                                        <div>
+                                            @log.CaloriesBurned.ToString("0.#") recorded kcal
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="ct-log-actions">
+                                    <button type="button"
+                                            class="ct-text-button ct-edit-workout"
+                                            data-id="@log.WorkoutLogId"
+                                            data-plan="@log.WorkoutPlanId"
+                                            data-date="@log.Date.ToString("yyyy-MM-dd")"
+                                            data-exercise="@log.Exercise"
+                                            data-sets="@log.Sets"
+                                            data-reps="@log.Reps"
+                                            data-duration="@log.Duration.ToString(CultureInfo.InvariantCulture)"
+                                            data-calories="@log.CaloriesBurned.ToString(CultureInfo.InvariantCulture)">
+                                        EDIT
+                                    </button>
+
+                                    @using (Html.BeginForm("Delete", "ClientTraining", FormMethod.Post))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@log.WorkoutLogId" />
+                                        <button type="submit"
+                                                class="ct-text-button ct-delete-workout">
+                                            DELETE
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        </article>
+                    }
+                }
+                else
+                {
+                    <div class="ct-empty">
+                        <h3>NO WORKOUTS ON THIS DATE</h3>
+                        <p class="ct-muted">
+                            Choose another date or record your first workout.
+                        </p>
+                    </div>
+                }
+            </div>
+
+            <aside class="ct-panel" id="ctWorkoutLogger">
+                <span class="ct-eyebrow">NEW ENTRY</span>
+                <h2 id="ctFormTitle"
+                    style="font:700 28px 'Archivo Narrow',sans-serif;margin:10px 0 22px">
+                    LOG A WORKOUT
+                </h2>
+
+                @using (Html.BeginForm("Save", "ClientTraining", FormMethod.Post, new { id = "ctWorkoutForm" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden"
+                           name="WorkoutLogId"
+                           id="ctWorkoutLogId"
+                           value="@Model.LogForm.WorkoutLogId" />
+
+                    @Html.ValidationSummary(false, "", new { @class = "ct-validation" })
+
+                    <div class="ct-field">
+                        <label for="ctWorkoutDate">DATE</label>
+                        <input type="date"
+                               id="ctWorkoutDate"
+                               name="Date"
+                               max="@DateTime.Today.ToString("yyyy-MM-dd")"
+                               value="@(Model.LogForm.Date.HasValue ? Model.LogForm.Date.Value.ToString("yyyy-MM-dd") : "")"
+                               required />
+                        @Html.ValidationMessage("Date", new { @class = "ct-validation" })
+                    </div>
+
+                    <div class="ct-field">
+                        <label for="ctWorkoutPlan">WORKOUT PLAN</label>
+                        <select id="ctWorkoutPlan" name="WorkoutPlanId">
+                            <option value="">Independent workout</option>
+                            @foreach (var plan in Model.Plans)
+                            {
+                                <option value="@plan.WorkoutPlanId"
+                                        selected="@(Model.LogForm.WorkoutPlanId == plan.WorkoutPlanId ? "selected" : null)">
+                                    @plan.PlanName
+                                </option>
+                            }
+                        </select>
+                        @Html.ValidationMessage("WorkoutPlanId", new { @class = "ct-validation" })
+                    </div>
+
+                    <div class="ct-field">
+                        <label for="ctExercise">EXERCISE</label>
+                        <input type="text"
+                               id="ctExercise"
+                               name="Exercise"
+                               maxlength="100"
+                               value="@Model.LogForm.Exercise"
+                               placeholder="e.g. Squats"
+                               required />
+                        @Html.ValidationMessage("Exercise", new { @class = "ct-validation" })
+                    </div>
+
+                    <div class="ct-form-grid">
+                        <div class="ct-field">
+                            <label for="ctSets">SETS</label>
+                            <input type="number"
+                                   id="ctSets"
+                                   name="Sets"
+                                   min="0"
+                                   max="100"
+                                   value="@Model.LogForm.Sets"
+                                   required />
+                        </div>
+
+                        <div class="ct-field">
+                            <label for="ctReps">REPS</label>
+                            <input type="number"
+                                   id="ctReps"
+                                   name="Reps"
+                                   min="0"
+                                   max="1000"
+                                   value="@Model.LogForm.Reps"
+                                   required />
+                        </div>
+
+                        <div class="ct-field">
+                            <label for="ctDuration">MINUTES</label>
+                            <input type="number"
+                                   id="ctDuration"
+                                   name="Duration"
+                                   min="0"
+                                   max="600"
+                                   step="0.1"
+                                   value="@Model.LogForm.Duration.ToString(CultureInfo.InvariantCulture)"
+                                   required />
+                        </div>
+
+                        <div class="ct-field">
+                            <label for="ctCalories">CALORIES BURNED</label>
+                            <input type="number"
+                                   id="ctCalories"
+                                   name="CaloriesBurned"
+                                   min="0"
+                                   max="10000"
+                                   step="0.1"
+                                   value="@Model.LogForm.CaloriesBurned.ToString(CultureInfo.InvariantCulture)"
+                                   required />
+                        </div>
+                    </div>
+
+                    <div class="ct-form-actions">
+                        <button type="submit" class="ct-button" id="ctSaveWorkout">
+                            SAVE WORKOUT
+                        </button>
+
+                        <button type="button"
+                                class="ct-button ct-button-secondary ct-hidden"
+                                id="ctCancelEdit">
+                            CANCEL EDIT
+                        </button>
+                    </div>
+                }
+            </aside>
+        </div>
+    </section>
+
+    <section class="ct-section ct-all-history">
+        <div class="ct-section-head">
+            <div>
+                <span class="ct-eyebrow">03 / RECORDS</span>
+                <h2>COMPLETE WORKOUT HISTORY</h2>
+            </div>
+            <span class="ct-muted">@Model.WorkoutLogs.Count entries</span>
+        </div>
+
+        @if (Model.WorkoutLogs.Any())
+        {
+            <div class="ct-panel">
+                @foreach (var log in Model.WorkoutLogs)
+                {
+                    <div class="ct-history-row">
+                        <div>
+                            <strong>@log.Exercise</strong>
+                            <span class="ct-muted">
+                                @log.Date.ToString("dd MMM yyyy") · @log.PlanName
+                            </span>
+                        </div>
+                        <div>
+                            @log.Duration.ToString("0.#") min
+                        </div>
+                        <div>
+                            <a class="ct-text-button"
+                               href="@Url.Action("Index", "ClientTraining", new { date = log.Date.ToString("yyyy-MM-dd") })">
+                                VIEW
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="ct-empty">
+                <h3>YOUR TRAINING JOURNEY STARTS HERE</h3>
+                <p class="ct-muted">Saved workouts will appear in your history.</p>
+            </div>
+        }
+    </section>
+</div>
+
+@section scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var jumpButton = document.getElementById("ctJumpToLogger");
+            var form = document.getElementById("ctWorkoutForm");
+            var logger = document.getElementById("ctWorkoutLogger");
+            var cancelButton = document.getElementById("ctCancelEdit");
+            var title = document.getElementById("ctFormTitle");
+            var saveButton = document.getElementById("ctSaveWorkout");
+            var selectedDate = document.getElementById("ctSelectedDate").value;
+
+            jumpButton.addEventListener("click", function () {
+                logger.scrollIntoView({ behavior: "smooth", block: "start" });
+                document.getElementById("ctExercise").focus();
+            });
+
+            function resetForm() {
+                form.reset();
+                document.getElementById("ctWorkoutLogId").value = "0";
+                document.getElementById("ctWorkoutDate").value = selectedDate;
+                document.getElementById("ctWorkoutPlan").value = "";
+                title.textContent = "LOG A WORKOUT";
+                saveButton.textContent = "SAVE WORKOUT";
+                cancelButton.classList.add("ct-hidden");
+            }
+
+            document.querySelectorAll(".ct-edit-workout").forEach(function (button) {
+                button.addEventListener("click", function () {
+                    document.getElementById("ctWorkoutLogId").value = button.dataset.id;
+                    document.getElementById("ctWorkoutPlan").value = button.dataset.plan || "";
+                    document.getElementById("ctWorkoutDate").value = button.dataset.date;
+                    document.getElementById("ctExercise").value = button.dataset.exercise;
+                    document.getElementById("ctSets").value = button.dataset.sets;
+                    document.getElementById("ctReps").value = button.dataset.reps;
+                    document.getElementById("ctDuration").value = button.dataset.duration;
+                    document.getElementById("ctCalories").value = button.dataset.calories;
+
+                    title.textContent = "EDIT WORKOUT";
+                    saveButton.textContent = "SAVE CHANGES";
+                    cancelButton.classList.remove("ct-hidden");
+
+                    logger.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start"
+                    });
+                });
+            });
+
+            document.querySelectorAll(".ct-delete-workout").forEach(function (button) {
+                button.addEventListener("click", function (event) {
+                    if (!window.confirm("Delete this workout entry?")) {
+                        event.preventDefault();
+                    }
+                });
+            });
+
+            cancelButton.addEventListener("click", resetForm);
+        });
+    </script>
+}

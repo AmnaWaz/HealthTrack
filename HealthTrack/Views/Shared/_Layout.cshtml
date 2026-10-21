@@ -34,7 +34,6 @@
     {
         <div class="ht-trainer-shell" id="htTrainerShell">
             <script>
-                // keep the sidebar exactly as the user left it (runs before the page paints, so there is no flash/re-open)
                 (function () {
                     try {
                         var s = localStorage.getItem('ht-sidebar-collapsed');
@@ -78,6 +77,12 @@
                         <span class="ht-side-num">07</span><span class="ht-side-label">Notifications</span>
                         @if (unread > 0)
                         {<span class="ht-side-badge">@unread</span>}
+                    </a>
+                    <a class="ht-side-link @(ctrl == "TrainerRequests" ? "active" : "")"
+                       href="@Url.Action("Index", "TrainerRequests")"
+                       title="Trainer Requests"
+                       aria-current="@(ctrl == "TrainerRequests" ? "page" : null)">
+                        <span class="ht-side-num">08</span><span class="ht-side-label">Trainer Requests</span>
                     </a>
                 </nav>
 

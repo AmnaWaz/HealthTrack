@@ -16,17 +16,7 @@ using Newtonsoft.Json;
 
 namespace HealthTrack.Controllers
 {
-    /// <summary>
-    /// Stage 2 of registration: mandatory profile onboarding.
-    ///
-    /// Client:  1 About you -> 2 Body -> 3 Goals -> 4 Review
-    /// Trainer: 1 Specialisations -> 2 Bio -> 3 Review
-    ///
-    /// Each "Continue" validates that step on the server and saves it to OnboardingDrafts, so the user
-    /// can close the browser and resume. "Finish" re-validates everything and creates the profile,
-    /// the goal/specialisation links, any new custom options and the display summary in ONE
-    /// SaveChanges (all or nothing), and deletes the draft in the same save.
-    /// </summary>
+    
     [Authorize]
     [AllowIncompleteOnboarding]
     public class OnboardingController : Controller
@@ -120,7 +110,7 @@ namespace HealthTrack.Controllers
             {
                 Role = acc.Role,
                 FirstName = acc.User.FirstName,
-                DashboardUrl = acc.IsClient ? Url.Action("Plans", "Client") : Url.Action("Index", "Trainer")
+                DashboardUrl = acc.IsClient ? Url.Action("Overview", "Client") : Url.Action("Index", "Trainer")
             };
             if (acc.IsClient)
             {
@@ -457,7 +447,7 @@ namespace HealthTrack.Controllers
             if (acc.Role != Models.Role.Client && acc.Role != Models.Role.Trainer)
                 return RedirectToAction("Index", "Home");                 // Admin: nothing to onboard
             if (OnboardingStatus.Check(db, acc.User.UserId, acc.Role) == OnboardingState.Complete)
-                return acc.IsClient ? RedirectToAction("Plans", "Client") : RedirectToAction("Index", "Trainer");
+                return acc.IsClient ? RedirectToAction("Overview", "Client") : RedirectToAction("Index", "Trainer");
             return null;
         }
 

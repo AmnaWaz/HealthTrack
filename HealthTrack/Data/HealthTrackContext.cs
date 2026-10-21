@@ -26,6 +26,7 @@ namespace HealthTrack.Data
         public DbSet<HealthMetric> HealthMetrics { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<TrainerRequest> TrainerRequests { get; set; }
 
         // ---- Onboarding (multi-select goals / specialisations + resumable drafts) ----
         public DbSet<FitnessGoal> FitnessGoals { get; set; }

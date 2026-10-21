@@ -1,0 +1,863 @@
+
+@model HealthTrack.ViewModels.ClientProgressViewModel
+@using System
+@using System.Linq
+@using System.Globalization
+
+@{
+    ViewBag.Title = "Progress";
+    Layout = "~/Views/Shared/_ClientLayout.cshtml";
+
+    var culture = CultureInfo.InvariantCulture;
+    var chartMeasurements = Model.Measurements
+        .OrderBy(x => x.DateRecorded)
+        .Take(30)
+        .ToList();
+
+    var minWeight = chartMeasurements.Any()
+        ? chartMeasurements.Min(x => x.Weight)
+        : 0m;
+
+    var maxWeight = chartMeasurements.Any()
+        ? chartMeasurements.Max(x => x.Weight)
+        : 0m;
+
+    var chartWorkouts = Model.WorkoutActivity
+        .OrderByDescending(x => x.Date)
+        .Take(14)
+        .OrderBy(x => x.Date)
+        .ToList();
+
+    var maxMinutes = chartWorkouts.Any()
+        ? chartWorkouts.Max(x => x.TotalMinutes)
+        : 0m;
+}
+
+<style>
+    .cp-page {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 28px 14px 72px;
+    }
+
+    .cp-eyebrow {
+        color: #b6505d;
+        font: 600 11px "IBM Plex Mono", monospace;
+        text-transform: uppercase;
+        letter-spacing: 1.3px;
+    }
+
+    .cp-header {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 22px;
+        margin-bottom: 30px;
+    }
+
+        .cp-header h1 {
+            font: 700 clamp(40px, 5vw, 68px) "Archivo Narrow", sans-serif;
+            letter-spacing: -1px;
+            text-transform: uppercase;
+            margin: 8px 0;
+        }
+
+    .cp-muted {
+        color: #858d99;
+        font-size: 13px;
+    }
+
+    .cp-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #b6505d;
+        background: #b6505d;
+        color: #fff;
+        padding: 12px 18px;
+        font: 600 11px "IBM Plex Mono", monospace;
+        text-transform: uppercase;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+        .cp-button:hover {
+            background: #913e49;
+            color: #fff;
+        }
+
+    .cp-button-outline {
+        background: transparent;
+        color: inherit;
+        border-color: #a3a8ae;
+    }
+
+        .cp-button-outline:hover {
+            background: transparent;
+            color: #b6505d;
+            border-color: #b6505d;
+        }
+
+    .cp-stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1px;
+        background: #bfc1c5;
+        border: 1px solid #bfc1c5;
+    }
+
+    .cp-stat {
+        background: var(--ht-surface, #f4f0e8);
+        padding: 22px;
+        min-width: 0;
+    }
+
+    .cp-stat-label {
+        display: block;
+        font: 600 10px "IBM Plex Mono", monospace;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #858d99;
+        margin-bottom: 13px;
+    }
+
+    .cp-stat-value {
+        font: 700 36px "Archivo Narrow", sans-serif;
+        overflow-wrap: anywhere;
+    }
+
+    .cp-stat-note {
+        display: block;
+        font-size: 11px;
+        margin-top: 8px;
+        color: #858d99;
+    }
+
+    .cp-section {
+        margin-top: 40px;
+    }
+
+    .cp-section-head {
+        margin-bottom: 18px;
+    }
+
+        .cp-section-head h2 {
+            font: 700 29px "Archivo Narrow", sans-serif;
+            text-transform: uppercase;
+            margin: 7px 0 0;
+        }
+
+    .cp-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 18px;
+    }
+
+    .cp-panel {
+        background: var(--ht-surface, #f4f0e8);
+        border: 1px solid var(--ht-border, #b9bdc2);
+        padding: 23px;
+        min-width: 0;
+    }
+
+        .cp-panel h3 {
+            font: 700 23px "Archivo Narrow", sans-serif;
+            text-transform: uppercase;
+            margin: 8px 0 10px;
+        }
+
+    .cp-chart {
+        display: flex;
+        align-items: stretch;
+        justify-content: space-between;
+        gap: 8px;
+        height: 210px;
+        margin-top: 25px;
+    }
+
+    .cp-chart-item {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: end;
+        gap: 9px;
+    }
+
+    .cp-chart-track {
+        width: 100%;
+        max-width: 50px;
+        height: 150px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        background: rgba(128, 135, 145, .12);
+    }
+
+    .cp-chart-fill {
+        width: 100%;
+        background: #ac5360;
+        min-height: 0;
+    }
+
+    .cp-chart-fill-alt {
+        background: #526479;
+    }
+
+    .cp-chart-label {
+        font: 500 10px "IBM Plex Mono", monospace;
+        color: #858d99;
+        text-align: center;
+    }
+
+    .cp-chart-value {
+        font: 600 11px "IBM Plex Mono", monospace;
+        text-align: center;
+    }
+
+    .cp-empty {
+        border: 1px dashed #aeb3ba;
+        padding: 34px 16px;
+        text-align: center;
+        margin-top: 15px;
+    }
+
+        .cp-empty strong {
+            display: block;
+            font: 700 20px "Archivo Narrow", sans-serif;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+    .cp-summary {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .cp-summary-item {
+        padding-top: 14px;
+        border-top: 1px solid var(--ht-border, #b9bdc2);
+    }
+
+        .cp-summary-item strong {
+            display: block;
+            font: 700 24px "Archivo Narrow", sans-serif;
+            margin-bottom: 6px;
+        }
+
+        .cp-summary-item span {
+            font-size: 11px;
+            color: #858d99;
+        }
+
+    .cp-record-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 340px;
+        gap: 20px;
+    }
+
+    .cp-record {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 14px;
+        align-items: center;
+        padding: 17px 0;
+        border-top: 1px solid var(--ht-border, #b9bdc2);
+    }
+
+        .cp-record strong {
+            display: block;
+            font: 700 20px "Archivo Narrow", sans-serif;
+            margin-bottom: 6px;
+        }
+
+    .cp-record-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .cp-text-button {
+        color: #b6505d;
+        border: 0;
+        background: transparent;
+        font: 600 11px "IBM Plex Mono", monospace;
+        text-transform: uppercase;
+        cursor: pointer;
+        padding: 5px;
+    }
+
+    .cp-field {
+        margin-bottom: 16px;
+    }
+
+        .cp-field label {
+            display: block;
+            margin-bottom: 8px;
+            font: 600 11px "IBM Plex Mono", monospace;
+            text-transform: uppercase;
+        }
+
+        .cp-field input {
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            color: inherit;
+            border: 1px solid #aeb3ba;
+            border-radius: 0;
+            font-size: 13px;
+        }
+
+    .cp-form-actions {
+        display: flex;
+        gap: 9px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+    }
+
+    .cp-validation {
+        font-size: 12px;
+        color: #bd4b59;
+    }
+
+    .cp-alert {
+        padding: 14px;
+        border-left: 3px solid #65967c;
+        background: rgba(101, 150, 124, .12);
+        margin-bottom: 22px;
+        font-size: 13px;
+    }
+
+    .cp-hidden {
+        display: none !important;
+    }
+
+    @@media (max-width: 1050px) {
+        .cp-record-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 760px) {
+        .cp-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .cp-stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .cp-stat {
+            padding: 16px;
+        }
+
+        .cp-stat-value {
+            font-size: 29px;
+        }
+
+        .cp-chart {
+            gap: 4px;
+        }
+
+        .cp-chart-label {
+            font-size: 8px;
+        }
+    }
+
+    @@media (max-width: 460px) {
+        .cp-summary {
+            grid-template-columns: 1fr;
+        }
+
+        .cp-record {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="cp-page">
+    <header class="cp-header">
+        <div>
+            <span class="cp-eyebrow">04 / CLIENT WORKSPACE</span>
+            <h1>YOUR PROGRESS</h1>
+            <p class="cp-muted">
+                Understand your health measurements and training activity.
+            </p>
+        </div>
+
+        <button type="button" class="cp-button" id="cpJumpToForm">
+            + LOG MEASUREMENT
+        </button>
+    </header>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="cp-alert" role="status">
+            @TempData["Success"]
+        </div>
+    }
+
+    <div class="cp-stats">
+        <div class="cp-stat">
+            <span class="cp-stat-label">Current weight</span>
+            <strong class="cp-stat-value">
+                @Model.CurrentWeight.ToString("0.##") kg
+            </strong>
+            <span class="cp-stat-note">
+                @(Model.WeightIsFromProfile
+                    ? "From your profile"
+                    : "Latest recorded measurement")
+            </span>
+        </div>
+
+        <div class="cp-stat">
+            <span class="cp-stat-label">Current BMI</span>
+            <strong class="cp-stat-value">
+                @(Model.CurrentBMI.HasValue
+                    ? Model.CurrentBMI.Value.ToString("0.0")
+                    : "—")
+            </strong>
+            <span class="cp-stat-note">
+                Calculated from height and weight
+            </span>
+        </div>
+
+        <div class="cp-stat">
+            <span class="cp-stat-label">Body fat</span>
+            <strong class="cp-stat-value">
+                @(Model.CurrentBodyFat.HasValue
+                    ? Model.CurrentBodyFat.Value.ToString("0.#") + "%"
+                    : "—")
+            </strong>
+            <span class="cp-stat-note">
+                @(Model.CurrentBodyFat.HasValue
+                    ? "Latest recorded reading"
+                    : "Not recorded")
+            </span>
+        </div>
+
+        <div class="cp-stat">
+            <span class="cp-stat-label">Weight change</span>
+            <strong class="cp-stat-value">
+                @(Model.WeightChange.HasValue
+                    ? (Model.WeightChange.Value > 0 ? "+" : "") +
+                      Model.WeightChange.Value.ToString("0.##") + " kg"
+                    : "—")
+            </strong>
+            <span class="cp-stat-note">
+                Earliest to latest recorded measurement
+            </span>
+        </div>
+    </div>
+
+    <section class="cp-section">
+        <div class="cp-section-head">
+            <span class="cp-eyebrow">01 / HEALTH METRICS</span>
+            <h2>BODY MEASUREMENTS</h2>
+        </div>
+
+        <div class="cp-grid">
+            <div class="cp-panel">
+                <span class="cp-eyebrow">WEIGHT HISTORY</span>
+                <h3>RECORDED WEIGHT</h3>
+                <p class="cp-muted">Up to 30 recorded measurements</p>
+
+                @if (chartMeasurements.Any())
+                {
+                    <div class="cp-chart" role="img" aria-label="Weight history across recorded dates">
+                        @foreach (var item in chartMeasurements)
+                        {
+                            var range = maxWeight - minWeight;
+                            var height = range > 0
+                                ? 25m + ((item.Weight - minWeight) / range * 75m)
+                                : 65m;
+
+                            <div class="cp-chart-item"
+                                 title="@item.DateRecorded.ToString("dd MMM yyyy"): @item.Weight.ToString("0.##") kg">
+                                <span class="cp-chart-value">
+                                    @item.Weight.ToString("0.#")
+                                </span>
+
+                                <div class="cp-chart-track">
+                                    <div class="cp-chart-fill"
+                                         style="height:@(height.ToString(culture))%">
+                                    </div>
+                                </div>
+
+                                <span class="cp-chart-label">
+                                    @item.DateRecorded.ToString("dd MMM")
+                                </span>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="cp-empty">
+                        <strong>NO WEIGHT HISTORY YET</strong>
+                        <p class="cp-muted">
+                            Log a measurement to begin tracking your weight.
+                        </p>
+                    </div>
+                }
+            </div>
+
+            <div class="cp-panel">
+                <span class="cp-eyebrow">BODY COMPOSITION</span>
+                <h3>BMI &amp; BODY FAT</h3>
+                <p class="cp-muted">
+                    Recorded measurements without estimated body-fat values.
+                </p>
+
+                @if (Model.Measurements.Any())
+                {
+                    <div class="cp-summary">
+                        <div class="cp-summary-item">
+                            <strong>@Model.Measurements.Count</strong>
+                            <span>Measurements</span>
+                        </div>
+
+                        <div class="cp-summary-item">
+                            <strong>@(Model.CurrentBMI.HasValue ? Model.CurrentBMI.Value.ToString("0.0") : "—")</strong>
+                            <span>Current BMI</span>
+                        </div>
+
+                        <div class="cp-summary-item">
+                            <strong>@(Model.CurrentBodyFat.HasValue ? Model.CurrentBodyFat.Value.ToString("0.#") + "%" : "—")</strong>
+                            <span>Latest body fat</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:24px">
+                        @foreach (var item in Model.Measurements.Take(6))
+                        {
+                            <div class="cp-record">
+                                <div>
+                                    <strong>@item.DateRecorded.ToString("dd MMM yyyy")</strong>
+                                    <span class="cp-muted">
+                                        BMI @item.BMI.ToString("0.0")
+                                        · Body fat
+                                        @(item.BodyFat.HasValue
+                                            ? item.BodyFat.Value.ToString("0.#") + "%"
+                                            : "not recorded")
+                                    </span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="cp-empty">
+                        <strong>NO BODY MEASUREMENTS</strong>
+                        <p class="cp-muted">
+                            Your BMI and body-fat history will appear here.
+                        </p>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+
+    <section class="cp-section">
+        <div class="cp-section-head">
+            <span class="cp-eyebrow">02 / TRAINING DATA</span>
+            <h2>WORKOUT PROGRESS</h2>
+        </div>
+
+        <div class="cp-grid">
+            <div class="cp-panel">
+                <span class="cp-eyebrow">RECORDED WORKOUTS</span>
+                <h3>WORKOUT DURATION</h3>
+                <p class="cp-muted">Up to 14 logged training dates</p>
+
+                @if (chartWorkouts.Any())
+                {
+                    <div class="cp-chart" role="img" aria-label="Workout minutes by logged date">
+                        @foreach (var item in chartWorkouts)
+                        {
+                            var height = maxMinutes > 0
+                                ? item.TotalMinutes / maxMinutes * 100m
+                                : 0m;
+
+                            <div class="cp-chart-item"
+                                 title="@item.Date.ToString("dd MMM yyyy"): @item.TotalMinutes.ToString("0.#") minutes">
+                                <span class="cp-chart-value">
+                                    @item.TotalMinutes.ToString("0.#")
+                                </span>
+
+                                <div class="cp-chart-track">
+                                    <div class="cp-chart-fill cp-chart-fill-alt"
+                                         style="height:@(height.ToString(culture))%">
+                                    </div>
+                                </div>
+
+                                <span class="cp-chart-label">
+                                    @item.Date.ToString("dd MMM")
+                                </span>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="cp-empty">
+                        <strong>NO WORKOUT DATA</strong>
+                        <p class="cp-muted">
+                            Log workouts in Training to see your activity here.
+                        </p>
+                    </div>
+                }
+            </div>
+
+            <div class="cp-panel">
+                <span class="cp-eyebrow">ALL-TIME RECORDS</span>
+                <h3>TRAINING SUMMARY</h3>
+
+                <div class="cp-summary">
+                    <div class="cp-summary-item">
+                        <strong>@Model.TotalTrainingDays</strong>
+                        <span>Training days</span>
+                    </div>
+
+                    <div class="cp-summary-item">
+                        <strong>@Model.TotalExerciseEntries</strong>
+                        <span>Exercise entries</span>
+                    </div>
+
+                    <div class="cp-summary-item">
+                        <strong>@Model.TotalWorkoutMinutes.ToString("0.#")</strong>
+                        <span>Recorded minutes</span>
+                    </div>
+                </div>
+
+                <div class="cp-summary" style="grid-template-columns:1fr">
+                    <div class="cp-summary-item">
+                        <strong>@Model.TotalRecordedCaloriesBurned.ToString("0.#") kcal</strong>
+                        <span>Total recorded calories burned</span>
+                    </div>
+                </div>
+
+                <p class="cp-muted" style="margin-top:20px">
+                    Training figures are based on saved workout entries.
+                    They are not estimates.
+                </p>
+
+                <a class="cp-button cp-button-outline"
+                   href="@Url.Action("Index", "ClientTraining")">
+                    VIEW TRAINING
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="cp-section">
+        <div class="cp-section-head">
+            <span class="cp-eyebrow">03 / MEASUREMENT JOURNAL</span>
+            <h2>MEASUREMENT HISTORY</h2>
+        </div>
+
+        <div class="cp-record-layout">
+            <div class="cp-panel">
+                @if (Model.Measurements.Any())
+                {
+                    foreach (var item in Model.Measurements)
+                    {
+                        <div class="cp-record">
+                            <div>
+                                <strong>
+                                    @item.Weight.ToString("0.##") kg
+                                </strong>
+
+                                <span class="cp-muted">
+                                    @item.DateRecorded.ToString("dd MMM yyyy")
+                                    · BMI @item.BMI.ToString("0.0")
+                                    · Body fat
+                                    @(item.BodyFat.HasValue
+                                        ? item.BodyFat.Value.ToString("0.#") + "%"
+                                        : "not recorded")
+                                </span>
+                            </div>
+
+                            <div class="cp-record-actions">
+                                <button type="button"
+                                        class="cp-text-button cp-edit-measurement"
+                                        data-id="@item.MetricId"
+                                        data-date="@item.DateRecorded.ToString("yyyy-MM-dd")"
+                                        data-weight="@item.Weight.ToString(culture)"
+                                        data-bodyfat="@(item.BodyFat.HasValue ? item.BodyFat.Value.ToString(culture) : "")">
+                                    EDIT
+                                </button>
+
+                                @using (Html.BeginForm("Delete", "ClientProgress", FormMethod.Post))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden"
+                                           name="id"
+                                           value="@item.MetricId" />
+
+                                    <button type="submit"
+                                            class="cp-text-button cp-delete-measurement">
+                                        DELETE
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="cp-empty">
+                        <strong>YOUR HISTORY IS EMPTY</strong>
+                        <p class="cp-muted">
+                            Your saved measurements will appear here.
+                        </p>
+                    </div>
+                }
+            </div>
+
+            <aside class="cp-panel" id="cpMeasurementLogger">
+                <span class="cp-eyebrow">NEW ENTRY</span>
+                <h3 id="cpFormTitle">LOG A MEASUREMENT</h3>
+
+                @using (Html.BeginForm("Save", "ClientProgress", FormMethod.Post, new { id = "cpMeasurementForm" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden"
+                           name="MetricId"
+                           id="cpMetricId"
+                           value="@Model.MeasurementForm.MetricId" />
+
+                    @Html.ValidationSummary(false, "", new { @class = "cp-validation" })
+
+                    <div class="cp-field">
+                        <label for="cpMeasurementDate">Date</label>
+
+                        <input type="date"
+                               id="cpMeasurementDate"
+                               name="DateRecorded"
+                               max="@DateTime.Today.ToString("yyyy-MM-dd")"
+                               value="@(Model.MeasurementForm.DateRecorded.HasValue ? Model.MeasurementForm.DateRecorded.Value.ToString("yyyy-MM-dd") : "")"
+                               required />
+
+                        @Html.ValidationMessage("DateRecorded", new { @class = "cp-validation" })
+                    </div>
+
+                    <div class="cp-field">
+                        <label for="cpWeight">Weight (kg)</label>
+
+                        <input type="number"
+                               id="cpWeight"
+                               name="Weight"
+                               min="20"
+                               max="500"
+                               step="0.01"
+                               value="@Model.MeasurementForm.Weight.ToString(culture)"
+                               required />
+
+                        @Html.ValidationMessage("Weight", new { @class = "cp-validation" })
+                    </div>
+
+                    <div class="cp-field">
+                        <label for="cpBodyFat">Body fat (%)</label>
+
+                        <input type="number"
+                               id="cpBodyFat"
+                               name="BodyFat"
+                               min="0"
+                               max="80"
+                               step="0.1"
+                               value="@(Model.MeasurementForm.BodyFat.HasValue ? Model.MeasurementForm.BodyFat.Value.ToString(culture) : "")"
+                               placeholder="Optional" />
+
+                        @Html.ValidationMessage("BodyFat", new { @class = "cp-validation" })
+                    </div>
+
+                    <p class="cp-muted">
+                        BMI will be calculated automatically using
+                        your profile height of @Model.HeightCm.ToString("0.#") cm.
+                    </p>
+
+                    <div class="cp-form-actions">
+                        <button type="submit"
+                                class="cp-button"
+                                id="cpSaveMeasurement">
+                            SAVE MEASUREMENT
+                        </button>
+
+                        <button type="button"
+                                class="cp-button cp-button-outline cp-hidden"
+                                id="cpCancelEdit">
+                            CANCEL EDIT
+                        </button>
+                    </div>
+                }
+            </aside>
+        </div>
+    </section>
+</div>
+
+@section scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var form = document.getElementById("cpMeasurementForm");
+            var logger = document.getElementById("cpMeasurementLogger");
+            var jumpButton = document.getElementById("cpJumpToForm");
+            var cancelButton = document.getElementById("cpCancelEdit");
+            var saveButton = document.getElementById("cpSaveMeasurement");
+            var title = document.getElementById("cpFormTitle");
+            var today = "@DateTime.Today.ToString("yyyy-MM-dd")";
+
+            function jumpToLogger() {
+                logger.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+            }
+
+            jumpButton.addEventListener("click", function () {
+                jumpToLogger();
+                document.getElementById("cpWeight").focus();
+            });
+
+            document.querySelectorAll(".cp-edit-measurement").forEach(function (button) {
+                button.addEventListener("click", function () {
+                    document.getElementById("cpMetricId").value = button.dataset.id;
+                    document.getElementById("cpMeasurementDate").value = button.dataset.date;
+                    document.getElementById("cpWeight").value = button.dataset.weight;
+                    document.getElementById("cpBodyFat").value = button.dataset.bodyfat;
+
+                    title.textContent = "EDIT MEASUREMENT";
+                    saveButton.textContent = "SAVE CHANGES";
+                    cancelButton.classList.remove("cp-hidden");
+
+                    jumpToLogger();
+                });
+            });
+
+            document.querySelectorAll(".cp-delete-measurement").forEach(function (button) {
+                button.addEventListener("click", function (event) {
+                    if (!window.confirm("Delete this measurement?")) {
+                        event.preventDefault();
+                    }
+                });
+            });
+
+            cancelButton.addEventListener("click", function () {
+                form.reset();
+                document.getElementById("cpMetricId").value = "0";
+                document.getElementById("cpMeasurementDate").value = today;
+                document.getElementById("cpWeight").value = "";
+                document.getElementById("cpBodyFat").value = "";
+                title.textContent = "LOG A MEASUREMENT";
+                saveButton.textContent = "SAVE MEASUREMENT";
+                cancelButton.classList.add("cp-hidden");
+            });
+        });
+    </script>
+}

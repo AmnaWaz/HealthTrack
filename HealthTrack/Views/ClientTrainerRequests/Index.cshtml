@@ -1,0 +1,621 @@
+
+@model HealthTrack.ViewModels.ClientTrainerRequestViewModel
+@using System
+@using System.Linq
+
+@{
+    ViewBag.Title = "Trainer Requests";
+    Layout = "~/Views/Shared/_ClientLayout.cshtml";
+}
+
+<style>
+    .ctr-page {
+        max-width: 1320px;
+        margin: 0 auto;
+        padding: 28px 16px 70px;
+    }
+
+    .ctr-eyebrow {
+        color: #b6505d;
+        font: 600 11px "IBM Plex Mono", monospace;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+    }
+
+    .ctr-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 18px;
+        margin-bottom: 28px;
+    }
+
+        .ctr-header h1 {
+            font: 700 clamp(38px, 5vw, 64px) "Archivo Narrow", sans-serif;
+            text-transform: uppercase;
+            margin: 8px 0;
+        }
+
+    .ctr-muted {
+        color: #858d99;
+        font-size: 13px;
+        line-height: 1.7;
+    }
+
+    .ctr-panel {
+        padding: 24px;
+        border: 1px solid var(--ht-border, #b9bdc2);
+        background: var(--ht-surface, #f4f0e8);
+        min-width: 0;
+    }
+
+        .ctr-panel h2 {
+            font: 700 27px "Archivo Narrow", sans-serif;
+            text-transform: uppercase;
+            margin: 7px 0 18px;
+        }
+
+    .ctr-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 440px) minmax(0, 1fr);
+        gap: 22px;
+        align-items: start;
+    }
+
+    .ctr-stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 26px;
+    }
+
+    .ctr-stat {
+        padding: 20px;
+        border: 1px solid var(--ht-border, #b9bdc2);
+        background: var(--ht-surface, #f4f0e8);
+    }
+
+        .ctr-stat span {
+            display: block;
+            color: #858d99;
+            font: 600 10px "IBM Plex Mono", monospace;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .ctr-stat strong {
+            font: 700 34px "Archivo Narrow", sans-serif;
+        }
+
+    .ctr-field {
+        margin-bottom: 18px;
+    }
+
+        .ctr-field label {
+            display: block;
+            margin-bottom: 8px;
+            font: 600 11px "IBM Plex Mono", monospace;
+            text-transform: uppercase;
+        }
+
+        .ctr-field input,
+        .ctr-field select,
+        .ctr-field textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #aeb3ba;
+            border-radius: 0;
+            background: transparent;
+            color: inherit;
+            font: 13px "Archivo", sans-serif;
+        }
+
+            .ctr-field select option {
+                background: var(--ht-surface, #f4f0e8);
+                color: #252525;
+            }
+
+        .ctr-field textarea {
+            min-height: 150px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+            .ctr-field input:focus,
+            .ctr-field select:focus,
+            .ctr-field textarea:focus {
+                outline: 2px solid #b6505d;
+                outline-offset: 1px;
+            }
+
+    .ctr-validation {
+        display: block;
+        margin-top: 7px;
+        color: #b6505d;
+        font-size: 12px;
+    }
+
+    .ctr-button {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        padding: 12px 18px;
+        background: #b6505d;
+        border: 1px solid #b6505d;
+        color: white;
+        font: 600 11px "IBM Plex Mono", monospace;
+        text-transform: uppercase;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+        .ctr-button:hover {
+            background: #933e49;
+            color: white;
+        }
+
+    .ctr-button-outline {
+        background: transparent;
+        border-color: #aeb3ba;
+        color: inherit;
+    }
+
+        .ctr-button-outline:hover {
+            background: transparent;
+            border-color: #b6505d;
+            color: #b6505d;
+        }
+
+    .ctr-alert {
+        padding: 14px 17px;
+        margin-bottom: 20px;
+        border-left: 3px solid #65967c;
+        background: rgba(101, 150, 124, .12);
+        font-size: 13px;
+    }
+
+    .ctr-notice {
+        padding: 14px 17px;
+        margin: 18px 0;
+        border-left: 3px solid #b6505d;
+        background: rgba(182, 80, 93, .08);
+        font-size: 12px;
+        line-height: 1.8;
+    }
+
+    .ctr-list {
+        display: grid;
+        gap: 14px;
+    }
+
+    .ctr-request {
+        padding: 22px;
+        border: 1px solid var(--ht-border, #b9bdc2);
+        background: var(--ht-surface, #f4f0e8);
+        min-width: 0;
+    }
+
+    .ctr-request-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+        .ctr-request-header h3 {
+            font: 700 24px "Archivo Narrow", sans-serif;
+            text-transform: uppercase;
+            margin: 6px 0;
+            overflow-wrap: anywhere;
+        }
+
+    .ctr-request-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px;
+        margin-bottom: 16px;
+    }
+
+    .ctr-tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 7px 10px;
+        border: 1px solid var(--ht-border, #b9bdc2);
+        font: 600 10px "IBM Plex Mono", monospace;
+        text-transform: uppercase;
+    }
+
+    .ctr-status-open {
+        border-color: #8c929b;
+    }
+
+    .ctr-status-review {
+        border-color: #b48b57;
+        color: #b48b57;
+    }
+
+    .ctr-status-answered {
+        border-color: #65967c;
+        color: #65967c;
+    }
+
+    .ctr-status-closed {
+        opacity: .7;
+    }
+
+    .ctr-priority-high {
+        border-color: #b6505d;
+        color: #b6505d;
+    }
+
+    .ctr-description {
+        font-size: 13px;
+        line-height: 1.8;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        margin: 0;
+    }
+
+    .ctr-response {
+        margin-top: 19px;
+        padding: 17px;
+        border-left: 3px solid #65967c;
+        background: rgba(101, 150, 124, .09);
+    }
+
+        .ctr-response strong {
+            display: block;
+            font: 700 17px "Archivo Narrow", sans-serif;
+            text-transform: uppercase;
+            margin-bottom: 9px;
+        }
+
+        .ctr-response p {
+            margin: 0;
+            font-size: 13px;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+    .ctr-request-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding-top: 16px;
+        margin-top: 18px;
+        border-top: 1px solid var(--ht-border, #b9bdc2);
+    }
+
+    .ctr-empty {
+        padding: 40px 20px;
+        border: 1px dashed #aeb3ba;
+        text-align: center;
+    }
+
+        .ctr-empty h3 {
+            font: 700 25px "Archivo Narrow", sans-serif;
+            text-transform: uppercase;
+        }
+
+    .ctr-link {
+        color: #b6505d;
+        text-decoration: none;
+        font: 600 11px "IBM Plex Mono", monospace;
+        text-transform: uppercase;
+    }
+
+        .ctr-link:hover {
+            text-decoration: underline;
+        }
+
+    @@media (max-width: 1050px) {
+        .ctr-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 700px) {
+        .ctr-stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .ctr-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .ctr-request-header {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="ctr-page">
+    <header class="ctr-header">
+        <div>
+            <span class="ctr-eyebrow">CLIENT / TRAINER COMMUNICATION</span>
+            <h1>TRAINER REQUESTS</h1>
+            <p class="ctr-muted">
+                Submit concerns, request plan changes and track your trainer's responses.
+            </p>
+        </div>
+
+        <a class="ctr-button ctr-button-outline"
+           href="@Url.Action("Index", "ClientTrainer")">
+            BACK TO MY TRAINER
+        </a>
+    </header>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="ctr-alert" role="status">
+            @TempData["Success"]
+        </div>
+    }
+
+    @if (TempData["Info"] != null)
+    {
+        <div class="ctr-alert" role="status">
+            @TempData["Info"]
+        </div>
+    }
+
+    <div class="ctr-stats">
+        <div class="ctr-stat">
+            <span>Open</span>
+            <strong>@Model.OpenCount</strong>
+        </div>
+
+        <div class="ctr-stat">
+            <span>In review</span>
+            <strong>@Model.InReviewCount</strong>
+        </div>
+
+        <div class="ctr-stat">
+            <span>Answered</span>
+            <strong>@Model.AnsweredCount</strong>
+        </div>
+
+        <div class="ctr-stat">
+            <span>Closed</span>
+            <strong>@Model.ClosedCount</strong>
+        </div>
+    </div>
+
+    <div class="ctr-layout">
+        <section class="ctr-panel">
+            <span class="ctr-eyebrow">01 / NEW REQUEST</span>
+            <h2>CONTACT YOUR TRAINER</h2>
+
+            @if (!Model.HasAssignedTrainer)
+            {
+                <div class="ctr-notice">
+                    You need an assigned trainer before you can submit a request.
+                    Your request history remains available on the right.
+                </div>
+            }
+            else
+            {
+                <p class="ctr-muted">
+                    Sending to:
+                    <strong>
+                        @(string.IsNullOrWhiteSpace(Model.TrainerName)
+                            ? "Your assigned trainer"
+                            : Model.TrainerName)
+                    </strong>
+                </p>
+
+                using (Html.BeginForm("Submit", "ClientTrainerRequests", FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.ValidationSummary(false, "", new { @class = "ctr-validation" })
+
+                    <div class="ctr-field">
+                        <label for="ctrCategory">Request category</label>
+
+                        <select id="ctrCategory" name="Category" required>
+                            <option value="">Select a category</option>
+
+                            @foreach (var category in new[]
+                            {
+                                "Medical concern",
+                                "Workout difficulty",
+                                "Dietary concern",
+                                "Fitness goal",
+                                "Availability",
+                                "Plan adjustment",
+                                "General question"
+                            })
+                            {
+                                <option value="@category"
+                                        selected="@(Model.RequestForm.Category == category ? "selected" : null)">
+                                    @category
+                                </option>
+                            }
+                        </select>
+
+                        @Html.ValidationMessage("Category", new { @class = "ctr-validation" })
+                    </div>
+
+                    <div class="ctr-field">
+                        <label for="ctrPriority">Priority</label>
+
+                        <select id="ctrPriority" name="Priority" required>
+                            <option value="Normal"
+                                    selected="@(Model.RequestForm.Priority == "Normal" ? "selected" : null)">
+                                Normal
+                            </option>
+
+                            <option value="High"
+                                    selected="@(Model.RequestForm.Priority == "High" ? "selected" : null)">
+                                High
+                            </option>
+                        </select>
+
+                        @Html.ValidationMessage("Priority", new { @class = "ctr-validation" })
+                    </div>
+
+                    <div class="ctr-field">
+                        <label for="ctrSubject">Subject</label>
+
+                        <input type="text"
+                               id="ctrSubject"
+                               name="Subject"
+                               maxlength="100"
+                               minlength="5"
+                               placeholder="Briefly describe your request"
+                               value="@Model.RequestForm.Subject"
+                               required />
+
+                        @Html.ValidationMessage("Subject", new { @class = "ctr-validation" })
+                    </div>
+
+                    <div class="ctr-field">
+                        <label for="ctrDescription">Description</label>
+
+                        <textarea id="ctrDescription"
+                                  name="Description"
+                                  minlength="10"
+                                  maxlength="1000"
+                                  placeholder="Explain what your trainer needs to know..."
+                                  required>@Model.RequestForm.Description</textarea>
+
+                        @Html.ValidationMessage("Description", new { @class = "ctr-validation" })
+                    </div>
+
+                    <div class="ctr-notice">
+                        Requests are not monitored for emergencies.
+                        If you have a medical concern, share only the information
+                        your trainer needs to adjust your fitness plan.
+                        A trainer cannot diagnose or treat medical conditions.
+                    </div>
+
+                    <button type="submit" class="ctr-button">
+                        SUBMIT REQUEST
+                    </button>
+                }
+            }
+        </section>
+
+        <section>
+            <div style="margin-bottom:18px">
+                <span class="ctr-eyebrow">02 / REQUEST HISTORY</span>
+                <h2 style="font:700 29px 'Archivo Narrow',sans-serif;text-transform:uppercase;margin:8px 0">
+                    YOUR REQUESTS
+                </h2>
+                <p class="ctr-muted">
+                    Track all requests, including those sent to previously assigned trainers.
+                </p>
+            </div>
+
+            @if (Model.Requests.Any())
+            {
+                <div class="ctr-list">
+                    @foreach (var request in Model.Requests)
+                    {
+                        var statusClass = request.Status == "Open"
+                            ? "ctr-status-open"
+                            : request.Status == "In review"
+                                ? "ctr-status-review"
+                                : request.Status == "Answered"
+                                    ? "ctr-status-answered"
+                                    : "ctr-status-closed";
+
+                        <article class="ctr-request">
+                            <div class="ctr-request-header">
+                                <div>
+                                    <span class="ctr-eyebrow">
+                                        REQUEST #@request.TrainerRequestId
+                                    </span>
+
+                                    <h3>@request.Subject</h3>
+
+                                    <span class="ctr-muted">
+                                        To @request.TrainerName
+                                    </span>
+                                </div>
+
+                                <span class="ctr-tag @statusClass">
+                                    @request.Status
+                                </span>
+                            </div>
+
+                            <div class="ctr-request-meta">
+                                <span class="ctr-tag">
+                                    @request.Category
+                                </span>
+
+                                <span class="ctr-tag @(request.Priority == "High" ? "ctr-priority-high" : "")">
+                                    @request.Priority PRIORITY
+                                </span>
+                            </div>
+
+                            <p class="ctr-description">@request.Description</p>
+
+                            @if (request.HasResponse)
+                            {
+                                <div class="ctr-response">
+                                    <strong>Trainer response</strong>
+
+                                    <p>@request.TrainerResponse</p>
+
+                                    @if (request.RespondedAt.HasValue)
+                                    {
+                                        <div class="ctr-muted" style="margin-top:10px">
+                                            Answered @request.RespondedAt.Value.ToString("dd MMM yyyy · hh:mm tt")
+                                        </div>
+                                    }
+                                </div>
+                            }
+
+                            <div class="ctr-request-footer">
+                                <div class="ctr-muted">
+                                    Submitted @request.CreatedAt.ToString("dd MMM yyyy · hh:mm tt")
+
+                                    @if (request.ClosedAt.HasValue)
+                                    {
+                                        <span>
+                                            · Closed @request.ClosedAt.Value.ToString("dd MMM yyyy")
+                                        </span>
+                                    }
+                                </div>
+
+                                @if (request.CanClose)
+                                {
+                                    using (Html.BeginForm("Close", "ClientTrainerRequests", FormMethod.Post))
+                                    {
+                                        @Html.AntiForgeryToken()
+
+                                        <input type="hidden"
+                                               name="id"
+                                               value="@request.TrainerRequestId" />
+
+                                        <button type="submit"
+                                                class="ctr-button ctr-button-outline"
+                                                onclick="return confirm('Close this trainer request?');">
+                                            CLOSE REQUEST
+                                        </button>
+                                    }
+                                }
+                            </div>
+                        </article>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="ctr-empty">
+                    <h3>NO REQUESTS YET</h3>
+                    <p class="ctr-muted">
+                        Your submitted trainer requests will appear here,
+                        along with their status and any responses.
+                    </p>
+                </div>
+            }
+        </section>
+    </div>
+</div>

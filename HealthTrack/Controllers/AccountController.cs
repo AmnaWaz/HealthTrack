@@ -125,7 +125,7 @@ namespace HealthTrack.Controllers
             var roleName = db.Set<Role>().Where(r => r.RoleId == user.RoleId).Select(r => r.RoleName).First();
             SignIn(user.Email, roleName, vm.RememberMe);
 
-            // Unfinished onboarding always comes first (a returnUrl would only be blocked by the gate anyway).
+            
             if (OnboardingStatus.Check(db, user.UserId, roleName) == OnboardingState.Incomplete)
                 return RedirectToAction("Index", "Onboarding");
 
@@ -174,7 +174,7 @@ namespace HealthTrack.Controllers
         private ActionResult RedirectByRole(string roleName)
         {
             if (roleName == "Trainer") return RedirectToAction("Index", "Trainer");
-            if (roleName == "Client") return RedirectToAction("Plans", "Client");
+            if (roleName == "Client") return RedirectToAction("Overview", "Client");
             return RedirectToAction("Index", "Home");
         }
 
