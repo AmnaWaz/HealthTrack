@@ -1,33 +1,176 @@
-﻿@{
-    ViewBag.Title = "Home Page";
+@{
+    ViewBag.Title = "Both sides of the work";
+    Layout = "~/Views/Shared/_LandingLayout.cshtml";
+    var registerClient = Url.Action("Register", "Account", new { role = "Client" });
+    var registerTrainer = Url.Action("Register", "Account", new { role = "Trainer" });
+    var assets = Url.Content("~/Content/img/landing/");
 }
+@section styles {
+<style>
+    .hx{position:relative;background:var(--ink)}
+    .hx-chapter{position:relative;min-height:100svh;isolation:isolate}
+    .hx-stack{position:sticky;top:0;height:100svh;overflow:hidden}
+    .hx-inner{position:relative;min-height:100svh;padding:clamp(108px,11vh,145px) clamp(22px,6vw,110px) clamp(48px,7vh,90px)}
+    .hx-mono{font:500 10px/1.7 var(--mono);text-transform:uppercase;letter-spacing:.15em;color:var(--stone)}
+    .hx-label{display:inline-flex;align-items:center;gap:16px}.hx-label:before{content:"";display:block;width:29px;height:1px;background:var(--red)}
+    .hx-head{font:900 clamp(66px,10.5vw,172px)/.81 var(--sans);letter-spacing:-.095em;margin:22px 0 28px;text-transform:uppercase}
+    .hx-head span{display:block}.hx-head em{display:block;font:italic 400 .53em/1 var(--serif);letter-spacing:-.04em;text-transform:none;padding-left:10%;color:#e7c9c6}
+    .hx-copy{font:400 clamp(16px,1.65vw,22px)/1.65 var(--sans);max-width:550px;color:var(--stone)}
+    .hx-hero{background:var(--ink);display:flex;align-items:stretch}
+    .hx-hero-media{position:absolute;inset:0;z-index:0;overflow:hidden;background:#141516}
+    .hx-hero-media picture,.hx-hero-media img{display:block;width:100%;height:100%}
+    .hx-hero-media img{object-fit:cover;object-position:62% center;filter:contrast(1.03) saturate(.85) brightness(.87);transform:scale(1.035);will-change:transform}
+    .hx-hero:after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;background:linear-gradient(90deg,rgba(13,14,16,.81) 0%,rgba(13,14,16,.58) 33%,rgba(13,14,16,.08) 80%),linear-gradient(0deg,rgba(13,14,16,.95) 0%,transparent 35%)}
+    .hx-hero .hx-inner{z-index:2;display:flex;flex-direction:column;justify-content:space-between;flex:1}
+    .hx-hero-title{font:900 clamp(75px,13vw,225px)/.76 var(--sans);letter-spacing:-.105em;text-transform:uppercase;margin:22px 0 12px;max-width:1050px}
+    .hx-hero-title span{display:block}.hx-hero-title em{display:block;padding-left:16%;margin:15px 0 5px;font:italic 400 .5em/1 var(--serif);letter-spacing:-.04em;text-transform:none;color:#e7c9c6}
+    .hx-hero-bottom{display:flex;align-items:end;justify-content:space-between;gap:30px;max-width:1250px}
+    .hx-deck{font:italic 400 clamp(21px,2.3vw,33px)/1.19 var(--serif);max-width:460px;margin:0}
+    .hx-buttons{display:flex;flex-wrap:wrap;gap:12px}.hx-cta{display:inline-flex;align-items:center;justify-content:space-between;gap:30px;border:1px solid var(--ivory);padding:17px 20px;min-width:194px;text-decoration:none;text-transform:uppercase;font:500 11px var(--mono);letter-spacing:.04em;transition:background .25s,color .25s,transform .25s}.hx-cta:hover{background:var(--ivory);color:var(--ink);transform:translateY(-3px)}
+    .hx-underhero{padding-top:16px;margin-top:37px;border-top:1px solid rgba(244,240,232,.45);display:flex;align-items:center;justify-content:space-between;gap:14px}
+    .hx-underhero a{font:500 10px var(--mono);text-transform:uppercase;text-decoration:none;letter-spacing:.1em}
+    .hx-intro{background:#191b1e}.hx-intro .hx-inner{display:flex;flex-direction:column;justify-content:space-between}
+    .hx-intro-grid{display:grid;grid-template-columns:1.08fr .92fr;gap:6%;align-items:end}
+    .hx-intro-copy{font:400 clamp(17px,2vw,26px)/1.5 var(--sans);max-width:510px;color:var(--stone)}
+    .hx-dual{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;align-items:stretch;min-height:320px;margin-top:20px}
+    .hx-dual article{position:relative;overflow:hidden;border:1px solid rgba(244,240,232,.28);min-height:300px;padding:24px;display:flex;flex-direction:column;justify-content:space-between;isolation:isolate}
+    .hx-dual img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;filter:saturate(.65) brightness(.72);transition:transform 1.2s cubic-bezier(.22,1,.36,1),filter .6s}
+    .hx-dual article:before{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.9),rgba(0,0,0,.06) 85%);z-index:1;pointer-events:none}.hx-dual article > .hx-mono,.hx-dual article > div{position:relative;z-index:2}
+    .hx-dual article:hover img{transform:scale(1.06);filter:saturate(.85) brightness(.82)}
+    .hx-dual h3{font-size:clamp(32px,4vw,60px);line-height:.92;letter-spacing:-.075em;margin:0;text-transform:uppercase}.hx-dual p{margin:8px 0 0;font-size:13px;max-width:290px;line-height:1.6}
+    .hx-plan{background:#272024}.hx-plan .hx-inner{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:7%;align-items:center}
+    .hx-portrait{position:relative;min-height:clamp(420px,65vh,740px);overflow:hidden;background:#111}
+    .hx-portrait img{width:100%;height:100%;position:absolute;inset:0;object-fit:cover;filter:saturate(.68)}
+    .hx-portrait:after{content:"";position:absolute;inset:0;border:1px solid rgba(244,240,232,.24);pointer-events:none}
+    .hx-portrait-tag{position:absolute;bottom:22px;left:23px;font:500 10px var(--mono);background:rgba(13,14,16,.85);padding:11px 13px;letter-spacing:.07em}
+    .hx-plan .hx-head{font-size:clamp(61px,7.8vw,126px)}
+    .hx-ui{background:#101214;border:1px solid #4b4749;padding:22px 24px;margin-top:24px;max-width:550px}
+    .hx-ui header,.hx-row{display:flex;align-items:center;justify-content:space-between;gap:20px;font:500 11px/1.45 var(--mono)}
+    .hx-ui header{padding-bottom:16px;border-bottom:1px solid #4b4749;color:var(--stone)}
+    .hx-row{padding:16px 0;border-bottom:1px solid #313034}.hx-row:last-child{border:0}.hx-row span:last-child{color:#d6c2c3}
+    .hx-caption{font:500 10px/1.6 var(--mono);letter-spacing:.06em;color:var(--stone);text-transform:uppercase}
+    .hx-session{height:290svh;background:#101113}
+    .hx-session-sticky{position:sticky;top:0;height:100svh;overflow:hidden;padding:clamp(100px,11vh,140px) clamp(20px,6vw,110px) 45px;display:flex;flex-direction:column}
+    .hx-session .hx-head{font-size:clamp(58px,8.5vw,132px);margin-bottom:24px}
+    .hx-stage{display:grid;grid-template-columns:minmax(0,1fr) 62px minmax(0,1fr);gap:20px;align-items:stretch;flex:1;min-height:0}
+    .hx-stage-panel{border:1px solid #55505a;background:#191a1c;display:flex;flex-direction:column;justify-content:space-between;min-height:230px;padding:clamp(15px,2vw,29px);position:relative;overflow:hidden}
+    .hx-stage-panel h3{font:800 clamp(25px,3vw,46px)/1 var(--sans);text-transform:uppercase;letter-spacing:-.05em;margin:10px 0}
+    .hx-stage-panel .hx-row{transition:opacity .45s,transform .45s}.hx-stage-panel[data-role="trainer"] .hx-row{opacity:.35;transform:translateY(6px)}
+    .hx-stage-panel[data-role="trainer"].is-complete .hx-row{opacity:1;transform:none}
+    .hx-session-line{display:flex;align-items:center;justify-content:center}.hx-session-line:before{content:"";display:block;height:1px;width:100%;background:var(--red);transform:scaleX(var(--handover,0));transform-origin:left}
+    .hx-session-status{font:500 10px var(--mono);color:#eac7ca;letter-spacing:.07em;text-transform:uppercase}
+    .hx-scrub{height:2px;background:#474044;margin-top:17px}.hx-scrub span{display:block;height:100%;background:var(--red);width:var(--session-progress,0%)}
+    .hx-question{background:var(--coal)}
+    .hx-question .hx-inner{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:7%;align-items:center}
+    .hx-question-visual{position:relative;min-height:clamp(390px,60vh,620px)}
+    .hx-question-visual img{position:absolute;width:100%;height:100%;object-fit:cover;filter:saturate(.65);opacity:.8}
+    .hx-note{position:absolute;right:-3%;bottom:6%;max-width:365px;padding:24px;background:var(--ivory);color:var(--ink);box-shadow:0 23px 80px rgba(0,0,0,.2)}
+    .hx-note .hx-mono{color:#3a3334}.hx-note p{font:italic 400 clamp(20px,2vw,30px)/1.18 var(--serif);margin:12px 0}
+    .hx-question .hx-head{font-size:clamp(62px,8vw,125px)}
+    .hx-perspective{margin-top:25px}
+    .hx-switch{display:flex;gap:0;max-width:450px;border:1px solid rgba(244,240,232,.5)}.hx-switch button{flex:1;border:0;background:transparent;color:var(--ivory);padding:15px 12px;font:500 10px var(--mono);text-transform:uppercase;letter-spacing:.04em;cursor:pointer}.hx-switch button[aria-pressed="true"]{background:var(--ivory);color:var(--ink)}
+    .hx-switch-panel{padding:20px 0;min-height:122px}.hx-switch-panel h3{font-size:25px;letter-spacing:-.05em;text-transform:uppercase;margin:0 0 10px}.hx-switch-panel p{font-size:14px;color:var(--stone);line-height:1.6;max-width:460px;margin:0}
+    .hx-process{background:var(--ivory);color:var(--ink)}.hx-process .hx-mono{color:#454144}.hx-process .hx-inner{padding-bottom:85px}.hx-process .hx-head{font-size:clamp(65px,9vw,140px)}.hx-process .hx-head em{color:var(--wine)}
+    .hx-steps{list-style:none;padding:0;margin:35px 0 0;max-width:1150px}.hx-steps li{display:grid;grid-template-columns:58px minmax(0,1fr) minmax(0,1.15fr);gap:22px;border-top:1px solid #b6afaa;padding:20px 0;align-items:start}
+    .hx-step-number{font:500 11px var(--mono);color:var(--wine)}.hx-steps strong{font:800 clamp(21px,2.7vw,36px)/1 var(--sans);letter-spacing:-.045em;text-transform:uppercase}.hx-steps p{font:400 14px/1.65 var(--sans);margin:0;color:#3e3b3a}
+    .hx-invite{background:#0D0E10}.hx-invite .hx-inner{display:flex;flex-direction:column;justify-content:space-between}.hx-invite .hx-head{margin-bottom:20px}
+    .hx-doors{display:grid;grid-template-columns:1fr 1fr;gap:7%;margin-top:55px}.hx-door{display:block;border-top:1px solid var(--ivory);padding:20px 0 30px;text-decoration:none;position:relative}.hx-door:after{content:"";height:2px;width:100%;position:absolute;top:-1px;left:0;background:var(--red);transform:scaleX(0);transform-origin:left;transition:transform .35s}.hx-door:hover:after,.hx-door:focus-visible:after{transform:scaleX(1)}
+    .hx-door strong{font:900 clamp(28px,4.4vw,72px)/.95 var(--sans);text-transform:uppercase;letter-spacing:-.065em;display:flex;justify-content:space-between;gap:15px}.hx-door strong span{transition:transform .25s}.hx-door:hover strong span{transform:translate(6px,-4px)}.hx-door small{display:block;font:500 11px/1.6 var(--mono);color:var(--stone);margin-top:14px;text-transform:uppercase}
+    [data-reveal]{opacity:0;transform:translateY(35px);transition:opacity .9s cubic-bezier(.22,1,.36,1),transform .9s cubic-bezier(.22,1,.36,1)}[data-reveal].is-visible{opacity:1;transform:none}
+    @@media(max-width:1050px){.hx-stack{height:auto;min-height:100svh;position:relative;overflow:visible}.hx-inner{min-height:100svh}.hx-head{font-size:clamp(65px,11vw,115px)}.hx-intro-grid{grid-template-columns:1fr}.hx-dual{min-height:260px}.hx-plan .hx-inner,.hx-question .hx-inner{grid-template-columns:1fr 1fr;gap:35px}.hx-portrait{min-height:510px}.hx-session{height:auto}.hx-session-sticky{height:auto;min-height:100svh;position:relative}.hx-stage{grid-template-columns:1fr 30px 1fr}.hx-session-line:before{transform:scaleX(1)}.hx-stage-panel[data-role="trainer"] .hx-row{opacity:1;transform:none}}
+    @@media(max-width:700px){.hx-inner{padding:108px 20px 62px;min-height:auto}.hx-hero .hx-inner{min-height:100svh}.hx-hero-title{font-size:clamp(70px,15vw,130px)}.hx-hero-title em{padding-left:8%}.hx-hero-bottom{align-items:flex-start;flex-direction:column}.hx-buttons{width:100%}.hx-cta{flex:1;min-width:0;gap:10px}.hx-hero-media img{object-position:70% center}.hx-hero:after{background:linear-gradient(90deg,rgba(13,14,16,.8),rgba(13,14,16,.25)),linear-gradient(0deg,#0D0E10,transparent 65%)}.hx-underhero{margin-top:20px}.hx-head{font-size:clamp(61px,13.5vw,100px)}.hx-dual,.hx-plan .hx-inner,.hx-question .hx-inner,.hx-doors{grid-template-columns:1fr}.hx-dual article{min-height:270px}.hx-portrait{min-height:430px}.hx-stage{grid-template-columns:1fr;gap:12px}.hx-session-line{min-height:20px}.hx-session-line:before{width:1px;height:20px}.hx-note{right:0;max-width:85%}.hx-steps li{grid-template-columns:42px 1fr}.hx-steps p{grid-column:2}.hx-process .hx-head{font-size:clamp(54px,11vw,90px)}}
+    @@media(max-width:430px){.hx-hero-title{font-size:16vw}.hx-cta{flex-basis:100%}.hx-session .hx-head{font-size:15vw}.hx-head{font-size:14vw}}
+    @@media(prefers-reduced-motion:reduce){.hx-stack{position:relative;height:auto;min-height:auto;overflow:visible}[data-reveal]{opacity:1;transform:none}.hx-hero-media img{transform:none}.hx-dual article:hover img{transform:none}}
 
-<main>
-    <section class="row" aria-labelledby="aspnetTitle">
-        <h1 id="title">ASP.NET</h1>
-        <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-        <p><a href="https://asp.net" class="btn btn-primary btn-md">Learn more &raquo;</a></p>
-    </section>
-
-    <div class="row">
-        <section class="col-md-4" aria-labelledby="gettingStartedTitle">
-            <h2 id="gettingStartedTitle">Getting started</h2>
-            <p>
-                ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-                enables a clean separation of concerns and gives you full control over markup
-                for enjoyable, agile development.
-            </p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-        </section>
-        <section class="col-md-4" aria-labelledby="librariesTitle">
-            <h2 id="librariesTitle">Get more libraries</h2>
-            <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-        </section>
-        <section class="col-md-4" aria-labelledby="hostingTitle">
-            <h2 id="hostingTitle">Web Hosting</h2>
-            <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
-        </section>
+    .hx-hero{position:sticky;isolation:isolate;background-color:#0D0E10}
+    .hx-hero-media{position:absolute;inset:0;z-index:0;width:100%;height:100%;overflow:hidden;pointer-events:none}
+    .hx-hero-media .hx-hero-img{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;object-position:62% center;opacity:1;visibility:visible}
+    .hx-hero::after{z-index:1}
+    .hx-hero > .hx-inner{position:relative;z-index:2}
+    @@media(max-width:1050px){.hx-hero{position:relative}}
+    @@media(max-width:700px){.hx-hero-media .hx-hero-img{object-position:70% center}}
+</style>
+}
+<div class="hx">
+<section class="hx-chapter hx-stack hx-hero" id="opening" aria-labelledby="hero-title">
+    <div class="hx-hero-media">
+        <img class="hx-hero-img" src="@Url.Content("~/Content/img/landing/hero-coaching.jpg")" alt="Personal trainer helping an athlete prepare for a kettlebell exercise" fetchpriority="high" decoding="async" />
     </div>
-</main>
+    <div class="hx-inner">
+        <div><div class="hx-mono hx-label">00 / FOR THE PEOPLE WHO TRAIN AND THE PEOPLE WHO COACH</div><h1 class="hx-hero-title" id="hero-title"><span>THE WORK.</span><em>has two</em><span>SIDES.</span></h1></div>
+        <div><div class="hx-hero-bottom"><p class="hx-deck">For the one putting in the work. And the one who makes every session count.</p><div class="hx-buttons"><a class="hx-cta" href="@registerClient">Start training <span aria-hidden="true">↗</span></a><a class="hx-cta" href="@registerTrainer">Start coaching <span aria-hidden="true">↗</span></a></div></div><div class="hx-underhero"><span class="hx-mono">ONE PLATFORM / TWO PERSPECTIVES</span><a href="#perspectives">SCROLL TO DISCOVER ↓</a></div></div>
+    </div>
+</section>
+<section class="hx-chapter hx-stack hx-intro" id="perspectives" aria-labelledby="perspectives-title">
+    <div class="hx-inner"><div><span class="hx-mono hx-label">01 / THE PLATFORM</span><div class="hx-intro-grid"><h2 class="hx-head" id="perspectives-title" data-reveal><span>ONE</span><em>shared</em><span>PURPOSE.</span></h2><p class="hx-intro-copy" data-reveal>A plan written with intention. A session recorded with honesty. A clearer picture of what comes next.</p></div></div><div class="hx-dual"><article><img src="@(assets + "athlete-detail.jpg")" alt="Athlete preparing to train" loading="lazy" /><span class="hx-mono">01 / THE CLIENT</span><div><h3>DO THE WORK.</h3><p>Training and nutrition plans, logs and progress in one place.</p></div></article><article><img src="@(assets + "trainer-detail.jpg")" alt="Personal trainer supervising a session" loading="lazy" /><span class="hx-mono">02 / THE TRAINER</span><div><h3>GUIDE THE WORK.</h3><p>Structure a programme and support the people following it.</p></div></article></div></div>
+</section>
+<section class="hx-chapter hx-stack hx-plan" id="plan" aria-labelledby="plan-title">
+    <div class="hx-inner"><div class="hx-portrait"><img src="@(assets + "coaching-editorial.jpg")" alt="Trainer and athlete focused on a strength exercise" loading="lazy"/><span class="hx-portrait-tag">02 / COACHING IS PERSONAL</span></div><div><span class="hx-mono hx-label">02 / THE PLAN</span><h2 class="hx-head" id="plan-title" data-reveal><span>WRITTEN.</span><em>for one</em><span>PERSON.</span></h2><p class="hx-copy">The trainer sets the direction. The client knows what to do next.</p><div class="hx-ui" aria-label="Illustrative training plan"><header><span>STRENGTH / SAMPLE PLAN</span><span>04 WEEKS</span></header><div class="hx-row"><strong>Monday / Lower body</strong><span>04 exercises</span></div><div class="hx-row"><strong>Wednesday / Upper body</strong><span>05 exercises</span></div><div class="hx-row"><strong>Friday / Full body</strong><span>04 exercises</span></div><div class="hx-caption" style="padding-top:15px">Illustrative sample / Not a live account</div></div></div></div>
+</section>
+<section class="hx-chapter hx-session" id="session" aria-labelledby="session-title">
+    <div class="hx-session-sticky"><span class="hx-mono hx-label">03 / THE CONNECTION / SCROLL TO FOLLOW THE RECORD</span><h2 class="hx-head" id="session-title"><span>LOGGED.</span><em>and then</em><span>SEEN.</span></h2><div class="hx-stage"><div class="hx-stage-panel" data-role="client"><div><span class="hx-mono">CLIENT / WORKOUT LOG / SAMPLE</span><h3>THE SESSION.</h3></div><div><div class="hx-row"><strong>Back squat</strong><span>4 × 8</span></div><div class="hx-row"><strong>Rowing</strong><span>20 minutes</span></div><div class="hx-row"><strong>Status</strong><span class="hx-session-status" id="client-status">READY TO SAVE</span></div></div></div><div class="hx-session-line" aria-hidden="true"></div><div class="hx-stage-panel" data-role="trainer" id="trainer-stage"><div><span class="hx-mono">TRAINER / CLIENT ACTIVITY / SAMPLE</span><h3>THE PICTURE.</h3></div><div><div class="hx-row"><strong>Last activity</strong><span id="trainer-latest">—</span></div><div class="hx-row"><strong>Sessions logged</strong><span id="trainer-sessions">02</span></div><div class="hx-row"><strong>Review</strong><span class="hx-session-status" id="trainer-review">AWAITING ENTRY</span></div></div></div></div><div class="hx-scrub" aria-hidden="true"><span id="session-meter"></span></div><p class="hx-caption">Illustrative connection of Client and Trainer workflows. Exact report presentation subject to integration testing.</p></div>
+</section>
+<section class="hx-chapter hx-stack hx-question" id="question" aria-labelledby="question-title"><div class="hx-inner"><div><span class="hx-mono hx-label">04 / THE CONVERSATION</span><h2 class="hx-head" id="question-title" data-reveal><span>ASKED.</span><em>and</em><span>ANSWERED.</span></h2><p class="hx-copy">Not another chat window. A clear request, the right context and a considered reply.</p><div class="hx-perspective"><div class="hx-switch" role="group" aria-label="Explore both sides of a trainer request"><button type="button" id="view-client" aria-pressed="true">Client perspective</button><button type="button" id="view-trainer" aria-pressed="false">Trainer perspective</button></div><div class="hx-switch-panel" id="perspective-panel" aria-live="polite"><h3>Ask for an adjustment.</h3><p>Category: Plan adjustment · Priority: Normal · “Could we move Friday's workout to Saturday?”</p></div><span class="hx-caption">Demonstration / Trainer Requests feature awaiting integration testing</span></div></div><div class="hx-question-visual"><img src="@(assets + "trainer-detail.jpg")" alt="Trainer observing an athlete and considering a session adjustment" loading="lazy"/><div class="hx-note"><span class="hx-mono">A REQUEST / A RESPONSE</span><p>“A better plan starts with a better conversation.”</p><span class="hx-caption" style="color:#454044">HealthTrack / Coaching in context</span></div></div></div></section>
+<section class="hx-chapter hx-stack hx-process" id="process" aria-labelledby="process-title"><div class="hx-inner"><span class="hx-mono hx-label">05 / THE PROCESS</span><h2 class="hx-head" id="process-title" data-reveal><span>FIVE STEPS.</span><em>Two</em><span>SIDES.</span></h2><ol class="hx-steps"><li><span class="hx-step-number">01</span><strong>Register.</strong><p>Create an account as a client or a trainer.</p></li><li><span class="hx-step-number">02</span><strong>Connect.</strong><p>Build a client–trainer relationship. The new selection approval workflow awaits integrated testing.</p></li><li><span class="hx-step-number">03</span><strong>Plan.</strong><p>Trainers design training and nutrition programmes for clients.</p></li><li><span class="hx-step-number">04</span><strong>Train.</strong><p>Clients record activities, meals and measurements; trainers manage sessions.</p></li><li><span class="hx-step-number">05</span><strong>Adjust.</strong><p>Review progress, share requests and refine the plan over time.</p></li></ol></div></section>
+<section class="hx-chapter hx-stack hx-invite" id="join" aria-labelledby="invite-title"><div class="hx-inner"><div><span class="hx-mono hx-label">06 / THE INVITATION</span><h2 class="hx-head" id="invite-title" data-reveal><span>CHOOSE.</span><em>your</em><span>SIDE.</span></h2><p class="hx-copy">Two different roles. One better way to move forward.</p></div><div><div class="hx-doors"><a class="hx-door" href="@registerClient"><strong>START TRAINING <span aria-hidden="true">↗</span></strong><small>For clients / Your training, nutrition and progress</small></a><a class="hx-door" href="@registerTrainer"><strong>START COACHING <span aria-hidden="true">↗</span></strong><small>For trainers / Your clients, plans and sessions</small></a></div><p class="hx-caption" style="margin-top:40px">Already a member? <a href="@Url.Action("Login","Account")">Log in ↗</a></p></div></div></section>
+</div>
+@section scripts {
+<script>
+(function () {
+    'use strict';
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var reveals = document.querySelectorAll('[data-reveal]');
+    if ('IntersectionObserver' in window && !reduce) {
+        var observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) { if (entry.isIntersecting) { entry.target.classList.add('is-visible'); observer.unobserve(entry.target); } });
+        }, { threshold: 0.1 });
+        reveals.forEach(function (el) { observer.observe(el); });
+    } else { reveals.forEach(function (el) { el.classList.add('is-visible'); }); }
+    var clientButton = document.getElementById('view-client');
+    var trainerButton = document.getElementById('view-trainer');
+    var panel = document.getElementById('perspective-panel');
+    function showPerspective(trainer) {
+        clientButton.setAttribute('aria-pressed', trainer ? 'false' : 'true');
+        trainerButton.setAttribute('aria-pressed', trainer ? 'true' : 'false');
+        panel.innerHTML = trainer
+            ? '<h3>Respond with context.</h3><p>Request: Plan adjustment · Status: Answered · “Yes, we can move that session and keep your recovery time between workouts.”</p>'
+            : '<h3>Ask for an adjustment.</h3><p>Category: Plan adjustment · Priority: Normal · “Could we move Friday’s workout to Saturday?”</p>';
+    }
+    clientButton.addEventListener('click', function () { showPerspective(false); });
+    trainerButton.addEventListener('click', function () { showPerspective(true); });
+    var progress = document.getElementById('hl-progress');
+    var track = document.getElementById('session');
+    var stage = document.getElementById('trainer-stage');
+    var clientStatus = document.getElementById('client-status');
+    var latest = document.getElementById('trainer-latest');
+    var sessions = document.getElementById('trainer-sessions');
+    var review = document.getElementById('trainer-review');
+    var meter = document.getElementById('session-meter');
+    var raf = false;
+    function clamp(v) { return Math.max(0, Math.min(1, v)); }
+    function render() {
+        var available = document.documentElement.scrollHeight - window.innerHeight;
+        var pct = available > 0 ? clamp(window.scrollY / available) : 0;
+        if (progress) progress.style.transform = 'scaleX(' + pct + ')';
+        if (track) {
+            var length = track.offsetHeight - window.innerHeight;
+            var p = length > 0 ? clamp(-track.getBoundingClientRect().top / length) : (track.getBoundingClientRect().top <= 0 ? 1 : 0);
+            if (reduce || window.innerWidth <= 1050) { p = track.getBoundingClientRect().top < window.innerHeight * .7 ? 1 : 0; }
+            meter.style.width = (p * 100) + '%';
+            track.style.setProperty('--handover', clamp((p - .42) / .24));
+            var saved = p > .32;
+            var shared = p > .69;
+            clientStatus.textContent = saved ? 'LOGGED' : 'READY TO SAVE';
+            latest.textContent = shared ? 'Strength' : '—';
+            sessions.textContent = shared ? '03' : '02';
+            review.textContent = shared ? 'AVAILABLE TO REVIEW' : 'AWAITING ENTRY';
+            stage.classList.toggle('is-complete', shared);
+        }
+        raf = false;
+    }
+    window.addEventListener('scroll', function () { if (!raf) { raf = true; requestAnimationFrame(render); } }, { passive:true });
+    window.addEventListener('resize', function () { if (!raf) { raf = true; requestAnimationFrame(render); } });
+    render();
+})();
+</script>
+}

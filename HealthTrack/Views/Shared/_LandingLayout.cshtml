@@ -1,0 +1,57 @@
+@{
+    Layout = null;
+    var pageTitle = ViewBag.Title as string ?? "HealthTrack";
+}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0D0E10" />
+    <meta name="description" content="HealthTrack connects the people who train with the people who coach. Plans, progress and support in one place." />
+    <title>@pageTitle — HealthTrack</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+    <style>
+        :root{--ink:#0D0E10;--coal:#1C2022;--ivory:#F4F0E8;--stone:#B9BDC2;--red:#B6505D;--wine:#522B35;--mono:'IBM Plex Mono',monospace;--sans:'Archivo',Arial,sans-serif;--serif:'Instrument Serif',Georgia,serif}
+        *,*::before,*::after{box-sizing:border-box}
+        html{scroll-behavior:smooth;scroll-padding-top:80px}
+        body{margin:0;background:var(--ink);color:var(--ivory);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow-x:clip}
+        a{color:inherit}button{font:inherit}a:focus-visible,button:focus-visible{outline:2px solid currentColor;outline-offset:5px}
+        ::selection{background:var(--red);color:var(--ivory)}
+        .hl-skip{position:fixed;left:12px;top:-80px;z-index:9999;padding:12px;background:var(--ivory);color:var(--ink)}.hl-skip:focus{top:12px}
+        .hl-nav{position:fixed;top:0;left:0;right:0;z-index:300;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:22px clamp(20px,5vw,90px);background:rgba(13,14,16,.89);border-bottom:1px solid rgba(244,240,232,.14);backdrop-filter:blur(16px)}
+        .hl-brand{font-weight:900;font-size:clamp(16px,1.4vw,21px);letter-spacing:-.075em;white-space:nowrap;text-decoration:none}.hl-brand span{font-weight:400;color:var(--stone)}
+        .hl-navlinks,.hl-actions{display:flex;gap:clamp(15px,2vw,35px);align-items:center}.hl-navlinks a,.hl-actions a{font:500 10px var(--mono);letter-spacing:.06em;text-decoration:none;text-transform:uppercase;white-space:nowrap;transition:opacity .2s}
+        .hl-navlinks a:hover,.hl-actions a:hover{opacity:.65}.hl-actions a.hl-join{border:1px solid var(--ivory);padding:12px 17px;transition:background .2s,color .2s}.hl-actions a.hl-join:hover{opacity:1;background:var(--ivory);color:var(--ink)}
+        .hl-progress{position:fixed;z-index:400;left:0;top:0;height:2px;background:var(--red);width:100%;transform-origin:left;transform:scaleX(0);pointer-events:none}
+        .hl-footer{position:relative;z-index:40;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:24px;padding:37px clamp(20px,5vw,90px);background:var(--ink);border-top:1px solid #414043}
+        .hl-footer small,.hl-footer a{font:500 10px var(--mono);letter-spacing:.06em;color:var(--stone);text-decoration:none;text-transform:uppercase}
+        @@media(max-width:850px){.hl-navlinks{display:none}}
+        @@media(max-width:430px){.hl-nav{padding:19px 18px}.hl-actions{gap:12px}.hl-actions a{font-size:9px}.hl-actions a.hl-join{padding:10px 12px}}
+        @@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+    </style>
+    @RenderSection("styles", required:false)
+</head>
+<body>
+    <a href="#main-content" class="hl-skip">Skip to content</a>
+    <div class="hl-progress" id="hl-progress" aria-hidden="true"></div>
+    <header class="hl-nav">
+        <a href="@Url.Action("Index","Home")" class="hl-brand" aria-label="HealthTrack homepage">HEALTH<span>TRACK.</span></a>
+        <nav class="hl-navlinks" aria-label="Public navigation">
+            <a href="@Url.Action("Index","Home")#perspectives">The platform</a>
+            <a href="@Url.Action("Index","Home")#session">Experience</a>
+            <a href="@Url.Action("Index","Home")#process">How it works</a>
+            <a href="@Url.Action("About","Home")">About</a>
+        </nav>
+        <div class="hl-actions">
+            <a href="@Url.Action("Login","Account")">Log in</a>
+            <a href="@Url.Action("Register","Account")" class="hl-join">Join ↗</a>
+        </div>
+    </header>
+    <main id="main-content">@RenderBody()</main>
+    <footer class="hl-footer"><a href="@Url.Action("Index","Home")" class="hl-brand">HEALTH<span>TRACK.</span></a><small>THE WORK IS PERSONAL. THE PROGRESS IS SHARED.</small><a href="@Url.Action("About","Home")">About ↗</a></footer>
+    @RenderSection("scripts", required:false)
+</body>
+</html>

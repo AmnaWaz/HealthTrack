@@ -222,6 +222,11 @@
     <Content Include="Content\bootstrap.rtl.css" />
     <Content Include="Content\bootstrap.rtl.min.css" />
     <Content Include="Content\brand.css" />
+    <Content Include="Content\img\landing\athlete-detail.webp" />
+    <Content Include="Content\img\landing\coaching-editorial.webp" />
+    <Content Include="Content\img\landing\hero-coaching.jpg" />
+    <Content Include="Content\img\landing\hero-coaching.webp" />
+    <Content Include="Content\img\landing\trainer-detail.webp" />
     <Content Include="Content\onboarding.css" />
     <Content Include="Content\option-picker.css" />
     <Content Include="Content\profile.css" />
@@ -303,6 +308,7 @@
     <Content Include="Views\TrainerRequests\Index.cshtml" />
     <Content Include="Views\ClientTrainerDirectory\Index.cshtml" />
     <Content Include="Views\TrainerSelection\Index.cshtml" />
+    <Content Include="Views\Shared\_LandingLayout.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
