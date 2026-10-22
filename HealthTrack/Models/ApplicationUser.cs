@@ -29,6 +29,9 @@ namespace HealthTrack.Models
         [StringLength(20)]
         public string Phone { get; set; }
 
+        [StringLength(255)]
+        public string ProfilePhotoPath { get; set; }
+
         public DateTime DateJoined { get; set; }
 
         public bool IsActive { get; set; }

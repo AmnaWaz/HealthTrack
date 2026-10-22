@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections.Generic;
 
@@ -56,6 +56,9 @@ namespace HealthTrack.ViewModels
                         return "Overview";
 
                     case "request":
+                        return "Client Requests";
+
+                    case "trainerselection":
                         return "My Trainer";
 
                     case "feedback":
@@ -86,6 +89,9 @@ namespace HealthTrack.ViewModels
                         return "Client";
 
                     case "request":
+                        return "ClientTrainerRequests";
+
+                    case "trainerselection":
                         return "ClientTrainer";
 
                     case "feedback":

@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Data;
 using System.Linq;
@@ -94,12 +94,74 @@ namespace HealthTrack.Controllers
                         ? null
                         : form.TrainerNote.Trim();
 
+                var otherPendingRequests = db.Set<TrainerSelectionRequest>()
+                    .Where(r => r.ClientId == client.ClientId &&
+                                r.TrainerSelectionRequestId != request.TrainerSelectionRequestId &&
+                                r.Status == TrainerSelectionRequest.Statuses.Pending)
+                    .ToList();
+
+                foreach (var other in otherPendingRequests)
+                {
+                    other.Status = TrainerSelectionRequest.Statuses.Cancelled;
+                    other.RespondedAt = now;
+                }
+
+                // Legacy data may contain future bookings from an older relationship,
+                // even though this Client currently has no assigned Trainer.
+                var staleAppointments = db.Set<Appointment>()
+                    .Where(a => a.ClientId == client.ClientId &&
+                                a.TrainerId != trainerId &&
+                                a.AppointmentDateTime > now &&
+                                (a.Status == AppointmentStatus.Pending ||
+                                 a.Status == AppointmentStatus.Scheduled ||
+                                 a.Status == AppointmentStatus.Approved))
+                    .ToList();
+
+                foreach (var appointment in staleAppointments)
+                {
+                    appointment.Status = AppointmentStatus.Cancelled;
+                }
+
+                var otherTrainerIds = otherPendingRequests
+                    .Select(r => r.TrainerId)
+                    .Concat(staleAppointments.Select(a => a.TrainerId))
+                    .Distinct()
+                    .ToList();
+
+                var affectedTrainers = db.Set<TrainerProfile>()
+                    .Where(t => otherTrainerIds.Contains(t.TrainerId))
+                    .Select(t => new { t.TrainerId, t.UserId })
+                    .ToList();
+
+                var clientName = (clientUser.FirstName + " " + clientUser.LastName).Trim();
+                foreach (var affectedTrainer in affectedTrainers)
+                {
+                    var hadSelection = otherPendingRequests.Any(r => r.TrainerId == affectedTrainer.TrainerId);
+                    var hadAppointment = staleAppointments.Any(a => a.TrainerId == affectedTrainer.TrainerId);
+                    var message = hadSelection && hadAppointment
+                        ? "The trainer request from " + clientName + " was closed, and old upcoming appointments were cancelled because the client selected another trainer."
+                        : hadSelection
+                            ? "The trainer request from " + clientName + " was closed because the client selected another trainer."
+                            : "Upcoming appointments for " + clientName + " were cancelled because the client selected another trainer.";
+                    db.Set<Notification>().Add(new Notification
+                    {
+                        UserId = affectedTrainer.UserId,
+                        Message = LimitNotification(message),
+                        Type = "TrainerSelection",
+                        IsRead = false,
+                        CreatedAt = now
+                    });
+                }
+
                 db.Set<Notification>().Add(new Notification
                 {
                     UserId = client.UserId,
-                    Message =
+                    Message = LimitNotification(
                         "Your trainer selection request was accepted by " +
-                        TrainerName + ". You can now access your trainer's plans and services.",
+                        TrainerName + ". You can now access your trainer's plans and services." +
+                        (staleAppointments.Count > 0
+                            ? " Old appointments with other trainers were cancelled."
+                            : "")),
                     Type = "TrainerSelection",
                     IsRead = false,
                     CreatedAt = now
@@ -172,10 +234,10 @@ namespace HealthTrack.Controllers
                     db.Set<Notification>().Add(new Notification
                     {
                         UserId = client.UserId,
-                        Message =
+                        Message = LimitNotification(
                             "Your trainer selection request to " +
                             TrainerName +
-                            " was not accepted. You can browse other available trainers.",
+                            " was not accepted. You can browse other available trainers."),
                         Type = "TrainerSelection",
                         IsRead = false,
                         CreatedAt = now
@@ -191,6 +253,12 @@ namespace HealthTrack.Controllers
                 "Trainer selection request rejected.";
 
             return RedirectToAction("Index");
+        }
+
+        private static string LimitNotification(string message)
+        {
+            if (string.IsNullOrEmpty(message)) return string.Empty;
+            return message.Length <= 300 ? message : message.Substring(0, 300);
         }
 
         private TrainerSelectionViewModel BuildViewModel()

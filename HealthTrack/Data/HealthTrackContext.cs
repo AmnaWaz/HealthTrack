@@ -24,6 +24,7 @@ namespace HealthTrack.Data
         public DbSet<MealLog> MealLogs { get; set; }
         public DbSet<HealthMetric> HealthMetrics { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
+        public DbSet<HealthcareAppointment> HealthcareAppointments { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<TrainerRequest> TrainerRequests { get; set; }
         public DbSet<TrainerSelectionRequest> TrainerSelectionRequests { get; set; }

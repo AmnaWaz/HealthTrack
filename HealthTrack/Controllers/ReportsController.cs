@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
@@ -56,6 +56,26 @@ namespace HealthTrack.Controllers
                 // ===== END DATA ACCESS =====
             }
 
+            var lastWorkoutDates = new Dictionary<int, DateTime>();
+            var lastMealDates = new Dictionary<int, DateTime>();
+
+            if (ids.Count > 0)
+            {
+                lastWorkoutDates = db.Set<WorkoutLog>()
+                    .Where(w => ids.Contains(w.ClientId) && w.Date <= now)
+                    .GroupBy(w => w.ClientId)
+                    .Select(g => new { ClientId = g.Key, LastDate = g.Max(w => w.Date) })
+                    .ToList()
+                    .ToDictionary(x => x.ClientId, x => x.LastDate);
+
+                lastMealDates = db.Set<MealLog>()
+                    .Where(m => ids.Contains(m.ClientId) && m.Date <= now)
+                    .GroupBy(m => m.ClientId)
+                    .Select(g => new { ClientId = g.Key, LastDate = g.Max(m => m.Date) })
+                    .ToList()
+                    .ToDictionary(x => x.ClientId, x => x.LastDate);
+            }
+
             var vm = new ReportsViewModel { Days = days, ClientCount = clients.Count };
 
             foreach (var c in clients)
@@ -75,10 +95,15 @@ namespace HealthTrack.Controllers
                 decimal? change = null;
                 if (cwt.Count >= 2) change = Math.Round(cwt.Last().Value - cwt.First().Value, 1);
 
-                var dates = workouts.Where(p => p.ClientId == cid).Select(p => p.When)
-                    .Concat(meals.Where(p => p.ClientId == cid).Select(p => p.When)).ToList();
-                DateTime? last = null;
-                if (dates.Count > 0) last = dates.Max();
+                DateTime lastWorkout;
+                DateTime lastMeal;
+                var hasWorkout = lastWorkoutDates.TryGetValue(cid, out lastWorkout);
+                var hasMeal = lastMealDates.TryGetValue(cid, out lastMeal);
+                DateTime? last = hasWorkout && hasMeal
+                    ? (DateTime?)(lastWorkout > lastMeal ? lastWorkout : lastMeal)
+                    : hasWorkout ? (DateTime?)lastWorkout
+                    : hasMeal ? (DateTime?)lastMeal
+                    : null;
 
                 vm.Rows.Add(new ReportRow
                 {

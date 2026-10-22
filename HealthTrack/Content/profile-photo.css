@@ -1,0 +1,7 @@
+
+.ht-photo-controls{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin:14px 0 25px;padding:20px;border:1px solid var(--ht-border,#b9bdc2)}
+.ht-photo-upload{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.ht-photo-label{display:block;width:100%;font:600 12px "IBM Plex Mono",monospace;text-transform:uppercase}
+.ht-photo-action{cursor:pointer;padding:11px 15px;background:#b6505d;color:white;border:1px solid #b6505d;font:600 11px "IBM Plex Mono",monospace;text-transform:uppercase}
+.ht-photo-remove{background:transparent;color:inherit;border-color:#777}
+.ht-photo-preview{margin:20px 0}

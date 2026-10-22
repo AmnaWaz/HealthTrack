@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
+using System.Web.Security;
 using HealthTrack.Data;
 using HealthTrack.Models;
 using HealthTrack.ViewModels;
@@ -24,6 +25,13 @@ namespace HealthTrack.Controllers
         {
             var email = User.Identity.Name;
             var user = db.Set<ApplicationUser>().FirstOrDefault(u => u.Email == email);
+            if (user == null || !user.IsActive)
+            {
+                FormsAuthentication.SignOut();
+                filterContext.Result = RedirectToAction("Login", "Account");
+                return;
+            }
+
             TrainerProfile trainer = null;
             if (user != null)
             {
@@ -44,6 +52,7 @@ namespace HealthTrack.Controllers
             var last = string.IsNullOrEmpty(user.LastName) ? "" : user.LastName.Substring(0, 1);
             ViewBag.SideName = user.FirstName + " " + user.LastName;
             ViewBag.SideInitials = (first + last).ToUpper();
+            ViewBag.SidePhoto = user.ProfilePhotoPath;
             ViewBag.SideUnread = db.Set<Notification>().Count(n => n.UserId == userId && !n.IsRead);
 
             base.OnActionExecuting(filterContext);
@@ -55,7 +64,7 @@ namespace HealthTrack.Controllers
         {
             var client = db.Set<ClientProfile>().Find(clientId);
             if (client == null) return;
-            if (message != null && message.Length > 480) message = message.Substring(0, 480);
+            if (message != null && message.Length > 300) message = message.Substring(0, 300);
 
             db.Set<Notification>().Add(new Notification
             {
@@ -74,6 +83,7 @@ namespace HealthTrack.Controllers
             public string FirstName { get; set; }
             public string LastName { get; set; }
             public string Goal { get; set; }
+            public string ProfilePhotoPath { get; set; }
             public decimal Height { get; set; }
             public decimal Weight { get; set; }
             public DateTime DateOfBirth { get; set; }
@@ -92,6 +102,7 @@ namespace HealthTrack.Controllers
                 Name = c.FirstName + " " + c.LastName,
                 Initials = (first + last).ToUpper(),
                 Goal = c.Goal,
+                ProfilePhotoPath = c.ProfilePhotoPath,
                 Height = c.Height,
                 Weight = c.Weight,
                 Age = age < 0 ? 0 : age
@@ -114,6 +125,7 @@ namespace HealthTrack.Controllers
                            FirstName = u.FirstName,
                            LastName = u.LastName,
                            Goal = c.Goal,
+                           ProfilePhotoPath = u.ProfilePhotoPath,
                            Height = (decimal)c.Height,
                            Weight = (decimal)c.Weight,
                            DateOfBirth = c.DateOfBirth

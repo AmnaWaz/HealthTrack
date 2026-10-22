@@ -28,6 +28,7 @@ namespace HealthTrack.ViewModels
     public class AppointmentsIndexViewModel
     {
         public string Filter { get; set; }
+        public int CountPending { get; set; }
         public int CountUpcoming { get; set; }
         public int CountNeedsUpdate { get; set; }
         public int CountCompleted { get; set; }
@@ -124,7 +125,7 @@ namespace HealthTrack.ViewModels
         [StringLength(100)]
         public string Specialisation { get; set; }
 
-        [StringLength(1000)]
+        [StringLength(500)]
         public string Bio { get; set; }
     }
 }

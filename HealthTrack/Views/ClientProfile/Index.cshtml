@@ -231,12 +231,23 @@
 
     <div class="cpf-grid">
         <section class="cpf-panel">
-            <div class="cpf-avatar" aria-hidden="true">
-                @(string.IsNullOrWhiteSpace(Model.FirstName)
-                    ? "C"
-                    : Model.FirstName.Substring(0, 1).ToUpperInvariant())
-            </div>
+            <div class="cpf-avatar">@if (!string.IsNullOrWhiteSpace(Model.ProfilePhotoPath)) { <img src="@Url.Content("~" + Model.ProfilePhotoPath)" alt="Your profile photograph" style="width:100%;height:100%;object-fit:cover" /> } else { @(string.IsNullOrWhiteSpace(Model.FirstName) ? "C" : Model.FirstName.Substring(0, 1).ToUpperInvariant()) }</div>
 
+
+            <div class="ht-photo-controls">
+                @using (Html.BeginForm("UploadPhoto", "ClientProfile", FormMethod.Post, new { enctype = "multipart/form-data", @class = "ht-photo-upload" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <label for="htPhotoFile" class="ht-photo-label">Profile photo (JPEG or PNG, up to 3 MB)</label>
+                    <input id="htPhotoFile" name="photo" type="file" accept="image/jpeg,image/png" required />
+                    <button type="submit" class="ht-photo-action">Upload photo</button>
+                }
+                @using (Html.BeginForm("RemovePhoto", "ClientProfile", FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="ht-photo-action ht-photo-remove">Remove photo</button>
+                }
+            </div>
             <span class="cpf-eyebrow">PERSONAL DETAILS</span>
             <h2>@Model.FullName</h2>
 

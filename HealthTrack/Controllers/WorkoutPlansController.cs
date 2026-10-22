@@ -76,6 +76,7 @@ namespace HealthTrack.Controllers
                 TrainerId = CurrentTrainerId,
                 ClientId = vm.ClientId.Value
             });
+            Notify(vm.ClientId.Value, "Your trainer assigned a new workout plan: " + vm.PlanName + ". Open your plans to view it.", Notification.WorkoutReminder);
             db.SaveChanges();
 
             TempData["Success"] = Kind + " plan created.";
@@ -87,6 +88,11 @@ namespace HealthTrack.Controllers
         {
             var plan = db.Set<WorkoutPlan>().Find(id);
             if (plan == null || plan.TrainerId != CurrentTrainerId) return HttpNotFound();
+            if (!IsMyClient(plan.ClientId))
+            {
+                TempData["Error"] = "This plan belongs to a former client and is retained as history. You cannot change or delete it.";
+                return RedirectToAction("Index");
+            }
 
             var vm = PreparedForm(new PlanFormViewModel
             {
@@ -105,15 +111,32 @@ namespace HealthTrack.Controllers
         {
             var plan = db.Set<WorkoutPlan>().Find(vm.Id);
             if (plan == null || plan.TrainerId != CurrentTrainerId) return HttpNotFound();
+            if (!IsMyClient(plan.ClientId))
+            {
+                TempData["Error"] = "This plan belongs to a former client and is retained as history. You cannot change or delete it.";
+                return RedirectToAction("Index");
+            }
 
             PreparedForm(vm, Kind, Route);
             if (!ValidatePlan(vm)) return View(FormView, vm);
 
+            var previousClientId = plan.ClientId;
+            var previousName = plan.PlanName;
             plan.PlanName = vm.PlanName;
             plan.Description = vm.Description;
             plan.StartDate = vm.StartDate.Value;
             plan.EndDate = vm.EndDate.Value;
             plan.ClientId = vm.ClientId.Value;
+            if (previousClientId != vm.ClientId.Value)
+            {
+                if (IsMyClient(previousClientId))
+                    Notify(previousClientId, "Your trainer removed your assignment to the workout plan: " + previousName + ".", Notification.WorkoutReminder);
+                Notify(vm.ClientId.Value, "Your trainer assigned you the workout plan: " + vm.PlanName + ".", Notification.WorkoutReminder);
+            }
+            else
+            {
+                Notify(vm.ClientId.Value, "Your trainer updated your workout plan: " + vm.PlanName + ".", Notification.WorkoutReminder);
+            }
             db.SaveChanges();
 
             TempData["Success"] = Kind + " plan updated.";
@@ -126,10 +149,17 @@ namespace HealthTrack.Controllers
         {
             var plan = db.Set<WorkoutPlan>().Find(id);
             if (plan == null || plan.TrainerId != CurrentTrainerId) return HttpNotFound();
+            if (!IsMyClient(plan.ClientId))
+            {
+                TempData["Error"] = "This plan belongs to a former client and is retained as history. You cannot change or delete it.";
+                return RedirectToAction("Index");
+            }
 
             try
             {
                 db.Set<WorkoutPlan>().Remove(plan);
+                if (IsMyClient(plan.ClientId))
+                    Notify(plan.ClientId, "Your trainer deleted the workout plan: " + plan.PlanName + ".", Notification.WorkoutReminder);
                 db.SaveChanges();
                 TempData["Success"] = Kind + " plan deleted.";
             }

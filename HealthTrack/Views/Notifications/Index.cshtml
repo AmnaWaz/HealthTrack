@@ -37,6 +37,27 @@
               <p class="ht-list-title" style="@(n.IsRead ? "font-weight:500" : "")">@n.Message</p>
               <p class="ht-list-sub">@n.CreatedAt.ToString("d MMM yyyy, h:mm tt")@(string.IsNullOrWhiteSpace(n.Type) ? "" : " · " + n.Type)</p>
             </div>
+            @{
+              var targetController = "Trainer";
+              var targetAction = "Index";
+              var targetText = "Dashboard";
+              switch ((n.Type ?? "").ToLowerInvariant())
+              {
+                case "trainerselection":
+                  targetController = "TrainerSelection";
+                  targetText = "Client selections";
+                  break;
+                case "appointment":
+                  targetController = "Appointments";
+                  targetText = "Appointments";
+                  break;
+                case "request":
+                  targetController = "TrainerRequests";
+                  targetText = "Client requests";
+                  break;
+              }
+            }
+            <a class="ht-btn-ghost" href="@Url.Action(targetAction, targetController)" aria-label="View @targetText">View @targetText &rarr;</a>
             @if (!n.IsRead)
             {
               using (Html.BeginForm("MarkRead", "Notifications", new { id = n.Id, filter = Model.Filter }, FormMethod.Post, new { @class = "d-inline" }))

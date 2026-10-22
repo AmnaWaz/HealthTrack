@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Linq;
 using System.Web.Mvc;
@@ -10,6 +10,53 @@ namespace HealthTrack.Controllers
 {
     public class ClientProfileController : ClientBaseController
     {
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult UploadPhoto(System.Web.HttpPostedFileBase photo)
+        {
+            string newPath;
+            try { newPath = HealthTrack.Services.ProfilePhotoService.Save(photo, Server); }
+            catch (InvalidOperationException ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToAction("Index");
+            }
+            catch (ArgumentException)
+            {
+                TempData["Error"] = "The selected file is not a valid image.";
+                return RedirectToAction("Index");
+            }
+            catch (System.Runtime.InteropServices.ExternalException)
+            {
+                TempData["Error"] = "The selected image could not be processed.";
+                return RedirectToAction("Index");
+            }
+            catch (System.OutOfMemoryException)
+            {
+                TempData["Error"] = "The selected file is not a valid image.";
+                return RedirectToAction("Index");
+            }
+            var previous = CurrentUser.ProfilePhotoPath;
+            CurrentUser.ProfilePhotoPath = newPath;
+            try { db.SaveChanges(); }
+            catch { HealthTrack.Services.ProfilePhotoService.DeleteOld(newPath, Server); throw; }
+            try { HealthTrack.Services.ProfilePhotoService.DeleteOld(previous, Server); } catch (System.IO.IOException) { }
+            TempData["Success"] = "Profile photo updated.";
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult RemovePhoto()
+        {
+            var previous = CurrentUser.ProfilePhotoPath;
+            CurrentUser.ProfilePhotoPath = null;
+            db.SaveChanges();
+            try { HealthTrack.Services.ProfilePhotoService.DeleteOld(previous, Server); } catch (System.IO.IOException) { }
+            TempData["Success"] = "Profile photo removed.";
+            return RedirectToAction("Index");
+        }
         [HttpGet]
         public ActionResult Index()
         {
@@ -206,6 +253,7 @@ namespace HealthTrack.Controllers
                 FirstName = CurrentUser.FirstName,
                 LastName = CurrentUser.LastName,
                 FullName = CurrentUser.FullName,
+                ProfilePhotoPath = CurrentUser.ProfilePhotoPath,
                 Email = CurrentUser.Email,
                 Phone = CurrentUser.Phone,
                 DateJoined = CurrentUser.DateJoined,

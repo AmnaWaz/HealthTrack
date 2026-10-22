@@ -35,6 +35,7 @@ namespace HealthTrack.ViewModels
         public int ClientId { get; set; }
         public string Name { get; set; }
         public string Initials { get; set; }
+        public string ProfilePhotoPath { get; set; }
         public string Goal { get; set; }
         public decimal Height { get; set; }
         public decimal Weight { get; set; }

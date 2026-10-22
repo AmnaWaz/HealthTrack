@@ -1,5 +1,8 @@
-using System;
+﻿using System;
 using System.Linq;
+using System.Data;
+using System.Data.Entity;
+using HealthTrack.Services;
 using System.Web.Mvc;
 using HealthTrack.Models;
 using HealthTrack.ViewModels;
@@ -20,17 +23,19 @@ namespace HealthTrack.Controllers
             var mine = db.Set<Appointment>().Where(a => a.TrainerId == tid);
 
             var vm = new AppointmentsIndexViewModel { Filter = filter };
-            vm.CountUpcoming = mine.Count(a => a.Status == "Scheduled" && a.AppointmentDateTime >= now);
-            vm.CountNeedsUpdate = mine.Count(a => a.Status == "Scheduled" && a.AppointmentDateTime < now);
+            vm.CountPending = mine.Count(a => a.Status == AppointmentStatus.Pending && a.AppointmentDateTime >= now);
+            vm.CountUpcoming = mine.Count(a => (a.Status == AppointmentStatus.Scheduled || a.Status == AppointmentStatus.Approved) && a.AppointmentDateTime >= now);
+            vm.CountNeedsUpdate = mine.Count(a => (a.Status == AppointmentStatus.Scheduled || a.Status == AppointmentStatus.Approved) && a.AppointmentDateTime < now);
             vm.CountCompleted = mine.Count(a => a.Status == "Completed");
-            vm.CountCancelled = mine.Count(a => a.Status == "Cancelled");
+            vm.CountCancelled = mine.Count(a => a.Status == "Cancelled" || a.Status == "Declined");
             vm.CountAll = mine.Count();
 
             IQueryable<Appointment> q = mine;
-            if (filter == "upcoming") q = q.Where(a => a.Status == "Scheduled" && a.AppointmentDateTime >= now);
-            else if (filter == "needsupdate") q = q.Where(a => a.Status == "Scheduled" && a.AppointmentDateTime < now);
+            if (filter == "pending") q = q.Where(a => a.Status == AppointmentStatus.Pending && a.AppointmentDateTime >= now);
+            else if (filter == "upcoming") q = q.Where(a => (a.Status == AppointmentStatus.Scheduled || a.Status == AppointmentStatus.Approved) && a.AppointmentDateTime >= now);
+            else if (filter == "needsupdate") q = q.Where(a => (a.Status == AppointmentStatus.Scheduled || a.Status == AppointmentStatus.Approved) && a.AppointmentDateTime < now);
             else if (filter == "completed") q = q.Where(a => a.Status == "Completed");
-            else if (filter == "cancelled") q = q.Where(a => a.Status == "Cancelled");
+            else if (filter == "cancelled") q = q.Where(a => a.Status == "Cancelled" || a.Status == "Declined");
             else filter = "all";
             vm.Filter = filter;
 
@@ -53,6 +58,57 @@ namespace HealthTrack.Controllers
             return View(vm);
         }
 
+        [HttpPost, ValidateAntiForgeryToken]
+        public ActionResult Approve(int id)
+        {
+            using (var booking = db.Database.BeginTransaction(IsolationLevel.ReadCommitted))
+            {
+            var existing = db.Set<Appointment>().AsNoTracking().FirstOrDefault(a => a.AppointmentId == id && a.TrainerId == CurrentTrainerId);
+            if (existing == null) return HttpNotFound();
+            AppointmentBookingGuard.Lock(db, existing.ClientId, CurrentTrainerId);
+            var appt = db.Set<Appointment>().FirstOrDefault(a => a.AppointmentId == id && a.TrainerId == CurrentTrainerId);
+            if (appt == null) return HttpNotFound();
+            if (appt.Status != AppointmentStatus.Pending || appt.AppointmentDateTime <= DateTime.Now || !IsMyClient(appt.ClientId))
+            {
+                TempData["Error"] = "This request is no longer eligible for approval.";
+                return RedirectToAction("Index", new { filter = "pending" });
+            }
+            var start = appt.AppointmentDateTime.AddMinutes(-30);
+            var end = appt.AppointmentDateTime.AddMinutes(30);
+            var tid = CurrentTrainerId;
+            if (db.Set<Appointment>().Any(a => (a.TrainerId == tid || a.ClientId == appt.ClientId) && a.AppointmentId != id &&
+                (a.Status == AppointmentStatus.Scheduled || a.Status == AppointmentStatus.Approved) &&
+                a.AppointmentDateTime > start && a.AppointmentDateTime < end))
+            {
+                TempData["Error"] = "Another confirmed appointment conflicts with this request.";
+                return RedirectToAction("Index", new { filter = "pending" });
+            }
+            appt.Status = AppointmentStatus.Scheduled;
+            Notify(appt.ClientId, TrainerName + " approved your appointment for " + Stamp(appt.AppointmentDateTime) + ".", "Appointment");
+            db.SaveChanges();
+            booking.Commit();
+            TempData["Success"] = "Appointment approved. The client has been notified.";
+            return RedirectToAction("Index", new { filter = "pending" });
+            }
+        }
+
+        [HttpPost, ValidateAntiForgeryToken]
+        public ActionResult Decline(int id)
+        {
+            var appt = db.Set<Appointment>().FirstOrDefault(a => a.AppointmentId == id && a.TrainerId == CurrentTrainerId);
+            if (appt == null) return HttpNotFound();
+            if (appt.Status != AppointmentStatus.Pending)
+            {
+                TempData["Error"] = "Only pending requests can be declined.";
+                return RedirectToAction("Index", new { filter = "pending" });
+            }
+            appt.Status = "Declined";
+            Notify(appt.ClientId, TrainerName + " declined your appointment request for " + Stamp(appt.AppointmentDateTime) + ".", "Appointment");
+            db.SaveChanges();
+            TempData["Success"] = "Request declined. The client has been notified.";
+            return RedirectToAction("Index", new { filter = "pending" });
+        }
+
         // GET: /Appointments/Create?clientId=5
         public ActionResult Create(int? clientId)
         {
@@ -70,10 +126,14 @@ namespace HealthTrack.Controllers
             Prepared(vm);
             if (!Validate(vm, 0)) return View(FormView, vm);
 
+            using (var booking = db.Database.BeginTransaction(IsolationLevel.ReadCommitted))
+            {
+            AppointmentBookingGuard.Lock(db, vm.ClientId.Value, CurrentTrainerId);
+            if (!Validate(vm, 0)) return View(FormView, vm);
             db.Set<Appointment>().Add(new Appointment
             {
                 AppointmentDateTime = vm.When.Value,
-                Status = "Scheduled",
+                Status = AppointmentStatus.Scheduled,
                 Location = vm.Location,
                 Notes = vm.Notes,
                 ClientId = vm.ClientId.Value,
@@ -84,6 +144,8 @@ namespace HealthTrack.Controllers
                 TrainerName + " scheduled an appointment for " + Stamp(vm.When.Value) + AtPlace(vm.Location) + ".",
                 "Appointment");
             db.SaveChanges();
+            booking.Commit();
+            }
 
             TempData["Success"] = "Appointment scheduled.";
             return RedirectToAction("Index");
@@ -94,7 +156,12 @@ namespace HealthTrack.Controllers
         {
             var appt = db.Set<Appointment>().Find(id);
             if (appt == null || appt.TrainerId != CurrentTrainerId) return HttpNotFound();
-            if (appt.Status != "Scheduled")
+            if (!IsMyClient(appt.ClientId))
+            {
+                TempData["Error"] = "This appointment belongs to a former client and cannot be changed.";
+                return RedirectToAction("Index", new { filter = "all" });
+            }
+            if ((appt.Status != AppointmentStatus.Scheduled && appt.Status != AppointmentStatus.Approved))
             {
                 TempData["Error"] = "Only scheduled appointments can be changed.";
                 return RedirectToAction("Index", new { filter = "all" });
@@ -116,10 +183,28 @@ namespace HealthTrack.Controllers
         {
             var appt = db.Set<Appointment>().Find(vm.Id);
             if (appt == null || appt.TrainerId != CurrentTrainerId) return HttpNotFound();
+            if (!IsMyClient(appt.ClientId))
+            {
+                TempData["Error"] = "This appointment belongs to a former client and cannot be changed.";
+                return RedirectToAction("Index", new { filter = "all" });
+            }
 
             Prepared(vm);
+            if (vm.ClientId != appt.ClientId) ModelState.AddModelError("ClientId", "You cannot change the client for an existing appointment.");
+            if ((appt.Status != AppointmentStatus.Scheduled && appt.Status != AppointmentStatus.Approved)) ModelState.AddModelError("", "Only scheduled appointments can be edited.");
             if (!Validate(vm, vm.Id)) return View(FormView, vm);
 
+            using (var booking = db.Database.BeginTransaction(IsolationLevel.ReadCommitted))
+            {
+            AppointmentBookingGuard.Lock(db, appt.ClientId, CurrentTrainerId);
+            db.Entry(appt).Reload();
+            if (!IsMyClient(appt.ClientId) ||
+                (appt.Status != AppointmentStatus.Scheduled && appt.Status != AppointmentStatus.Approved) ||
+                vm.ClientId != appt.ClientId || !Validate(vm, vm.Id))
+            {
+                TempData["Error"] = "This appointment is no longer eligible for editing.";
+                return RedirectToAction("Index", new { filter = "all" });
+            }
             var timeChanged = appt.AppointmentDateTime != vm.When.Value;
 
             appt.AppointmentDateTime = vm.When.Value;
@@ -132,6 +217,8 @@ namespace HealthTrack.Controllers
                     TrainerName + " moved your appointment to " + Stamp(vm.When.Value) + AtPlace(vm.Location) + ".",
                     "Appointment");
             db.SaveChanges();
+            booking.Commit();
+            }
 
             TempData["Success"] = "Appointment updated.";
             return RedirectToAction("Index");
@@ -143,8 +230,13 @@ namespace HealthTrack.Controllers
         {
             var appt = db.Set<Appointment>().Find(id);
             if (appt == null || appt.TrainerId != CurrentTrainerId) return HttpNotFound();
+            if (!IsMyClient(appt.ClientId))
+            {
+                TempData["Error"] = "This appointment belongs to a former client and cannot be changed.";
+                return RedirectToAction("Index", new { filter = "all" });
+            }
 
-            if (appt.Status == "Scheduled")
+            if ((appt.Status == AppointmentStatus.Scheduled || appt.Status == AppointmentStatus.Approved))
             {
                 appt.Status = "Completed";
                 db.SaveChanges();
@@ -159,8 +251,13 @@ namespace HealthTrack.Controllers
         {
             var appt = db.Set<Appointment>().Find(id);
             if (appt == null || appt.TrainerId != CurrentTrainerId) return HttpNotFound();
+            if (!IsMyClient(appt.ClientId))
+            {
+                TempData["Error"] = "This appointment belongs to a former client and cannot be changed.";
+                return RedirectToAction("Index", new { filter = "all" });
+            }
 
-            if (appt.Status == "Scheduled")
+            if ((appt.Status == AppointmentStatus.Scheduled || appt.Status == AppointmentStatus.Approved))
             {
                 appt.Status = "Cancelled";
                 Notify(appt.ClientId,
@@ -193,7 +290,7 @@ namespace HealthTrack.Controllers
                 var windowStart = vm.When.Value.AddMinutes(-30);
                 var windowEnd = vm.When.Value.AddMinutes(30);
                 var clash = db.Set<Appointment>().Any(a =>
-                    a.TrainerId == tid && a.Status == "Scheduled" && a.AppointmentId != excludeId &&
+                    (a.TrainerId == tid || a.ClientId == vm.ClientId.Value) && (a.Status == AppointmentStatus.Scheduled || a.Status == AppointmentStatus.Approved) && a.AppointmentId != excludeId &&
                     a.AppointmentDateTime > windowStart && a.AppointmentDateTime < windowEnd);
                 if (clash)
                     ModelState.AddModelError("When", "You already have an appointment within 30 minutes of that time.");

@@ -1,4 +1,4 @@
-﻿
+
 
 @model HealthTrack.ViewModels.ClientTrainerViewModel
 @using System
@@ -365,16 +365,28 @@
     {
         <section class="cmt-section">
             <div class="cmt-panel cmt-profile">
-                <div class="cmt-avatar" aria-hidden="true">
-                    @(string.IsNullOrWhiteSpace(Model.TrainerName)
-                        ? "T"
-                        : Model.TrainerName.Substring(0, 1).ToUpperInvariant())
+                <div class="cmt-avatar">
+                    @if (!string.IsNullOrWhiteSpace(Model.TrainerPhotoPath))
+                    {
+                        <img src="@Url.Content("~" + Model.TrainerPhotoPath)"
+                             alt="@Model.TrainerName profile photo"
+                             style="width:100%;height:100%;object-fit:cover;display:block"
+                             loading="lazy" />
+                    }
+                    else
+                    {
+                        <span aria-hidden="true">@(string.IsNullOrWhiteSpace(Model.TrainerName) ? "T" : Model.TrainerName.Substring(0, 1).ToUpperInvariant())</span>
+                    }
                 </div>
 
                 <div>
                     <span class="cmt-eyebrow">YOUR ASSIGNED TRAINER</span>
 
                     <h2>@Model.TrainerName</h2>
+                    @if (Model.TrainerAverageRating > 0)
+                    {
+                        <p class="cmt-muted" style="margin:0 0 12px">Trainer rating: @Model.TrainerAverageRating.ToString("0.0") / 5</p>
+                    }
 
                     <p class="cmt-bio">
                         @(string.IsNullOrWhiteSpace(Model.TrainerBio)

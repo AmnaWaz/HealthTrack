@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -14,6 +14,8 @@ namespace HealthTrack.ViewModels
         public string LastName { get; set; }
 
         public string FullName { get; set; }
+
+        public string ProfilePhotoPath { get; set; }
 
         public string Email { get; set; }
 

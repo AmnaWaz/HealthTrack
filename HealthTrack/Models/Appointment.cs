@@ -8,7 +8,9 @@ namespace HealthTrack.Models
     public static class AppointmentStatus
     {
         public const string Pending = "Pending";
-        public const string Approved = "Approved";
+        public const string Approved = "Approved"; // Legacy confirmed status
+        public const string Scheduled = "Scheduled";
+        public const string Declined = "Declined";
         public const string Cancelled = "Cancelled";
         public const string Completed = "Completed";
     }

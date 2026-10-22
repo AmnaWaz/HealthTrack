@@ -1,0 +1,47 @@
+@model HealthTrack.ViewModels.AdminReportsVm
+@using System
+@using System.Linq
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewBag.Title = "Reports";
+    var daily = Model.Daily ?? new System.Collections.Generic.List<HealthTrack.ViewModels.AdminDailyRow>();
+    var exercises = Model.Exercises ?? new System.Collections.Generic.List<HealthTrack.ViewModels.AdminExerciseRow>();
+    var trainers = Model.Trainers ?? new System.Collections.Generic.List<HealthTrack.ViewModels.AdminTrainerReportRow>();
+    var max = Math.Max(1, daily.Select(x => Math.Max(x.Workouts, x.Meals)).DefaultIfEmpty(0).Max());
+    var maxExercise = Math.Max(1, exercises.Select(x => x.Count).DefaultIfEmpty(0).Max());
+    var total = Model.WorkoutCount + Model.MealCount;
+    var end = DateTime.Today;
+}
+<link href="@Url.Content("~/Content/admin-person-a.css")" rel="stylesheet" />
+<div class="aa-page aa-report-page">
+    <div class="aa-headline"><div><div class="aa-overline">ADMIN <span class="aa-slash">/</span> REPORTS</div><h1>Reports, made simple<span class="aa-fullstop">.</span></h1><p class="aa-sub">Track how the platform is being used, without exposing private health details.</p></div><div class="aa-actions"><a class="aa-quiet-btn" href="@Url.Action("ReportsCsv", "Admin", new { from = Model.From.ToString("yyyy-MM-dd"), to = Model.To.ToString("yyyy-MM-dd") })">Export CSV ↓</a><button class="aa-icon-btn aa-print" type="button" onclick="window.print()" title="Print report">⎙</button></div></div>
+    <section class="aa-surface aa-report-filters"><div class="aa-section-label">REPORTING PERIOD</div>
+        <div class="aa-preset-row"><a href="@Url.Action("Reports", "Admin", new { from = end.AddDays(-6).ToString("yyyy-MM-dd"), to = end.ToString("yyyy-MM-dd") })" class="aa-preset @((Model.To.Date == end && Model.From.Date == end.AddDays(-6)) ? "is-current" : "")">7 days</a><a href="@Url.Action("Reports", "Admin", new { from = end.AddDays(-29).ToString("yyyy-MM-dd"), to = end.ToString("yyyy-MM-dd") })" class="aa-preset @((Model.To.Date == end && Model.From.Date == end.AddDays(-29)) ? "is-current" : "")">30 days</a><a href="@Url.Action("Reports", "Admin", new { from = end.AddDays(-89).ToString("yyyy-MM-dd"), to = end.ToString("yyyy-MM-dd") })" class="aa-preset @((Model.To.Date == end && Model.From.Date == end.AddDays(-89)) ? "is-current" : "")">90 days</a><span class="aa-preset-separator"></span><form method="get" action="@Url.Action("Reports", "Admin")" class="aa-date-form" id="aaDates"><label>From <input type="date" name="from" id="aaFrom" value="@Model.From.ToString("yyyy-MM-dd")" required /></label><label>To <input type="date" name="to" id="aaTo" value="@Model.To.ToString("yyyy-MM-dd")" required /></label><button class="aa-primary-btn" type="submit">Update report →</button></form></div><small class="aa-date-error" id="aaDateError" role="alert" hidden>Choose a valid period of up to 366 days.</small>
+    </section>
+    <section class="aa-metrics"><div class="aa-stat aa-stat--dark"><span class="aa-stat-top">WORKOUT ENTRIES</span><strong>@Model.WorkoutCount.ToString("N0")</strong><span class="aa-stat-bottom">By @Model.ActiveWorkoutClients clients</span></div><div class="aa-stat"><span class="aa-stat-top">MEAL ENTRIES</span><strong>@Model.MealCount.ToString("N0")</strong><span class="aa-stat-bottom">By @Model.ActiveMealClients clients</span></div><div class="aa-stat"><span class="aa-stat-top">FINISHED SESSIONS</span><strong>@Model.CompletedAppointments.ToString("N0")</strong><span class="aa-stat-bottom">Marked complete this period</span></div><div class="aa-stat"><span class="aa-stat-top">TOTAL ACTIVITY</span><strong>@total.ToString("N0")</strong><span class="aa-stat-bottom">Workout and meal entries</span></div></section>
+    <section class="aa-surface"><div class="aa-section-head"><div><span class="aa-section-label">OVER TIME</span><h2>Daily engagement</h2></div><div class="aa-segment" role="group" aria-label="Chart display"><button type="button" class="is-selected" id="aaShowChart" aria-pressed="true">Chart</button><button type="button" id="aaShowTable" aria-pressed="false">Table</button></div></div>
+        <div class="aa-legend aa-reports-legend"><span><i class="aa-key-work"></i> Workouts</span><span><i class="aa-key-meal"></i> Meals</span></div>
+        <div id="aaDailyChart" class="aa-daily-chart" role="img" aria-label="Daily workout and meal entries by date">
+            @foreach (var d in daily) { var wh=100.0*d.Workouts/max; var mh=100.0*d.Meals/max; <div class="aa-daily-column" title="@d.Date.ToString("dd MMM yyyy"): @d.Workouts workouts and @d.Meals meals" tabindex="0"><div class="aa-daily-bars"><span class="aa-bar-work" style="height:@(wh.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))%"></span><span class="aa-bar-meal" style="height:@(mh.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))%"></span></div></div> }
+        </div><div class="aa-range-caption"><span>@Model.From.ToString("dd MMM yyyy")</span><span>@Model.To.ToString("dd MMM yyyy")</span></div>
+        <div id="aaDailyTable" class="aa-table-wrap" hidden><table class="aa-table"><thead><tr><th>DATE</th><th>WORKOUT LOGS</th><th>MEAL LOGS</th></tr></thead><tbody>@foreach (var d in daily) { <tr><td>@d.Date.ToString("ddd, dd MMM yyyy")</td><td>@d.Workouts</td><td>@d.Meals</td></tr> } @if (!daily.Any()) { <tr><td colspan="3">Nothing recorded for these dates.</td></tr> }</tbody></table></div>
+        @if (total == 0) { <p class="aa-empty-note">No workout or meal entries for the selected period.</p> }
+    </section>
+    <div class="aa-dashboard-grid aa-report-split">
+        <section class="aa-surface"><div class="aa-section-head"><div><span class="aa-section-label">WHAT MEMBERS LOG</span><h2>Popular exercises</h2></div><span class="aa-counter">TOP 10</span></div><p class="aa-helper">Based on actual workout entries, not plan assignments.</p><div class="aa-exercise-list">@foreach (var e in exercises) { var width=100.0*e.Count/maxExercise; <div class="aa-exercise-row"><div><strong>@e.Exercise</strong><span>@e.Count logs</span></div><div class="aa-progress"><i style="width:@(width.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))%"></i></div></div> } @if (!exercises.Any()) { <p class="aa-empty-note">No exercises logged in this period.</p> }</div></section>
+        <section class="aa-surface"><div class="aa-section-head"><div><span class="aa-section-label">TEAM VIEW</span><h2>Trainer workload</h2></div><span class="aa-counter">@trainers.Count TRAINERS</span></div><label class="aa-search-label" for="aaTrainerSearch">Find a trainer</label><input id="aaTrainerSearch" class="aa-search" type="search" placeholder="Search by name…" autocomplete="off"/><div class="aa-table-wrap aa-workload-table"><table class="aa-table"><thead><tr><th>TRAINER</th><th>CLIENTS</th><th>PLANS</th><th>SESSIONS</th></tr></thead><tbody id="aaTrainerRows">@foreach (var t in trainers) { <tr data-name="@t.Trainer.ToLowerInvariant()"><td><strong>@t.Trainer</strong></td><td>@t.Clients</td><td>@(t.WorkoutPlans+t.DietPlans)</td><td>@t.Appointments</td></tr> }</tbody></table><p class="aa-empty-note" id="aaNoTrainer" hidden>No trainers match that search.</p></div><p class="aa-helper">Clients and plans reflect current totals; sessions are within the selected dates.</p></section>
+    </div>
+</div>
+@section scripts {
+<script>
+(function () {
+    var chart = document.getElementById('aaDailyChart'), table = document.getElementById('aaDailyTable'), range = document.querySelector('.aa-range-caption');
+    var chartBtn = document.getElementById('aaShowChart'), tableBtn = document.getElementById('aaShowTable');
+    function show(asTable) { chart.hidden = asTable; table.hidden = !asTable; range.hidden = asTable; chartBtn.classList.toggle('is-selected', !asTable); tableBtn.classList.toggle('is-selected', asTable); chartBtn.setAttribute('aria-pressed', String(!asTable)); tableBtn.setAttribute('aria-pressed', String(asTable)); }
+    chartBtn.addEventListener('click', function () { show(false); }); tableBtn.addEventListener('click', function () { show(true); });
+    var search = document.getElementById('aaTrainerSearch'), rows = Array.prototype.slice.call(document.querySelectorAll('#aaTrainerRows tr')), empty = document.getElementById('aaNoTrainer');
+    search.addEventListener('input', function () { var q = search.value.trim().toLowerCase(), found = 0; rows.forEach(function (r) { var visible = r.getAttribute('data-name').indexOf(q) !== -1; r.hidden = !visible; if (visible) found++; }); empty.hidden = found !== 0; });
+    document.getElementById('aaDates').addEventListener('submit', function (e) { var a = new Date(document.getElementById('aaFrom').value + 'T00:00:00'), b = new Date(document.getElementById('aaTo').value + 'T00:00:00'); var valid = !isNaN(a.getTime()) && !isNaN(b.getTime()) && a <= b && (b - a) / 86400000 <= 365 && b <= new Date(new Date().toDateString()); document.getElementById('aaDateError').hidden = valid; if (!valid) e.preventDefault(); });
+}());
+</script>
+}

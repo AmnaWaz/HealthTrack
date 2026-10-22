@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Linq;
 using System.Web.Mvc;
@@ -22,7 +22,10 @@ namespace HealthTrack.Controllers
             var request = db.Set<TrainerRequest>()
                 .FirstOrDefault(r =>
                     r.TrainerRequestId == id &&
-                    r.TrainerId == CurrentTrainerId);
+                    r.TrainerId == CurrentTrainerId &&
+                    db.Set<ClientProfile>().Any(c =>
+                        c.ClientId == r.ClientId &&
+                        c.TrainerId == CurrentTrainerId));
 
             if (request == null)
             {
@@ -68,7 +71,10 @@ namespace HealthTrack.Controllers
             var request = db.Set<TrainerRequest>()
                 .FirstOrDefault(r =>
                     r.TrainerRequestId == form.TrainerRequestId &&
-                    r.TrainerId == CurrentTrainerId);
+                    r.TrainerId == CurrentTrainerId &&
+                    db.Set<ClientProfile>().Any(c =>
+                        c.ClientId == r.ClientId &&
+                        c.TrainerId == CurrentTrainerId));
 
             if (request == null)
             {
@@ -172,7 +178,10 @@ namespace HealthTrack.Controllers
             var request = db.Set<TrainerRequest>()
                 .FirstOrDefault(r =>
                     r.TrainerRequestId == id &&
-                    r.TrainerId == CurrentTrainerId);
+                    r.TrainerId == CurrentTrainerId &&
+                    db.Set<ClientProfile>().Any(c =>
+                        c.ClientId == r.ClientId &&
+                        c.TrainerId == CurrentTrainerId));
 
             if (request == null)
             {
@@ -220,7 +229,7 @@ namespace HealthTrack.Controllers
                     on r.ClientId equals c.ClientId
                 join u in db.Set<ApplicationUser>()
                     on c.UserId equals u.UserId
-                where r.TrainerId == trainerId
+                where r.TrainerId == trainerId && c.TrainerId == trainerId
                 select new TrainerRequestInboxItem
                 {
                     TrainerRequestId = r.TrainerRequestId,

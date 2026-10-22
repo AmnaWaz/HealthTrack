@@ -255,6 +255,35 @@ namespace HealthTrack.Controllers
             request.ClosedByRole = "Client";
             request.UpdatedAt = now;
 
+            // Only alert the current assigned trainer; historical requests remain private.
+            if (CurrentClient.TrainerId.HasValue &&
+                CurrentClient.TrainerId.Value == request.TrainerId)
+            {
+                var trainerUserId = (
+                    from trainer in db.Set<TrainerProfile>()
+                    join account in db.Set<ApplicationUser>()
+                        on trainer.UserId equals account.UserId
+                    where trainer.TrainerId == request.TrainerId && account.IsActive
+                    select (int?)account.UserId
+                ).FirstOrDefault();
+
+                if (trainerUserId.HasValue)
+                {
+                    var message = "A client closed a trainer request: " + request.Subject;
+                    if (message.Length > 300)
+                        message = message.Substring(0, 300);
+
+                    db.Set<Notification>().Add(new Notification
+                    {
+                        UserId = trainerUserId.Value,
+                        Message = message,
+                        Type = "Request",
+                        IsRead = false,
+                        CreatedAt = now
+                    });
+                }
+            }
+
             db.SaveChanges();
 
             TempData["Success"] =
