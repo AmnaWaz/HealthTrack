@@ -1,0 +1,40 @@
+@model HealthTrack.Controllers.HealthcareAppointmentForm
+@using HealthTrack.Models
+@{
+    ViewBag.Title = "Healthcare consultations";
+    Layout = "~/Views/Shared/_ClientLayout.cshtml";
+    var items = ViewBag.Items as System.Collections.Generic.List<HealthcareAppointment> ?? new System.Collections.Generic.List<HealthcareAppointment>();
+}
+<div style="max-width:1000px;margin:40px auto;padding:0 20px">
+    <p style="text-transform:uppercase;letter-spacing:.15em;opacity:.65">Sessions / Healthcare</p>
+    <h1>Healthcare consultations</h1>
+    <p>Keep track of appointments you've arranged with healthcare professionals. This is a personal schedule; HealthTrack does not contact or book with a clinic.</p>
+    @if (TempData["Error"] != null) { <p role="alert" style="color:#b34040">@TempData["Error"]</p> }
+    @if (TempData["Success"] != null) { <p role="status">@TempData["Success"]</p> }
+    <section style="padding:22px;border:1px solid #bcbcbc;border-radius:12px;margin:20px 0">
+        <h2>Add a consultation</h2>
+        @using (Html.BeginForm("Create", "HealthcareAppointments", FormMethod.Post)) {
+            @Html.AntiForgeryToken()
+            <div style="margin:12px 0"><label>Healthcare professional's name</label><div>@Html.TextBoxFor(m => m.ProfessionalName, new { required="required", maxlength="120", style="width:100%;max-width:500px;padding:8px" })</div></div>
+            <div style="margin:12px 0"><label>Clinic or location (optional)</label><div>@Html.TextBoxFor(m => m.Clinic, new { maxlength="120", style="width:100%;max-width:500px;padding:8px" })</div></div>
+            <div style="margin:12px 0"><label>Date and time</label><div>@Html.TextBoxFor(m => m.AppointmentDateTime, "{0:yyyy-MM-ddTHH:mm}", new { type="datetime-local", required="required", style="padding:8px" })</div></div>
+            <div style="margin:12px 0"><label>Notes (optional)</label><div>@Html.TextAreaFor(m => m.Notes, new { maxlength="500", rows="3", style="width:100%;max-width:500px;padding:8px" })</div></div>
+            <button type="submit" style="padding:12px 22px;cursor:pointer">Add consultation</button>
+        }
+    </section>
+    <h2>Your consultations</h2>
+    @if (!items.Any()) { <p>No healthcare consultations recorded yet.</p> }
+    @foreach (var a in items) {
+        <article style="border-bottom:1px solid #aaa;padding:16px 0">
+            <strong>@a.ProfessionalName</strong> — @a.AppointmentDateTime.ToString("ddd, dd MMM yyyy · h:mm tt")
+            <div>@a.Clinic</div><div>Status: @a.Status</div>
+            @if (a.Status == "Scheduled" && a.AppointmentDateTime > DateTime.Now) {
+                using (Html.BeginForm("Cancel", "HealthcareAppointments", new { id=a.HealthcareAppointmentId }, FormMethod.Post)) {
+                    @Html.AntiForgeryToken()
+                    <button type="submit" style="margin-top:8px">Remove from schedule</button>
+                }
+            }
+        </article>
+    }
+    <p style="margin-top:22px"><a href="@Url.Action("Index", "ClientSessions")">← Back to Trainer sessions</a></p>
+</div>

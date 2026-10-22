@@ -253,6 +253,9 @@
             grid-template-columns: 1fr;
         }
     }
+    .cs-booking-form { display:grid; gap:10px; min-width:240px; width:100%; max-width:460px; }
+    .cs-booking-form input, .cs-booking-form textarea { box-sizing:border-box; width:100%; padding:11px; border:1px solid #83919d; border-radius:3px; background:transparent; color:inherit; font:inherit; }
+    .cs-booking-form label { font-size:12px; font-weight:600; }
 </style>
 
 <div class="cs-page">
@@ -292,6 +295,14 @@
         </div>
     </div>
 
+    @if (TempData["Success"] != null)
+    {
+        <p role="status" style="padding:12px;border:1px solid currentColor">@TempData["Success"]</p>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <p role="alert" style="padding:12px;border:1px solid currentColor">@TempData["Error"]</p>
+    }
     <section class="cs-section">
         <div class="cs-section-head">
             <div>
@@ -415,9 +426,18 @@
                             </p>
                         </div>
 
-                        <span class="cs-status cs-status-pending">
-                            PENDING
-                        </span>
+                        <div>
+                            <span class="cs-status cs-status-pending">PENDING</span>
+                            @if (appointment.CanWithdraw)
+                            {
+                                using (Html.BeginForm("Withdraw", "ClientSessions", FormMethod.Post))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@appointment.AppointmentId" />
+                                    <button type="submit" class="cs-button">WITHDRAW REQUEST</button>
+                                }
+                            }
+                        </div>
                     </article>
                 }
             </div>
@@ -510,23 +530,29 @@
 
                 @if (Model.HasAssignedTrainer)
                 {
-                    <p class="cs-muted">
-                        Appointment requests will become available once the
-                        Trainer approval workflow is connected.
-                        Your existing appointments remain visible above.
-                    </p>
+                    <p class="cs-muted">Choose a date and time. Your trainer will review your request.</p>
                 }
                 else
                 {
-                    <p class="cs-muted">
-                        Your trainer must be assigned before you can request a session.
-                    </p>
+                    <p class="cs-muted">Your trainer must be assigned before you can request a session.</p>
                 }
             </div>
-
-            <span class="cs-button cs-button-disabled" aria-disabled="true">
-                REQUESTS COMING SOON
-            </span>
+            @if (Model.HasAssignedTrainer)
+            {
+                using (Html.BeginForm("RequestAppointment", "ClientSessions", FormMethod.Post, new { @class = "cs-booking-form" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <label for="RequestForm_Date">Preferred date</label>
+                    <input id="RequestForm_Date" name="Date" type="date" min="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                    <label for="RequestForm_Time">Preferred time</label>
+                    <input id="RequestForm_Time" name="Time" type="time" required />
+                    <label for="RequestForm_Notes">Notes (optional)</label>
+                    <textarea id="RequestForm_Notes" name="Notes" maxlength="500" rows="3"></textarea>
+                    <button class="cs-button" type="submit">SEND REQUEST</button>
+                }
+            }
         </div>
     </section>
 </div>
+
+<div style="max-width:1000px;margin:24px auto;padding:0 20px"><a href="@Url.Action("Index", "HealthcareAppointments")">Track healthcare consultations →</a></div>

@@ -426,3 +426,17 @@ FodyWeavers.xsd
 
 # Official VS Code C# Dev Kit Extension exclusion
 #*.lscache
+
+
+# HealthTrack - uploaded profile photos
+**/Content/uploads/profiles/*
+!**/Content/uploads/profiles/.gitkeep
+
+# Old Admin registration setup scripts
+HealthTrack/Configure-AdminRegistration.ps1
+HealthTrack/Setup/
+
+# Local configuration and secrets
+*.env
+**/Web.Local.config
+**/Web.Secrets.config

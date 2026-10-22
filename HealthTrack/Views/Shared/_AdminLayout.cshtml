@@ -1,0 +1,37 @@
+@using System
+@{
+    var action = Convert.ToString(ViewContext.RouteData.Values["action"]);
+    var name = (ViewBag.AdminName as string) ?? "Administrator";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewBag.Title — HealthTrack Admin</title>
+    <link rel="icon" href="@Url.Content("~/Content/favicon.svg")" type="image/svg+xml" />
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Archivo+Narrow:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/admin-foundation.css")" rel="stylesheet" />
+    @RenderSection("styles", required: false)
+</head>
+<body>
+    <div class="af-shell">
+        <aside class="af-sidebar" id="afSidebar">
+            <a class="af-brand" href="@Url.Action("Index", "Admin")">HEALTHTRACK <small>/ ADMIN</small></a>
+            <span class="af-label">PLATFORM / CONTROL</span>
+            <nav aria-label="Admin navigation">
+                <a class="@(action == "Index" ? "current" : "")" href="@Url.Action("Index", "Admin")"><span>01</span> Overview</a>
+                <a class="@(action == "Users" ? "current" : "")" href="@Url.Action("Users", "Admin")"><span>02</span> Users</a>
+                <a class="@(action == "Assignments" ? "current" : "")" href="@Url.Action("Assignments", "Admin")"><span>03</span> Assignments</a>
+                <a class="@(action == "Reports" ? "current" : "")" href="@Url.Action("Reports", "Admin")"><span>04</span> Reports</a>
+            </nav>
+            <div class="af-bottom"><div class="af-avatar">@name.Substring(0,1).ToUpperInvariant()</div><div><strong>@name</strong><small>Administrator</small></div>
+                @using (Html.BeginForm("Logout", "AdminAccess", FormMethod.Post)) { @Html.AntiForgeryToken() <button type="submit" title="Sign out">↗</button> }
+            </div>
+        </aside>
+        <div class="af-workspace"><header class="af-topbar"><button class="af-menu" type="button" id="afMenu" aria-controls="afSidebar" aria-expanded="false">☰ Menu</button><span>ADMINISTRATION</span><span class="af-date">@DateTime.Today.ToString("dd MMM yyyy")</span></header><main class="af-content">@RenderBody()</main></div>
+    </div>
+    <script>document.getElementById('afMenu').addEventListener('click',function(){var s=document.getElementById('afSidebar');var open=s.classList.toggle('af-open');this.setAttribute('aria-expanded',String(open));});</script>
+    @RenderSection("scripts", required: false)
+</body>
+</html>

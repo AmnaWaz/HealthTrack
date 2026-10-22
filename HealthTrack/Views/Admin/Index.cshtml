@@ -1,0 +1,64 @@
+@model HealthTrack.ViewModels.AdminOverviewVm
+@using System
+@using System.Linq
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewBag.Title = "Overview";
+    var activity = Model.Activity ?? new System.Collections.Generic.List<HealthTrack.ViewModels.AdminDailyRow>();
+    var registrations = Model.RecentUsers ?? new System.Collections.Generic.List<HealthTrack.ViewModels.AdminUserRow>();
+    var peak = Math.Max(1, activity.Select(x => Math.Max(x.Workouts, x.Meals)).DefaultIfEmpty(0).Max());
+    var workouts = activity.Sum(x => x.Workouts);
+    var meals = activity.Sum(x => x.Meals);
+}
+<link href="@Url.Content("~/Content/admin-person-a.css")" rel="stylesheet" />
+<div class="aa-page">
+    <div class="aa-headline">
+        <div><div class="aa-overline"><span class="aa-live-dot"></span> ADMIN OVERVIEW <span class="aa-slash">/</span> @DateTime.Today.ToString("dddd, dd MMMM yyyy")</div>
+            <h1>Good to have you here<span class="aa-fullstop">.</span></h1>
+            <p class="aa-sub">A quick look at your members, activity and what needs a decision.</p>
+        </div>
+        <div class="aa-actions"><a class="aa-quiet-btn" href="@Url.Action("Reports", "Admin")">Open reports <span aria-hidden="true">↗</span></a><button type="button" class="aa-icon-btn" id="aaRefresh" title="Reload dashboard" aria-label="Reload dashboard">↻</button></div>
+    </div>
+
+    <section class="aa-metrics" aria-label="System at a glance">
+        <a class="aa-stat aa-stat--dark" href="@Url.Action("Users", "Admin", new { role = "Client" })"><span class="aa-stat-top">01 / CLIENTS <span aria-hidden="true">↗</span></span><strong>@Model.Clients.ToString("N0")</strong><span class="aa-stat-bottom">Registered members</span></a>
+        <a class="aa-stat" href="@Url.Action("Users", "Admin", new { role = "Trainer" })"><span class="aa-stat-top">02 / TRAINERS <span aria-hidden="true">↗</span></span><strong>@Model.Trainers.ToString("N0")</strong><span class="aa-stat-bottom">Coaches on the platform</span></a>
+        <a class="aa-stat" href="@Url.Action("Users", "Admin", new { status = "active" })"><span class="aa-stat-top">03 / ACTIVE ACCOUNTS <span aria-hidden="true">↗</span></span><strong>@Model.ActiveUsers.ToString("N0")</strong><span class="aa-stat-bottom">Across all roles</span></a>
+        <a class="aa-stat" href="@Url.Action("Assignments", "Admin")"><span class="aa-stat-top">04 / WITHOUT TRAINER <span aria-hidden="true">↗</span></span><strong>@Model.Unassigned.ToString("N0")</strong><span class="aa-stat-bottom">Clients waiting to connect</span></a>
+    </section>
+
+    <div class="aa-dashboard-grid">
+        <section class="aa-surface aa-chart-panel" aria-label="Last seven days activity">
+            <div class="aa-section-head"><div><span class="aa-section-label">MEMBER ENGAGEMENT</span><h2>Activity this week</h2></div><a class="aa-text-link" href="@Url.Action("Reports", "Admin")">Explore data <span>↗</span></a></div>
+            <div class="aa-chart-intro"><div><strong>@((workouts + meals).ToString("N0"))</strong><span>total logs in the last seven days</span></div><div class="aa-legend"><span><i class="aa-key-work"></i> Workouts (@workouts)</span><span><i class="aa-key-meal"></i> Meals (@meals)</span></div></div>
+            <div class="aa-chart" role="img" aria-label="Bar chart of workout and meal logs in the last seven days">
+                @foreach (var d in activity) {
+                    var workHeight = 100.0 * d.Workouts / peak;
+                    var mealHeight = 100.0 * d.Meals / peak;
+                    <div class="aa-bar-group" tabindex="0" title="@d.Date.ToString("ddd, dd MMM"): @d.Workouts workout logs and @d.Meals meal logs">
+                        <div class="aa-bars"><span class="aa-bar-work" style="height:@(workHeight.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))%"></span><span class="aa-bar-meal" style="height:@(mealHeight.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))%"></span></div>
+                        <span class="aa-bar-label">@d.Date.ToString("ddd")</span>
+                        <div class="aa-bar-tooltip">@d.Date.ToString("ddd, dd MMM")<br />@d.Workouts workouts · @d.Meals meals</div>
+                    </div>
+                }
+            </div>
+            @if (!activity.Any() || workouts + meals == 0) { <p class="aa-empty-note">No activity recorded this week yet.</p> }
+        </section>
+        <section class="aa-surface aa-attention-panel">
+            <div class="aa-section-head"><div><span class="aa-section-label">TO LOOK AT</span><h2>Needs attention</h2></div><span class="aa-counter">@Model.PendingSelections pending</span></div>
+            <a class="aa-attention-item" href="@Url.Action("Assignments", "Admin")"><div class="aa-attention-icon">↗</div><div><strong>Trainer requests</strong><p>Clients waiting for a trainer to respond</p></div><b>@Model.PendingSelections</b></a>
+            <a class="aa-attention-item" href="@Url.Action("Assignments", "Admin")"><div class="aa-attention-icon">↗</div><div><strong>Unassigned clients</strong><p>Members without a trainer</p></div><b>@Model.Unassigned</b></a>
+            <div class="aa-mini-note"><span class="aa-note-dot"></span><div><strong>@Model.OpenAppointments upcoming sessions</strong><p>Confirmed appointments across the platform.</p></div></div>
+            <a class="aa-bottom-link" href="@Url.Action("Assignments", "Admin")">Go to assignments <span>→</span></a>
+        </section>
+    </div>
+
+    <section class="aa-surface aa-registrations">
+        <div class="aa-section-head"><div><span class="aa-section-label">NEW TO HEALTHTRACK</span><h2>Recent registrations</h2></div><a class="aa-text-link" href="@Url.Action("Users", "Admin")">All members ↗</a></div>
+        <div class="aa-table-wrap"><table class="aa-table"><thead><tr><th>MEMBER</th><th>ROLE</th><th>JOINED</th><th>ACCOUNT</th></tr></thead><tbody>
+            @foreach (var u in registrations) { <tr><td><div class="aa-member"><span class="aa-initial">@(string.IsNullOrWhiteSpace(u.Name) ? "?" : u.Name.Trim().Substring(0, 1).ToUpperInvariant())</span><span><strong>@u.Name</strong><small>@u.Email</small></span></div></td><td>@u.Role</td><td>@u.Joined.ToString("dd MMM yyyy")</td><td><span class="aa-status @(u.IsActive ? "aa-status--on" : "aa-status--off")">@(u.IsActive ? "Active" : "Inactive")</span></td></tr> }
+            @if (!registrations.Any()) { <tr><td colspan="4" class="aa-empty-cell">No registrations found.</td></tr> }
+        </tbody></table></div>
+    </section>
+</div>
+@section scripts { <script>document.getElementById('aaRefresh').addEventListener('click', function () { window.location.reload(); });</script> }

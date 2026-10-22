@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Linq;
 using System.Web.Mvc;
@@ -40,6 +40,8 @@ namespace HealthTrack.Controllers
                     t.TrainerId,
                     t.Bio,
                     t.Specialisation,
+                    t.AverageRating,
+                    u.ProfilePhotoPath,
                     u.FirstName,
                     u.LastName
                 }
@@ -58,6 +60,8 @@ namespace HealthTrack.Controllers
             ).Trim();
 
             vm.TrainerBio = trainer.Bio;
+            vm.TrainerPhotoPath = trainer.ProfilePhotoPath;
+            vm.TrainerAverageRating = trainer.AverageRating;
 
             vm.Specialisations = (
                 from ts in db.Set<TrainerSpecialisation>()

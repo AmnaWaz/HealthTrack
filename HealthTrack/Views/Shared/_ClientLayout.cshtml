@@ -27,6 +27,8 @@
     @Html.Partial("_ThemeHead")
 
     <link href="@Url.Content("~/Content/brand.css")" rel="stylesheet" />
+    <style>.ht-profile-avatar{overflow:hidden}.ht-user-photo{display:block;width:100%;height:100%;object-fit:cover}</style>
+    <link href="@Url.Content("~/Content/profile-photo.css")" rel="stylesheet" />
     <link href="@Url.Content("~/Content/sidebar.css")" rel="stylesheet" />
 
     @Scripts.Render("~/bundles/modernizr")
@@ -55,56 +57,10 @@
                 outline-offset: -2px;
             }
 
-        .ht-client-account-links {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            padding: 12px 8px;
-            border-top: 1px solid rgba(180, 190, 205, .2);
-        }
-
-            .ht-client-account-links a {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                min-height: 34px;
-                padding: 7px 11px;
-                border: 1px solid rgba(180, 190, 205, .3);
-                border-radius: 2px;
-                color: inherit;
-                text-decoration: none;
-                font: 500 11px "IBM Plex Mono", monospace;
-            }
-
-                .ht-client-account-links a:hover,
-                .ht-client-account-links a:focus-visible,
-                .ht-client-account-links a.active {
-                    color: #e18a94;
-                    border-color: #b6505d;
-                }
-
-                .ht-client-account-links a:focus-visible {
-                    outline: 2px solid #b6505d;
-                    outline-offset: 2px;
-                }
-
-        .ht-trainer-shell.sidebar-collapsed .ht-client-account-links {
-            display: none;
-        }
-
-        .ht-client-account-links a.active {
-            font-weight: 600;
-        }
-
         .ht-client-logout-form {
             margin: 0;
         }
 
-        @@media (max-width: 767px) {
-            .ht-client-account-links {
-                padding: 12px 8px;
-            }
-        }
     </style>
 </head>
 
@@ -204,30 +160,15 @@
 
             <div class="ht-sidebar-bottom">
                 <div class="ht-sidebar-profile">
-                    <span class="ht-profile-avatar" aria-hidden="true">
-                        @sideInitials
-                    </span>
-
+                    <button type="button" class="ht-profile-avatar" data-profile-toggle aria-label="Profile and settings" aria-expanded="false" aria-controls="htProfileMenu" title="Profile and settings">@if (!string.IsNullOrWhiteSpace(ViewBag.SidePhoto as string)) { <img class="ht-user-photo" src="@Url.Content("~" + (string)ViewBag.SidePhoto)" alt="" /> } else { @sideInitials }</button>
                     <span class="ht-profile-info">
                         <strong>@sideName</strong>
                         <small>Client</small>
                     </span>
+                    <button type="button" class="ht-profile-cog @(ctrl == "ClientProfile" ? "active" : "")" data-profile-toggle aria-haspopup="menu" aria-expanded="false" aria-controls="htProfileMenu" aria-label="Profile and settings" title="Profile and settings">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+                    </button>
                 </div>
-
-                <nav class="ht-client-account-links"
-                     aria-label="Client account">
-                    <a href="@Url.Action("Index", "ClientProfile")"
-                       class="@(ctrl == "ClientProfile" && act == "Index" ? "active" : "")"
-                       aria-current="@(ctrl == "ClientProfile" && act == "Index" ? "page" : null)">
-                        Profile
-                    </a>
-
-                    <a href="@Url.Action("Settings", "ClientProfile")"
-                       class="@(ctrl == "ClientProfile" && act == "Settings" ? "active" : "")"
-                       aria-current="@(ctrl == "ClientProfile" && act == "Settings" ? "page" : null)">
-                        Settings
-                    </a>
-                </nav>
 
                 <button type="button"
                         class="ht-sidebar-collapse"
@@ -243,6 +184,15 @@
         </aside>
 
         <div class="ht-sidebar-overlay" id="htSidebarOverlay"></div>
+
+        <div class="ht-profile-menu" id="htProfileMenu" role="menu" hidden>
+            <div class="ht-profile-menu-head">
+                <strong>@sideName</strong>
+                <small>@User.Identity.Name</small>
+            </div>
+            <a role="menuitem" class="@(ctrl == "ClientProfile" && act == "Index" ? "active" : "")" href="@Url.Action("Index", "ClientProfile")">Profile</a>
+            <a role="menuitem" class="@(ctrl == "ClientProfile" && act == "Settings" ? "active" : "")" href="@Url.Action("Settings", "ClientProfile")">Settings</a>
+        </div>
 
         <div class="ht-trainer-main">
             <header class="ht-trainer-topbar">

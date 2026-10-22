@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Web.Mvc;
 using HealthTrack.Data;
@@ -34,29 +34,46 @@ namespace HealthTrack.Controllers
             var weekEnd = weekStart.AddDays(7);
             var clientId = client.ClientId;
 
+            var sixWeekStart = weekStart.AddDays(-35);
             var workoutLogs = db.WorkoutLogs
                 .Where(w => w.ClientId == clientId &&
-                            w.Date >= weekStart &&
+                            w.Date >= sixWeekStart &&
                             w.Date < weekEnd)
                 .Select(w => new
                 {
                     w.Date,
-                    w.WorkoutPlanId
+                    w.WorkoutPlanId,
+                    w.Duration
                 })
                 .ToList();
 
-            var trainingDays = workoutLogs
-                .Select(w => w.Date.Date)
-                .Distinct()
-                .Count();
-
-            var workoutSessions = workoutLogs
-                .GroupBy(w => new
+            var trainingWeeks = Enumerable.Range(0, 6)
+                .Select(index =>
                 {
-                    Date = w.Date.Date,
-                    w.WorkoutPlanId
+                    var start = sixWeekStart.AddDays(index * 7);
+                    var end = start.AddDays(7);
+                    var logs = workoutLogs
+                        .Where(w => w.Date >= start && w.Date < end)
+                        .ToList();
+
+                    return new ClientTrainingWeekViewModel
+                    {
+                        WeekStart = start,
+                        WeekEnd = end.AddDays(-1),
+                        TrainingDays = logs.Select(w => w.Date.Date).Distinct().Count(),
+                        WorkoutSessions = logs
+                            .GroupBy(w => new { Day = w.Date.Date, w.WorkoutPlanId })
+                            .Count(),
+                        TotalExercises = logs.Count,
+                        TotalMinutes = logs.Sum(w => w.Duration),
+                        IsCurrentWeek = index == 5
+                    };
                 })
-                .Count();
+                .ToList();
+
+            var currentWeek = trainingWeeks.Last();
+            var trainingDays = currentWeek.TrainingDays;
+            var workoutSessions = currentWeek.WorkoutSessions;
 
             var mealsLogged = db.MealLogs
                 .Count(m => m.ClientId == clientId &&
@@ -92,7 +109,8 @@ namespace HealthTrack.Controllers
                     ? (DateTime?)latestMetric.DateRecorded
                     : null,
                 WeightIsFromProfile = latestMetric == null,
-                FitnessGoals = fitnessGoals
+                FitnessGoals = fitnessGoals,
+                TrainingWeeks = trainingWeeks
             };
 
             return View(vm);

@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections.Generic;
 
@@ -34,6 +34,8 @@ namespace HealthTrack.ViewModels
         public string FullName { get; set; }
 
         public string Bio { get; set; }
+
+        public string ProfilePhotoPath { get; set; }
 
         public List<string> Specialisations { get; set; }
 

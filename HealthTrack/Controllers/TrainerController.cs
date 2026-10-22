@@ -27,7 +27,7 @@ namespace HealthTrack.Controllers
             vm.ClientCount = db.Set<ClientProfile>().Count(c => c.TrainerId == tid);
 
             vm.UpcomingAppointmentCount = db.Set<Appointment>()
-                .Count(a => a.TrainerId == tid && a.AppointmentDateTime >= now && a.Status != "Cancelled");
+                .Count(a => a.TrainerId == tid && a.AppointmentDateTime >= now && (a.Status == "Scheduled" || a.Status == "Approved"));
 
             vm.ActiveWorkoutPlans = db.Set<WorkoutPlan>()
                 .Count(p => p.TrainerId == tid && p.StartDate <= today && (p.EndDate == null || p.EndDate >= today));
@@ -40,7 +40,7 @@ namespace HealthTrack.Controllers
             var appts = (from a in db.Set<Appointment>()
                          join c in db.Set<ClientProfile>() on a.ClientId equals c.ClientId
                          join u in db.Set<ApplicationUser>() on c.UserId equals u.UserId
-                         where a.TrainerId == tid && a.AppointmentDateTime >= now && a.Status != "Cancelled"
+                         where a.TrainerId == tid && a.AppointmentDateTime >= now && (a.Status == "Scheduled" || a.Status == "Approved")
                          orderby a.AppointmentDateTime
                          select new { a.AppointmentId, When = a.AppointmentDateTime, u.FirstName, u.LastName, a.Status, a.Location })
                         .Take(6).ToList();
@@ -73,27 +73,9 @@ namespace HealthTrack.Controllers
             return View(new TrainerClientsViewModel
             {
                 Mine = ClientRows(true),
-                Available = ClientRows(false)
+                Available = new System.Collections.Generic.List<ClientRow>()
             });
         }
 
-        // POST: /Trainer/AddClient
-        [HttpPost, ValidateAntiForgeryToken]
-        public ActionResult AddClient(int clientId)
-        {
-            var client = db.Set<ClientProfile>().Find(clientId);
-            if (client == null) return HttpNotFound();
-
-            if (client.TrainerId != null && client.TrainerId != CurrentTrainerId)
-            {
-                TempData["Error"] = "That client already has a trainer.";
-                return RedirectToAction("Clients");
-            }
-
-            client.TrainerId = CurrentTrainerId;
-            db.SaveChanges();
-            TempData["Success"] = "Client added to your list.";
-            return RedirectToAction("Clients");
-        }
     }
 }

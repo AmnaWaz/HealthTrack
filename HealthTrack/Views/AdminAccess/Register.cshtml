@@ -1,0 +1,23 @@
+@model HealthTrack.ViewModels.AdminRegisterViewModel
+@{
+    Layout = null;
+    ViewBag.Title = "Admin registration";
+}
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Admin registration — HealthTrack</title>
+<link href="@Url.Content("~/Content/admin-access.css")" rel="stylesheet" /></head>
+<body>
+<main class="access-shell">
+ <aside class="access-aside"><a class="wordmark" href="@Url.Action("Index", "Home")">HEALTHTRACK <span>/ CONTROL</span></a><div class="aside-bottom"><span class="eyebrow">FIRST-TIME SETUP</span><h1>A trusted space.<br/>A responsible role.</h1><p>Create the first administrator on this computer. Registration closes automatically afterward.</p></div></aside>
+ <section class="access-main"><div class="access-card"><span class="eyebrow">PRIVATE ACCESS / 02</span><h2>Create admin account</h2><p class="intro">This setup form is available only locally, until the first Admin account is created.</p>
+ @using (Html.BeginForm("Register", "AdminAccess", FormMethod.Post, new { @class = "access-form" })) {
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "error" })
+    <div class="pair"><div><label for="FirstName">First name</label>@Html.TextBoxFor(m => m.FirstName, new { autocomplete = "given-name" })@Html.ValidationMessageFor(m => m.FirstName, "", new { @class = "error" })</div><div><label for="LastName">Last name</label>@Html.TextBoxFor(m => m.LastName, new { autocomplete = "family-name" })@Html.ValidationMessageFor(m => m.LastName, "", new { @class = "error" })</div></div>
+    <label for="Email">Email address</label>@Html.TextBoxFor(m => m.Email, new { type = "email", autocomplete = "email" })@Html.ValidationMessageFor(m => m.Email, "", new { @class = "error" })
+    <label for="Password">Password</label>@Html.PasswordFor(m => m.Password, new { autocomplete = "new-password", placeholder = "At least 12 characters" })@Html.ValidationMessageFor(m => m.Password, "", new { @class = "error" })
+    <label for="ConfirmPassword">Confirm password</label>@Html.PasswordFor(m => m.ConfirmPassword, new { autocomplete = "new-password" })@Html.ValidationMessageFor(m => m.ConfirmPassword, "", new { @class = "error" })
+    <button type="submit">Create administrator <span>↗</span></button>
+ }
+ <p class="footnote">Already registered? <a href="@Url.Action("Login", "AdminAccess")">Admin sign in</a></p></div></section>
+</main></body></html>

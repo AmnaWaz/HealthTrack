@@ -1,4 +1,4 @@
-﻿@model HealthTrack.ViewModels.TrainerClientsViewModel
+@model HealthTrack.ViewModels.TrainerClientsViewModel
 @{ ViewBag.Title = "Client list"; }
 
 <div class="ht-page">
@@ -6,7 +6,7 @@
         <div>
             <p class="ht-eyebrow">02 / Client list</p>
             <h1 class="ht-h1">Your<br />clients.</h1>
-            <p class="ht-sub">Add clients to your list, then give them plans, sessions and feedback.</p>
+            <p class="ht-sub">Manage the clients who selected you as their trainer. New requests are reviewed in Client Selections.</p>
         </div>
     </div>
 
@@ -31,7 +31,11 @@
                         @foreach (var c in Model.Mine)
                         {
                             <tr>
-                                <td data-label="Client"><div class="ht-name"><span class="ht-avatar">@c.Initials</span>@c.Name</div></td>
+                                <td data-label="Client"><div class="ht-name"><span class="ht-avatar" style="overflow:hidden;display:inline-flex;align-items:center;justify-content:center">
+                                        @if (!string.IsNullOrWhiteSpace(c.ProfilePhotoPath)) {
+                                            <img src="@Url.Content(c.ProfilePhotoPath)" alt="@c.Name" style="width:100%;height:100%;object-fit:cover" />
+                                        } else { @c.Initials }
+                                    </span>@c.Name</div></td>
                                 <td data-label="Goal">@(string.IsNullOrWhiteSpace(c.Goal) ? "—" : c.Goal)</td>
                                 <td data-label="Age">@c.Age</td>
                                 <td data-label="Actions">
@@ -50,39 +54,15 @@
         }
         else
         {
-            <div class="ht-empty"><div>No clients yet. Add one from the list below.</div></div>
+            <div class="ht-empty"><div>No assigned clients yet. Clients can find you in the trainer directory and send a selection request.</div></div>
         }
     </section>
 
     <section class="ht-card">
         <div class="ht-card-head">
-            <h2 class="ht-card-title">Looking for a trainer</h2>
-            <span class="ht-badge red">@Model.Available.Count</span>
+            <h2 class="ht-card-title">New client requests</h2>
         </div>
-        @if (Model.Available.Any())
-        {
-            <ul class="ht-list">
-                @foreach (var c in Model.Available)
-                {
-                    <li>
-                        <span class="ht-avatar">@c.Initials</span>
-                        <div class="ht-list-main">
-                            <p class="ht-list-title">@c.Name</p>
-                            <p class="ht-list-sub">@(string.IsNullOrWhiteSpace(c.Goal) ? "No goal set" : c.Goal) · @c.Age yrs</p>
-                        </div>
-                        @using (Html.BeginForm("AddClient", "Trainer", FormMethod.Post, new { @class = "d-inline" }))
-                        {
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="clientId" value="@c.ClientId" />
-                            <button type="submit" class="ht-btn-ghost">Add to my list</button>
-                        }
-                    </li>
-                }
-            </ul>
-        }
-        else
-        {
-            <div class="ht-empty"><div>Every registered client already has a trainer.</div></div>
-        }
+        <p class="ht-sub">Clients choose a trainer from their directory. Review their requests before an assignment is created.</p>
+        @Html.ActionLink("Review client selections", "Index", "TrainerSelection", null, new { @class = "ht-btn-ghost" })
     </section>
 </div>

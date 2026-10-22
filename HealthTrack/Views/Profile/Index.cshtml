@@ -1,69 +1,295 @@
 @model HealthTrack.ViewModels.ProfileViewModel
-@{ ViewBag.Title = "Profile"; }
+@{
+    ViewBag.Title = "My Profile";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var photo = ViewBag.SidePhoto as string;
+    var name = ((Model.FirstName ?? "") + " " + (Model.LastName ?? "")).Trim();
+}
+<style>
+    .cpf-page {
+        max-width: 1250px;
+        margin: 0 auto;
+        padding: 30px 16px 70px;
+    }
 
-<div class="ht-page">
-    <div class="ht-page-head">
-        <div>
-            <p class="ht-eyebrow">Trainer / Settings</p>
-            <h1 class="ht-h1">Your<br />profile.</h1>
-            <p class="ht-sub">This is what your clients see about you.</p>
-        </div>
-    </div>
+    .cpf-eyebrow {
+        color: #b6505d;
+        font: 600 11px "IBM Plex Mono", monospace;
+        letter-spacing: 1.3px;
+        text-transform: uppercase;
+    }
 
-    <div class="ht-tabs">
-        @Html.ActionLink("Profile", "Index", "Profile", null, new { @class = "ht-tab active" })
-        @Html.ActionLink("Settings", "Settings", "Profile", null, new { @class = "ht-tab" })
-    </div>
+    .cpf-title {
+        margin: 10px 0;
+        font: 700 clamp(42px, 5vw, 65px) "Archivo Narrow", sans-serif;
+        text-transform: uppercase;
+    }
 
-    @if (TempData["Success"] != null)
-    {<div class="ht-alert ok">@TempData["Success"]</div>}
+    .cpf-muted {
+        color: #858d99;
+        font-size: 13px;
+        line-height: 1.7;
+    }
 
-    <section class="ht-card ht-form-card">
-        @using (Html.BeginForm("Index", "Profile", FormMethod.Post))
-        {
-            @Html.AntiForgeryToken()
-            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    .cpf-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 20px;
+        margin-bottom: 30px;
+    }
 
-            <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                    @Html.LabelFor(m => m.FirstName, new { @class = "form-label" })
-                    @Html.TextBoxFor(m => m.FirstName, new { @class = "form-control" })
-                    @Html.ValidationMessageFor(m => m.FirstName, "", new { @class = "text-danger" })
-                </div>
-                <div class="col-md-6">
-                    @Html.LabelFor(m => m.LastName, new { @class = "form-label" })
-                    @Html.TextBoxFor(m => m.LastName, new { @class = "form-control" })
-                    @Html.ValidationMessageFor(m => m.LastName, "", new { @class = "text-danger" })
-                </div>
-            </div>
+    .cpf-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 370px;
+        gap: 20px;
+    }
 
-            <div class="mb-4">
-                <label class="form-label">Email</label>
-                <input type="text" class="form-control" value="@Model.Email" disabled />
-                <div class="ht-hint mt-2">Your email is your login and can&rsquo;t be changed here.</div>
-            </div>
+    .cpf-panel {
+        padding: 25px;
+        border: 1px solid var(--ht-border, #b9bdc2);
+        background: var(--ht-surface, #f4f0e8);
+        min-width: 0;
+    }
 
-            <div class="mb-4">
-                @Html.LabelFor(m => m.Phone, new { @class = "form-label" })
-                @Html.TextBoxFor(m => m.Phone, new { @class = "form-control", type = "tel" })
-                @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger" })
-            </div>
-
-            <div class="mb-4">
-                @Html.LabelFor(m => m.Specialisation, new { @class = "form-label" })
-                @Html.TextBoxFor(m => m.Specialisation, new { @class = "form-control", placeholder = "e.g. Strength and conditioning" })
-                @Html.ValidationMessageFor(m => m.Specialisation, "", new { @class = "text-danger" })
-            </div>
-
-            <div class="mb-4">
-                @Html.LabelFor(m => m.Bio, new { @class = "form-label" })
-                @Html.TextAreaFor(m => m.Bio, 4, 40, new { @class = "form-control", placeholder = "A few lines about how you coach." })
-                @Html.ValidationMessageFor(m => m.Bio, "", new { @class = "text-danger" })
-            </div>
-
-            <button type="submit" class="ht-btn">Save profile</button>
+        .cpf-panel h2 {
+            margin: 7px 0 22px;
+            font: 700 27px "Archivo Narrow", sans-serif;
+            text-transform: uppercase;
         }
-    </section>
-</div>
 
+    .cpf-avatar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 96px;
+        height: 96px;
+        background: #17283d;
+        color: #fff;
+        font: 700 35px "Archivo Narrow", sans-serif;
+        margin-bottom: 18px;
+    }
+
+    .cpf-details {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+    }
+
+    .cpf-detail {
+        padding-top: 15px;
+        border-top: 1px solid var(--ht-border, #b9bdc2);
+        min-width: 0;
+    }
+
+        .cpf-detail span {
+            display: block;
+            color: #858d99;
+            font: 600 10px "IBM Plex Mono", monospace;
+            text-transform: uppercase;
+            margin-bottom: 9px;
+        }
+
+        .cpf-detail strong {
+            display: block;
+            font-size: 14px;
+            overflow-wrap: anywhere;
+        }
+
+    .cpf-field {
+        margin-bottom: 18px;
+    }
+
+        .cpf-field label {
+            display: block;
+            margin-bottom: 8px;
+            font: 600 11px "IBM Plex Mono", monospace;
+            text-transform: uppercase;
+        }
+
+        .cpf-field input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #aeb3ba;
+            background: transparent;
+            color: inherit;
+            border-radius: 0;
+            font-size: 13px;
+        }
+
+    .cpf-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 18px;
+        background: #b6505d;
+        border: 1px solid #b6505d;
+        color: #fff;
+        text-decoration: none;
+        text-transform: uppercase;
+        font: 600 11px "IBM Plex Mono", monospace;
+        cursor: pointer;
+    }
+
+        .cpf-button:hover {
+            background: #933e49;
+            color: #fff;
+        }
+
+    .cpf-button-outline {
+        background: transparent;
+        color: inherit;
+        border-color: #aeb3ba;
+    }
+
+        .cpf-button-outline:hover {
+            background: transparent;
+            border-color: #b6505d;
+            color: #b6505d;
+        }
+
+    .cpf-goals {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px;
+    }
+
+    .cpf-goal {
+        padding: 10px 13px;
+        border: 1px solid var(--ht-border, #b9bdc2);
+        font: 600 11px "IBM Plex Mono", monospace;
+    }
+
+    .cpf-alert {
+        padding: 14px;
+        border-left: 3px solid #65967c;
+        background: rgba(101, 150, 124, .12);
+        margin-bottom: 25px;
+        font-size: 13px;
+    }
+
+    .cpf-validation {
+        display: block;
+        margin-top: 5px;
+        font-size: 12px;
+        color: #b6505d;
+    }
+
+    .cpf-section {
+        margin-top: 22px;
+    }
+
+        .cpf-section h2 {
+            font: 700 27px "Archivo Narrow", sans-serif;
+            text-transform: uppercase;
+            margin: 7px 0 20px;
+        }
+
+    @@media (max-width: 950px) {
+        .cpf-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 580px) {
+        .cpf-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .cpf-details {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+<style>
+    .cpf-avatar { overflow: hidden; }
+    .cpf-field textarea {width:100%;min-height:125px;padding:12px;border:1px solid #aeb3ba;background:transparent;color:inherit;font-size:13px;resize:vertical;}
+    .cpf-field input:focus,.cpf-field textarea:focus {outline:2px solid #b6505d;outline-offset:1px;}
+    .cpf-photo-form {margin:15px 0;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+    .cpf-photo-form input {max-width:100%;}
+    .cpf-multiline {white-space:pre-wrap;overflow-wrap:anywhere;}
+    .cpf-wide {grid-column:1/-1;}
+</style>
+<div class="cpf-page">
+    <header class="cpf-header">
+        <div>
+            <span class="cpf-eyebrow">ACCOUNT / PROFILE</span>
+            <h1 class="cpf-title">MY PROFILE</h1>
+            <p class="cpf-muted">Your personal information, coaching specialisations and public Trainer profile.</p>
+        </div>
+        <a class="cpf-button cpf-button-outline" href="@Url.Action("Settings", "Profile")">ACCOUNT SETTINGS</a>
+    </header>
+    @if (TempData["Success"] != null) { <div class="cpf-alert" role="status">@TempData["Success"]</div> }
+    @if (TempData["Error"] != null) { <div class="cpf-alert" style="border-left-color:#b6505d" role="alert">@TempData["Error"]</div> }
+    <div class="cpf-grid">
+        <section class="cpf-panel">
+            <div class="cpf-avatar" aria-label="Trainer profile picture">
+                @if (!string.IsNullOrWhiteSpace(photo)) {
+                    <img src="@Url.Content("~" + photo)" alt="Your profile photo" style="width:100%;height:100%;object-fit:cover" />
+                } else {
+                    @(string.IsNullOrWhiteSpace(Model.FirstName) ? "T" : Model.FirstName.Substring(0, 1).ToUpperInvariant())
+                }
+            </div>
+            <span class="cpf-eyebrow">PERSONAL DETAILS</span>
+            <h2>@name</h2>
+            <div class="cpf-details">
+                <div class="cpf-detail"><span>Email address</span><strong>@Model.Email</strong></div>
+                <div class="cpf-detail"><span>Phone number</span><strong>@(string.IsNullOrWhiteSpace(Model.Phone) ? "Not provided" : Model.Phone)</strong></div>
+                <div class="cpf-detail cpf-wide"><span>Specialisations</span><strong>@(string.IsNullOrWhiteSpace(Model.Specialisation) ? "Not added" : Model.Specialisation)</strong></div>
+                <div class="cpf-detail cpf-wide"><span>Trainer biography</span><strong class="cpf-multiline">@(string.IsNullOrWhiteSpace(Model.Bio) ? "No biography added yet" : Model.Bio)</strong></div>
+            </div>
+            <p class="cpf-muted" style="margin-top:20px">Clients can see your display name, photo, biography and specialisations. Your private contact details remain on this account page.</p>
+            <span class="cpf-eyebrow" style="display:block;margin-top:25px">PROFILE PHOTO</span>
+            @using (Html.BeginForm("UploadPhoto", "Profile", FormMethod.Post, new { enctype = "multipart/form-data", @class = "cpf-photo-form" })) {
+                @Html.AntiForgeryToken()
+                <label class="cpf-muted" for="trainerProfilePhoto">JPEG or PNG, up to 3 MB</label>
+                <input id="trainerProfilePhoto" name="photo" type="file" accept="image/jpeg,image/png" required />
+                <button class="cpf-button" type="submit">UPLOAD PHOTO</button>
+            }
+            @if (!string.IsNullOrWhiteSpace(photo)) {
+                using (Html.BeginForm("RemovePhoto", "Profile", FormMethod.Post, new { @class = "cpf-photo-form" })) {
+                    @Html.AntiForgeryToken()
+                    <button class="cpf-button cpf-button-outline" type="submit">REMOVE PHOTO</button>
+                }
+            }
+        </section>
+        <aside class="cpf-panel">
+            <span class="cpf-eyebrow">EDIT ACCOUNT</span>
+            <h2>UPDATE DETAILS</h2>
+            @using (Html.BeginForm("Index", "Profile", FormMethod.Post)) {
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(true, "", new { @class = "cpf-validation" })
+                <div class="cpf-field">
+                    @Html.LabelFor(m => m.FirstName)
+                    @Html.TextBoxFor(m => m.FirstName, new { maxlength = "50", required = "required" })
+                    @Html.ValidationMessageFor(m => m.FirstName, "", new { @class = "cpf-validation" })
+                </div>
+                <div class="cpf-field">
+                    @Html.LabelFor(m => m.LastName)
+                    @Html.TextBoxFor(m => m.LastName, new { maxlength = "50", required = "required" })
+                    @Html.ValidationMessageFor(m => m.LastName, "", new { @class = "cpf-validation" })
+                </div>
+                <div class="cpf-field">
+                    @Html.LabelFor(m => m.Phone)
+                    @Html.TextBoxFor(m => m.Phone, new { type = "tel", maxlength = "25", required = "required" })
+                    @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "cpf-validation" })
+                </div>
+                <div class="cpf-field">
+                    @Html.LabelFor(m => m.Specialisation)
+                    <p class="cpf-muted">Separate up to three specialisations with commas. This list also appears to Clients.</p>
+                    @Html.TextBoxFor(m => m.Specialisation, new { maxlength = "100", placeholder = "Strength training, Bodybuilding, Weight management" })
+                    @Html.ValidationMessageFor(m => m.Specialisation, "", new { @class = "cpf-validation" })
+                </div>
+                <div class="cpf-field">
+                    @Html.LabelFor(m => m.Bio)
+                    @Html.TextAreaFor(m => m.Bio, 5, 40, new { maxlength = "500", placeholder = "Tell clients about your coaching approach" })
+                    @Html.ValidationMessageFor(m => m.Bio, "", new { @class = "cpf-validation" })
+                </div>
+                <p class="cpf-muted">Email is your login and cannot be changed here.</p>
+                <button type="submit" class="cpf-button">SAVE PROFILE</button>
+            }
+        </aside>
+    </div>
+</div>
 @section scripts { @Scripts.Render("~/bundles/jqueryval") }

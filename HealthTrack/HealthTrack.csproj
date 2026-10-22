@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="packages\EntityFramework.6.5.2\build\EntityFramework.props" Condition="Exists('packages\EntityFramework.6.5.2\build\EntityFramework.props')" />
   <Import Project="packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
@@ -46,6 +46,17 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Controllers\AdminAccessController.cs" />
+    <Compile Include="Controllers\AdminBaseController.cs" />
+    <Compile Include="Controllers\AdminController.cs" />
+    <Compile Include="Services\ProfilePhotoService.cs" />
+    <Content Include="Content\admin-access.css" />
+    <Content Include="Content\admin-person-a.css" />
+    <Content Include="Content\admin-foundation.css" />
+    <Content Include="Content\img\landing\athlete-detail.jpg" />
+    <Content Include="Content\img\landing\coaching-editorial.jpg" />
+    <Content Include="Content\img\landing\trainer-detail.jpg" />
+    <Content Include="Content\profile-photo.css" />
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>packages\EntityFramework.6.5.2\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
@@ -129,6 +140,7 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\AppointmentsController.cs" />
+    <Compile Include="Services\AppointmentBookingGuard.cs" />
     <Compile Include="Controllers\ClientBaseController.cs" />
     <Compile Include="Controllers\ClientController.cs" />
     <Compile Include="Controllers\ClientNotificationsController.cs" />
@@ -136,6 +148,7 @@
     <Compile Include="Controllers\ClientProfileController.cs" />
     <Compile Include="Controllers\ClientProgressController.cs" />
     <Compile Include="Controllers\ClientSessionsController.cs" />
+    <Compile Include="Controllers\HealthcareAppointmentsController.cs" />
     <Compile Include="Controllers\ClientTrainerController.cs" />
     <Compile Include="Controllers\ClientTrainerDirectoryController.cs" />
     <Compile Include="Controllers\ClientTrainerRequestsController.cs" />
@@ -164,6 +177,7 @@
     <Compile Include="Helpers\ProfileOptions.cs" />
     <Compile Include="Models\ApplicationUser.cs" />
     <Compile Include="Models\Appointment.cs" />
+    <Compile Include="Models\HealthcareAppointment.cs" />
     <Compile Include="Models\ClientGoal.cs" />
     <Compile Include="Models\ClientProfile.cs" />
     <Compile Include="Models\DietPlan.cs" />
@@ -184,6 +198,8 @@
     <Compile Include="Services\TrainerRequestAiService.cs" />
     <Compile Include="Services\TrainerRequestPriorityAnalyzer.cs" />
     <Compile Include="ViewModels\AccountViewModels.cs" />
+    <Compile Include="ViewModels\AdminAccessViewModels.cs" />
+    <Compile Include="ViewModels\AdminDashboardViewModels.cs" />
     <Compile Include="ViewModels\ClientNotificationsViewModel.cs" />
     <Compile Include="ViewModels\ClientNutritionViewModel.cs" />
     <Compile Include="ViewModels\ClientOverviewViewModel.cs" />
@@ -234,7 +250,13 @@
     <Content Include="Content\sidebar.css" />
     <Content Include="Content\stat-accordion.css" />
     <Content Include="Content\theme.css" />
+    <Content Include="Content\uploads\profiles\007e87a17ac34439b44dcb4c981b9868.jpg" />
+    <Content Include="Content\uploads\profiles\c9392c5244c34777bf3bf038fc3a0648.jpg" />
     <Content Include="Database\02_onboarding_update.sql" />
+    <Content Include="Database\05_profile_photo.sql" />
+    <Content Include="Database\06_requests_existing_database.sql" />
+    <Content Include="Database\07_healthcare_consultations.sql" />
+    <Content Include="Database\STEP9_Check_Only.sql" />
     <Content Include="favicon.svg" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
@@ -301,6 +323,8 @@
     <Content Include="Views\ClientNutrition\Index.cshtml" />
     <Content Include="Views\ClientProgress\Index.cshtml" />
     <Content Include="Views\ClientSessions\Index.cshtml" />
+    <Content Include="Views\HealthcareAppointments\Index.cshtml" />
+    <Content Include="Database\07_healthcare_consultations.sql" />
     <Content Include="Views\ClientTrainer\Index.cshtml" />
     <Content Include="Views\ClientNotifications\Index.cshtml" />
     <Content Include="Views\ClientProfile\Index.cshtml" />
@@ -310,6 +334,16 @@
     <Content Include="Views\ClientTrainerDirectory\Index.cshtml" />
     <Content Include="Views\TrainerSelection\Index.cshtml" />
     <Content Include="Views\Shared\_LandingLayout.cshtml" />
+    <Content Include="Views\Admin\Index.cshtml" />
+    <Content Include="Views\Admin\Users.cshtml" />
+    <Content Include="Views\Admin\Assignments.cshtml" />
+    <Content Include="Content\admin-management.css" />
+    <Content Include="Views\Admin\PendingModule.cshtml" />
+    <Content Include="Views\Shared\_AdminLayout.cshtml" />
+    <Content Include="Views\Admin\Reports.cshtml" />
+    <Content Include="Setup\Generate-AdminRegistrationKey.ps1" />
+    <Content Include="Views\AdminAccess\Login.cshtml" />
+    <Content Include="Views\AdminAccess\Register.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

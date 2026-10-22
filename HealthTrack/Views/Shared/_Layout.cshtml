@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" data-theme="dark" data-bs-theme="dark">
 <head>
     <meta charset="utf-8" />
@@ -15,6 +15,8 @@
     @Styles.Render("~/Content/css")
     @Html.Partial("_ThemeHead")
     <link href="@Url.Content("~/Content/brand.css")" rel="stylesheet" />
+    <style>.ht-profile-avatar{overflow:hidden}.ht-user-photo{display:block;width:100%;height:100%;object-fit:cover}</style>
+    <link href="@Url.Content("~/Content/profile-photo.css")" rel="stylesheet" />
     <link href="@Url.Content("~/Content/sidebar.css")" rel="stylesheet" />
     @Scripts.Render("~/bundles/modernizr")
 </head>
@@ -94,7 +96,7 @@
 
                 <div class="ht-sidebar-bottom">
                     <div class="ht-sidebar-profile">
-                        <button type="button" class="ht-profile-avatar" data-profile-toggle aria-label="Profile and settings" title="Profile and settings">@sideInitials</button>
+                        <button type="button" class="ht-profile-avatar" data-profile-toggle aria-label="Profile and settings" title="Profile and settings">@if (!string.IsNullOrWhiteSpace(ViewBag.SidePhoto as string)) { <img class="ht-user-photo" src="@Url.Content("~" + (string)ViewBag.SidePhoto)" alt="" /> } else { @sideInitials }</button>
                         <span class="ht-profile-info">
                             <strong>@sideName</strong>
                             <small>Trainer</small>

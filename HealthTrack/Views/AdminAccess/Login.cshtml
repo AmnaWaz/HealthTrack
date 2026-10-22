@@ -1,0 +1,26 @@
+@model HealthTrack.ViewModels.AdminLoginViewModel
+@{
+    Layout = null;
+    ViewBag.Title = "Admin sign in";
+}
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Admin sign in — HealthTrack</title>
+<link href="@Url.Content("~/Content/admin-access.css")" rel="stylesheet" /></head>
+<body>
+<main class="access-shell">
+ <aside class="access-aside"><a class="wordmark" href="@Url.Action("Index", "Home")">HEALTHTRACK <span>/ CONTROL</span></a><div class="aside-bottom"><span class="eyebrow">PRIVATE ACCESS</span><h1>Run the platform.<br/>Stay in control.</h1><p>Administration for the people behind HealthTrack.</p></div></aside>
+ <section class="access-main"><div class="access-card"><span class="eyebrow">SECURE ACCESS / 01</span><h2>Admin sign in</h2><p class="intro">Use your administrator credentials to continue.</p>
+ @if (TempData["AdminNotice"] != null) { <div class="notice">@TempData["AdminNotice"]</div> }
+ @using (Html.BeginForm("Login", "AdminAccess", new { returnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "access-form" })) {
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "error" })
+    <label for="Email">Email address</label>
+    @Html.TextBoxFor(m => m.Email, new { type = "email", autocomplete = "username", placeholder = "admin@example.com" })
+    @Html.ValidationMessageFor(m => m.Email, "", new { @class = "error" })
+    <label for="Password">Password</label>
+    @Html.PasswordFor(m => m.Password, new { autocomplete = "current-password", placeholder = "Your password" })
+    @Html.ValidationMessageFor(m => m.Password, "", new { @class = "error" })
+    <button type="submit">Enter dashboard <span>↗</span></button>
+ }
+ <p class="footnote">Admin accounts are separate from member and trainer access.</p></div></section>
+</main></body></html>

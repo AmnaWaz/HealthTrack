@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections.Generic;
 
@@ -15,6 +15,10 @@ namespace HealthTrack.ViewModels
         public string TrainerName { get; set; }
 
         public string TrainerBio { get; set; }
+
+        public string TrainerPhotoPath { get; set; }
+
+        public decimal TrainerAverageRating { get; set; }
 
         public List<string> Specialisations { get; set; }
 

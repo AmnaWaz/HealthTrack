@@ -123,6 +123,12 @@ namespace HealthTrack.Controllers
             }
 
             var roleName = db.Set<Role>().Where(r => r.RoleId == user.RoleId).Select(r => r.RoleName).First();
+            if (roleName == Role.Admin)
+            {
+                ModelState.AddModelError("", "Admin accounts use the private admin sign-in page.");
+                return View(vm);
+            }
+
             SignIn(user.Email, roleName, vm.RememberMe);
 
             
@@ -145,6 +151,7 @@ namespace HealthTrack.Controllers
         // ---------- helpers ----------
         private string CurrentRole()
         {
+            if (User.IsInRole("Admin")) return "Admin";
             if (User.IsInRole("Trainer")) return "Trainer";
             if (User.IsInRole("Client")) return "Client";
             return "";
@@ -173,6 +180,7 @@ namespace HealthTrack.Controllers
 
         private ActionResult RedirectByRole(string roleName)
         {
+            if (roleName == "Admin") return RedirectToAction("Index", "Admin");
             if (roleName == "Trainer") return RedirectToAction("Index", "Trainer");
             if (roleName == "Client") return RedirectToAction("Overview", "Client");
             return RedirectToAction("Index", "Home");

@@ -68,7 +68,8 @@ namespace HealthTrack.Controllers
                     {
                         t.TrainerId,
                         u.FirstName,
-                        u.LastName
+                        u.LastName,
+                        u.UserId
                     }
                 ).FirstOrDefault();
 
@@ -91,6 +92,17 @@ namespace HealthTrack.Controllers
                 };
 
                 db.Set<TrainerSelectionRequest>().Add(request);
+                var clientName = (CurrentUser.FirstName + " " + CurrentUser.LastName).Trim();
+                var message = "New trainer connection request from " + clientName + ". Review it under Client Selections.";
+                if (message.Length > 300) message = message.Substring(0, 300);
+                db.Set<Notification>().Add(new Notification
+                {
+                    UserId = trainer.UserId,
+                    Message = message,
+                    Type = "TrainerSelection",
+                    IsRead = false,
+                    CreatedAt = now
+                });
                 db.SaveChanges();
 
                 transaction.Commit();
@@ -108,29 +120,59 @@ namespace HealthTrack.Controllers
         {
             var clientId = CurrentClientId;
 
-            var request = db.Set<TrainerSelectionRequest>()
-                .FirstOrDefault(r =>
-                    r.TrainerSelectionRequestId == id &&
-                    r.ClientId == clientId);
-
-            if (request == null)
+            using (var transaction = db.Database.BeginTransaction(
+                IsolationLevel.Serializable))
             {
-                return HttpNotFound();
+                var request = db.Set<TrainerSelectionRequest>()
+                    .FirstOrDefault(r =>
+                        r.TrainerSelectionRequestId == id &&
+                        r.ClientId == clientId);
+
+                if (request == null)
+                {
+                    return HttpNotFound();
+                }
+
+                if (request.Status != TrainerSelectionRequest.Statuses.Pending)
+                {
+                    TempData["Error"] =
+                        "Only pending trainer requests can be cancelled.";
+                    return RedirectToAction("Index");
+                }
+
+                var trainerUserId = db.Set<TrainerProfile>()
+                    .Where(t => t.TrainerId == request.TrainerId)
+                    .Select(t => (int?)t.UserId)
+                    .FirstOrDefault();
+
+                var now = DateTime.Now;
+                request.Status = TrainerSelectionRequest.Statuses.Cancelled;
+                request.RespondedAt = now;
+
+                if (trainerUserId.HasValue)
+                {
+                    var clientName = ((CurrentUser.FirstName ?? "") + " " +
+                        (CurrentUser.LastName ?? "")).Trim();
+                    var message = "Trainer connection request cancelled by " +
+                        clientName + ". Open Client Selections for the updated status.";
+                    if (message.Length > 300)
+                    {
+                        message = message.Substring(0, 300);
+                    }
+
+                    db.Set<Notification>().Add(new Notification
+                    {
+                        UserId = trainerUserId.Value,
+                        Message = message,
+                        Type = "TrainerSelection",
+                        IsRead = false,
+                        CreatedAt = now
+                    });
+                }
+
+                db.SaveChanges();
+                transaction.Commit();
             }
-
-            if (request.Status !=
-                TrainerSelectionRequest.Statuses.Pending)
-            {
-                TempData["Error"] =
-                    "Only pending trainer requests can be cancelled.";
-
-                return RedirectToAction("Index");
-            }
-
-            request.Status = TrainerSelectionRequest.Statuses.Cancelled;
-            request.RespondedAt = DateTime.Now;
-
-            db.SaveChanges();
 
             TempData["Success"] =
                 "Your pending trainer request has been cancelled.";
@@ -195,7 +237,8 @@ namespace HealthTrack.Controllers
                     t.TrainerId,
                     t.Bio,
                     u.FirstName,
-                    u.LastName
+                    u.LastName,
+                    u.ProfilePhotoPath
                 }
             ).ToList();
 
@@ -225,6 +268,7 @@ namespace HealthTrack.Controllers
                         (t.LastName ?? "")
                     ).Trim(),
                     Bio = t.Bio,
+                    ProfilePhotoPath = t.ProfilePhotoPath,
                     Specialisations = specialisations
                         .Where(s => s.TrainerId == t.TrainerId)
                         .Select(s => s.Name)
