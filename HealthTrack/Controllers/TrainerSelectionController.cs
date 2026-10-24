@@ -51,6 +51,12 @@ namespace HealthTrack.Controllers
                     return RedirectToAction("Index");
                 }
 
+                db.Database.ExecuteSqlCommand(@"DECLARE @result int;
+EXEC @result = sys.sp_getapplock @Resource = {0}, @LockMode = 'Exclusive',
+    @LockOwner = 'Transaction', @LockTimeout = 10000;
+IF @result < 0 THROW 51001, 'Client assignment is currently being updated. Please retry.', 1;",
+                    "HealthTrack:ClientAssignment:" + request.ClientId.ToString(System.Globalization.CultureInfo.InvariantCulture));
+
                 var client = db.Set<ClientProfile>()
                     .FirstOrDefault(c =>
                         c.ClientId == request.ClientId);
@@ -58,6 +64,14 @@ namespace HealthTrack.Controllers
                 if (client == null)
                 {
                     return HttpNotFound();
+                }
+
+                db.Entry(request).Reload();
+                db.Entry(client).Reload();
+                if (request.Status != TrainerSelectionRequest.Statuses.Pending)
+                {
+                    TempData["Error"] = "This selection request has already been handled.";
+                    return RedirectToAction("Index");
                 }
 
                 var clientUser = db.Set<ApplicationUser>()

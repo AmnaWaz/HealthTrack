@@ -1,12 +1,91 @@
 @model HealthTrack.ViewModels.AdminUsersVm
-@{ ViewBag.Title = "Users"; Layout = "~/Views/Shared/_AdminLayout.cshtml"; }
+@{
+    ViewBag.Title = "Users";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var totalPages = Math.Max(1, (int)Math.Ceiling(Model.Total / 20.0));
+}
 <link rel="stylesheet" href="@Url.Content("~/Content/admin-management.css")" />
-<section class="am-head"><div><small>ACCOUNT MANAGEMENT</small><h1>People on HealthTrack</h1><p>Find an account and manage access.</p></div><span>@Model.Total accounts</span></section>
-@if (TempData["AdminError"] != null) { <div class="am-alert">@TempData["AdminError"]</div> }
-@if (TempData["AdminNotice"] != null) { <div class="am-success">@TempData["AdminNotice"]</div> }
-<form method="get" action="@Url.Action("Users", "Admin")" class="am-filters"><input name="q" value="@Model.Query" placeholder="Search name, email or phone" aria-label="Search accounts" /><select name="role" aria-label="Role"><option value="">All roles</option>@foreach (var r in new[] { "Client", "Trainer", "Admin" }) { <option value="@r" @(Model.Role == r ? "selected" : "")>@r</option> }</select><select name="status" aria-label="Status"><option value="">Any status</option><option value="active" @(Model.Status == "active" ? "selected" : "")>Active</option><option value="inactive" @(Model.Status == "inactive" ? "selected" : "")>Inactive</option></select><button type="submit">Apply filters</button></form>
-<div class="am-table-wrap"><table class="am-table"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Status</th><th>Action</th></tr></thead><tbody>
-@foreach (var u in Model.Users) { <tr><td><strong>@u.Name</strong></td><td>@u.Email</td><td>@u.Role</td><td>@u.Joined.ToString("dd MMM yyyy")</td><td><span class="@(u.IsActive ? "am-active" : "am-inactive")">@(u.IsActive ? "Active" : "Inactive")</span></td><td>@using (Html.BeginForm("SetUserStatus", "Admin", FormMethod.Post)) { @Html.AntiForgeryToken() <input type="hidden" name="userId" value="@u.UserId" /><input type="hidden" name="active" value="@(u.IsActive ? "false" : "true")" /><button type="submit" class="am-outline" onclick="return confirm('Change access for this account?')">@(u.IsActive ? "Deactivate" : "Activate")</button> }</td></tr> }
-@if (!Model.Users.Any()) { <tr><td colspan="6">No accounts match these filters.</td></tr> }
-</tbody></table></div>
-<div class="am-pages">@if (Model.Page > 1) { <a href="@Url.Action("Users", new { q = Model.Query, role = Model.Role, status = Model.Status, page = Model.Page - 1 })">← Previous</a> }<span>Page @Model.Page of @Math.Max(1, (int)Math.Ceiling(Model.Total / 20.0))</span>@if (Model.Page * 20 < Model.Total) { <a href="@Url.Action("Users", new { q = Model.Query, role = Model.Role, status = Model.Status, page = Model.Page + 1 })">Next →</a> }</div>
+
+<section class="am-head">
+    <div>
+        <small>ACCOUNT MANAGEMENT</small>
+        <h1>People on HealthTrack</h1>
+        <p>Find members, review account access, and manage their status.</p>
+    </div>
+    <span>@Model.Total @(Model.Total == 1 ? "account" : "accounts")</span>
+</section>
+
+@if (TempData["AdminError"] != null)
+{
+    <div class="am-alert" role="alert">@TempData["AdminError"]</div>
+}
+@if (TempData["AdminNotice"] != null)
+{
+    <div class="am-success" role="status">@TempData["AdminNotice"]</div>
+}
+
+<form method="get" action="@Url.Action("Users", "Admin")" class="am-filters" role="search">
+    <input name="q" value="@Model.Query" maxlength="100" placeholder="Search name, email or phone" aria-label="Search accounts" />
+    <select name="role" aria-label="Filter by role">
+        <option value="">All roles</option>
+        @foreach (var r in new[] { "Client", "Trainer", "Admin" })
+        {
+            <option value="@r" @(Model.Role == r ? "selected" : "")>@r</option>
+        }
+    </select>
+    <select name="status" aria-label="Filter by account status">
+        <option value="">Any status</option>
+        <option value="active" @(Model.Status == "active" ? "selected" : "")>Active</option>
+        <option value="inactive" @(Model.Status == "inactive" ? "selected" : "")>Inactive</option>
+    </select>
+    <button type="submit">Apply filters</button>
+    <a href="@Url.Action("Users", "Admin")" class="am-outline" style="display:inline-flex;align-items:center;padding:10px 14px;text-decoration:none">Clear</a>
+</form>
+
+<div class="am-table-wrap">
+    <table class="am-table">
+        <thead>
+            <tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Status</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var u in Model.Users)
+            {
+                <tr>
+                    <td data-label="Name"><strong>@u.Name</strong></td>
+                    <td data-label="Email">@u.Email</td>
+                    <td data-label="Role">@u.Role</td>
+                    <td data-label="Joined">@u.Joined.ToString("dd MMM yyyy")</td>
+                    <td data-label="Status"><span class="@(u.IsActive ? "am-active" : "am-inactive")">@(u.IsActive ? "Active" : "Inactive")</span></td>
+                    <td data-label="Action">
+                        @using (Html.BeginForm("SetUserStatus", "Admin", FormMethod.Post))
+                        {
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="userId" value="@u.UserId" />
+                            <input type="hidden" name="active" value="@(u.IsActive ? "false" : "true")" />
+                            <button type="submit" class="am-outline"
+                                    onclick="return confirm('@(u.IsActive ? "Deactivate this account? The user will lose access." : "Reactivate this account?")')">
+                                @(u.IsActive ? "Deactivate" : "Activate")
+                            </button>
+                        }
+                    </td>
+                </tr>
+            }
+            @if (!Model.Users.Any())
+            {
+                <tr><td colspan="6">No accounts match these filters. Try clearing the search.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<nav class="am-pages" aria-label="User account pages">
+    @if (Model.Page > 1)
+    {
+        <a href="@Url.Action("Users", "Admin", new { q = Model.Query, role = Model.Role, status = Model.Status, page = Model.Page - 1 })">← Previous</a>
+    }
+    <span>Page @Model.Page of @totalPages</span>
+    @if (Model.Page < totalPages)
+    {
+        <a href="@Url.Action("Users", "Admin", new { q = Model.Query, role = Model.Role, status = Model.Status, page = Model.Page + 1 })">Next →</a>
+    }
+</nav>
