@@ -36,8 +36,8 @@ namespace HealthTrack.Controllers
                 vm.Activity.Add(new AdminDailyRow
                 {
                     Date = date,
-                    Workouts = workouts.Count(x => x.Date == date),
-                    Meals = meals.Count(x => x.Date == date)
+                    Workouts = workouts.Count(x => x.Date.Date == date),
+                    Meals = meals.Count(x => x.Date.Date == date)
                 });
             vm.RecentUsers = db.Users.OrderByDescending(x => x.DateJoined)
                 .Take(8).Select(x => new { x.FirstName, x.LastName, x.Email, x.DateJoined, x.IsActive, Role = x.Role.RoleName })
@@ -156,7 +156,9 @@ namespace HealthTrack.Controllers
             if (status == "inactive") query = query.Where(u => !u.IsActive);
             var vm = new AdminUsersVm { Query = q, Role = role, Status = status, Page = page };
             vm.Total = query.Count();
-            vm.Users = query.OrderBy(u => u.UserId).Skip((page - 1) * 20).Take(20)
+            var lastPage = Math.Max(1, (vm.Total + 19) / 20);
+            vm.Page = Math.Min(page, lastPage);
+            vm.Users = query.OrderBy(u => u.UserId).Skip((vm.Page - 1) * 20).Take(20)
                 .Select(u => new AdminAccountRow { UserId = u.UserId, Name = u.FirstName + " " + u.LastName,
                     Email = u.Email, Role = u.Role.RoleName, IsActive = u.IsActive, Joined = u.DateJoined }) .ToList();
             return View(vm);
@@ -174,6 +176,21 @@ namespace HealthTrack.Controllers
                 if (!active && user.Role.RoleName == Role.Admin &&
                     db.Users.Count(x => x.IsActive && x.Role.RoleName == Role.Admin) <= 1)
                 { TempData["AdminError"] = "At least one active administrator is required."; return RedirectToAction("Users"); }
+                if (!active && user.Role.RoleName == Role.Trainer)
+                {
+                    var trainerId = db.TrainerProfiles.Where(t => t.UserId == userId)
+                        .Select(t => (int?)t.TrainerId).FirstOrDefault();
+                    if (trainerId.HasValue && db.ClientProfiles.Any(c => c.TrainerId == trainerId.Value))
+                    {
+                        TempData["AdminError"] = "This trainer still has assigned clients. Reassign or unassign them first.";
+                        return RedirectToAction("Users");
+                    }
+                }
+                if (user.IsActive == active)
+                {
+                    TempData["AdminNotice"] = "This account already has the selected status.";
+                    return RedirectToAction("Users");
+                }
                 user.IsActive = active;
                 if (!active)
                 {
@@ -181,7 +198,40 @@ namespace HealthTrack.Controllers
                     int? trainerId = db.TrainerProfiles.Where(x => x.UserId == userId).Select(x => (int?)x.TrainerId).FirstOrDefault();
                     var pending = db.TrainerSelectionRequests.Where(x => x.Status == TrainerSelectionRequest.Statuses.Pending &&
                         (clientId.HasValue && x.ClientId == clientId.Value || trainerId.HasValue && x.TrainerId == trainerId.Value)).ToList();
-                    foreach (var request in pending) { request.Status = TrainerSelectionRequest.Statuses.Cancelled; request.RespondedAt = DateTime.Now; }
+                    var now = DateTime.Now;
+                    foreach (var request in pending) { request.Status = TrainerSelectionRequest.Statuses.Cancelled; request.RespondedAt = now; }
+                    if (clientId.HasValue)
+                    {
+                        var futureAppointments = db.Appointments.Where(x => x.ClientId == clientId.Value && x.AppointmentDateTime > now &&
+                            (x.Status == AppointmentStatus.Pending || x.Status == AppointmentStatus.Scheduled || x.Status == AppointmentStatus.Approved)).ToList();
+                        var affectedTrainerIds = futureAppointments.Select(x => x.TrainerId).Distinct().ToList();
+                        foreach (var appointment in futureAppointments) appointment.Status = AppointmentStatus.Cancelled;
+                        if (affectedTrainerIds.Count > 0)
+                        {
+                            var affectedUsers = db.TrainerProfiles.Where(x => affectedTrainerIds.Contains(x.TrainerId))
+                                .Select(x => x.UserId).Distinct().ToList();
+                            foreach (var recipientId in affectedUsers)
+                                db.Notifications.Add(new Notification { UserId = recipientId, Type = "Appointment",
+                                    Message = "A client's account was deactivated. Their future appointments with you were cancelled.",
+                                    CreatedAt = now, IsRead = false });
+                        }
+                    }
+                    else if (trainerId.HasValue)
+                    {
+                        var futureAppointments = db.Appointments.Where(x => x.TrainerId == trainerId.Value && x.AppointmentDateTime > now &&
+                            (x.Status == AppointmentStatus.Pending || x.Status == AppointmentStatus.Scheduled || x.Status == AppointmentStatus.Approved)).ToList();
+                        var affectedClientIds = futureAppointments.Select(x => x.ClientId).Distinct().ToList();
+                        foreach (var appointment in futureAppointments) appointment.Status = AppointmentStatus.Cancelled;
+                        if (affectedClientIds.Count > 0)
+                        {
+                            var affectedUsers = db.ClientProfiles.Where(x => affectedClientIds.Contains(x.ClientId))
+                                .Select(x => x.UserId).Distinct().ToList();
+                            foreach (var recipientId in affectedUsers)
+                                db.Notifications.Add(new Notification { UserId = recipientId, Type = "Appointment",
+                                    Message = "Your upcoming appointment was cancelled because your trainer's account is inactive.",
+                                    CreatedAt = now, IsRead = false });
+                        }
+                    }
                 }
                 db.SaveChanges(); tx.Commit();
             }
@@ -192,15 +242,16 @@ namespace HealthTrack.Controllers
         [HttpGet]
         public ActionResult Assignments(string tab = "pending")
         {
+            if (tab != "pending" && tab != "assigned" && tab != "unassigned") tab = "pending";
             var vm = new AdminAssignmentsVm { Tab = tab };
             vm.Trainers = db.TrainerProfiles.Where(x => x.User.IsActive).OrderBy(x => x.User.FirstName)
                 .Select(x => new AdminTrainerOption { TrainerId = x.TrainerId, Name = x.User.FirstName + " " + x.User.LastName }).ToList();
-            vm.Clients = db.ClientProfiles.OrderBy(x => x.User.FirstName).Select(x => new AdminClientAssignmentRow
+            vm.Clients = db.ClientProfiles.Where(x => x.User.IsActive).OrderBy(x => x.User.FirstName).Select(x => new AdminClientAssignmentRow
             {
                 ClientId = x.ClientId, Client = x.User.FirstName + " " + x.User.LastName,
                 TrainerId = x.TrainerId, Trainer = x.Trainer == null ? "Unassigned" : x.Trainer.User.FirstName + " " + x.Trainer.User.LastName
             }).ToList();
-            vm.Pending = db.TrainerSelectionRequests.Where(x => x.Status == TrainerSelectionRequest.Statuses.Pending)
+            vm.Pending = db.TrainerSelectionRequests.Where(x => x.Status == TrainerSelectionRequest.Statuses.Pending && x.Client.User.IsActive && x.Trainer.User.IsActive)
                 .OrderBy(x => x.CreatedAt).Select(x => new AdminPendingSelectionRow
                 {
                     RequestId = x.TrainerSelectionRequestId, Client = x.Client.User.FirstName + " " + x.Client.User.LastName,
@@ -214,6 +265,7 @@ namespace HealthTrack.Controllers
         {
             using (var tx = db.Database.BeginTransaction(IsolationLevel.Serializable))
             {
+                LockClientAssignment(clientId);
                 var client = db.ClientProfiles.Include("User").FirstOrDefault(x => x.ClientId == clientId);
                 if (client == null) return HttpNotFound();
                 if (!client.User.IsActive) { TempData["AdminError"] = "The client account is inactive."; return RedirectToAction("Assignments"); }
@@ -230,8 +282,11 @@ namespace HealthTrack.Controllers
                 client.TrainerId = trainerId;
                 var pending = db.TrainerSelectionRequests.Where(x => x.ClientId == clientId && x.Status == TrainerSelectionRequest.Statuses.Pending).ToList();
                 foreach (var request in pending) { request.Status = TrainerSelectionRequest.Statuses.Cancelled; request.RespondedAt = now; }
-                var appointments = db.Appointments.Where(x => x.ClientId == clientId && x.AppointmentDateTime > now &&
-                    (x.Status == AppointmentStatus.Pending || x.Status == AppointmentStatus.Scheduled || x.Status == AppointmentStatus.Approved)).ToList();
+                // Preserve unrelated historical records and appointments when there is no previous trainer.
+                var appointments = previous.HasValue
+                    ? db.Appointments.Where(x => x.ClientId == clientId && x.TrainerId == previous.Value && x.AppointmentDateTime > now &&
+                        (x.Status == AppointmentStatus.Pending || x.Status == AppointmentStatus.Scheduled || x.Status == AppointmentStatus.Approved)).ToList()
+                    : new List<Appointment>();
                 foreach (var appointment in appointments) appointment.Status = AppointmentStatus.Cancelled;
                 var message = trainer == null ? "Your trainer assignment was removed by an administrator." :
                     "Your trainer assignment has changed. Open My Trainer to see your new trainer.";
@@ -243,21 +298,49 @@ namespace HealthTrack.Controllers
                     Message = "An administrator assigned a client to you. Check My Clients.", Type = "TrainerSelection", CreatedAt = now });
                 db.SaveChanges(); tx.Commit();
             }
-            TempData["AdminNotice"] = "Assignment saved. Future appointments with the previous trainer were cancelled.";
+            TempData["AdminNotice"] = "Assignment updated. Any future appointments with the former trainer were cancelled.";
             return RedirectToAction("Assignments");
         }
 
         [HttpPost, ValidateAntiForgeryToken]
         public ActionResult CancelSelection(int requestId)
         {
-            var request = db.TrainerSelectionRequests.FirstOrDefault(x => x.TrainerSelectionRequestId == requestId);
-            if (request == null) return HttpNotFound();
-            if (request.Status != TrainerSelectionRequest.Statuses.Pending) return RedirectToAction("Assignments");
-            request.Status = TrainerSelectionRequest.Statuses.Cancelled;
-            request.RespondedAt = DateTime.Now;
-            db.SaveChanges();
-            TempData["AdminNotice"] = "Pending request cancelled.";
+            using (var tx = db.Database.BeginTransaction(IsolationLevel.Serializable))
+            {
+                var request = db.TrainerSelectionRequests.FirstOrDefault(x => x.TrainerSelectionRequestId == requestId);
+                if (request == null) return HttpNotFound();
+                if (request.Status != TrainerSelectionRequest.Statuses.Pending)
+                {
+                    TempData["AdminNotice"] = "This request has already been handled.";
+                    return RedirectToAction("Assignments");
+                }
+                var now = DateTime.Now;
+                request.Status = TrainerSelectionRequest.Statuses.Cancelled;
+                request.RespondedAt = now;
+                var clientUserId = db.ClientProfiles.Where(c => c.ClientId == request.ClientId)
+                    .Select(c => (int?)c.UserId).FirstOrDefault();
+                var trainerUserId = db.TrainerProfiles.Where(t => t.TrainerId == request.TrainerId)
+                    .Select(t => (int?)t.UserId).FirstOrDefault();
+                if (clientUserId.HasValue)
+                    db.Notifications.Add(new Notification { UserId = clientUserId.Value, Type = "TrainerSelection",
+                        Message = "An administrator cancelled a pending trainer request.", CreatedAt = now, IsRead = false });
+                if (trainerUserId.HasValue)
+                    db.Notifications.Add(new Notification { UserId = trainerUserId.Value, Type = "TrainerSelection",
+                        Message = "An administrator cancelled a pending client selection request.", CreatedAt = now, IsRead = false });
+                db.SaveChanges();
+                tx.Commit();
+            }
+            TempData["AdminNotice"] = "Pending request cancelled. Both accounts were notified.";
             return RedirectToAction("Assignments");
         }
+        private void LockClientAssignment(int clientId)
+        {
+            db.Database.ExecuteSqlCommand(@"DECLARE @result int;
+EXEC @result = sys.sp_getapplock @Resource = {0}, @LockMode = 'Exclusive',
+    @LockOwner = 'Transaction', @LockTimeout = 10000;
+IF @result < 0 THROW 51001, 'Client assignment is currently being updated. Please retry.', 1;",
+                "HealthTrack:ClientAssignment:" + clientId.ToString(CultureInfo.InvariantCulture));
+        }
+
     }
 }
